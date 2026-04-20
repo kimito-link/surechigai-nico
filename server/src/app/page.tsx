@@ -3,6 +3,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import {
   GUIDES,
+  HOME_HERO_BADGE,
+  HOME_HERO_LEAD,
   HOME_USAGE_HIGHLIGHTS,
   HOME_USAGE_SECTION_INTRO,
   HOME_USAGE_SECTION_TITLE,
@@ -38,13 +40,10 @@ export default function Home() {
           <div className={styles.heroCopy}>
             <span className={styles.badge}>
               <span className={styles.badgeDot} aria-hidden="true" />
-              API サーバー稼働中
+              {HOME_HERO_BADGE}
             </span>
             <h1 className={styles.title}>すれちがいライト</h1>
-            <p className={styles.lead}>
-              会場ですれ違った縁を、匿名で短くつなぐアプリの API
-              サーバーです。ニコニコ超会議向けの企画予告ページでは、りんく・こん太・たぬ姉がゆっくりガイドします。
-            </p>
+            <p className={styles.lead}>{HOME_HERO_LEAD}</p>
             <div className={styles.ctaRow}>
               <Link href="/chokaigi" className={styles.ctaPrimary}>
                 ニコニコ超会議 企画予告（LP）を見る

@@ -192,6 +192,12 @@ export const USAGE_STEPS = [
 export const USAGE_FOOTNOTE =
   "本サイトは企画予告です。API の稼働・アプリの配信・ストアの案内は、公開時のお知らせを優先してください。";
 
+/** ルート / ヒーロー（公開向け：API 稼働など開発用表記は避ける） */
+export const HOME_HERO_BADGE = "企画・公開準備中";
+
+export const HOME_HERO_LEAD =
+  "会場ですれ違った縁を、匿名で短くつなぐアプリ「すれちがいライト」の案内です。ニコニコ超会議向けの企画予告では、りんく・こん太・たぬ姉がゆっくりガイドします。";
+
 /** ルート / の短い要約（詳細は /chokaigi へ） */
 export const HOME_USAGE_SECTION_TITLE = "すれ違い通信のひとこと";
 
