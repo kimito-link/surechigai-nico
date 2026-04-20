@@ -1,0 +1,498 @@
+/* ルート LP — chokaigi と世界観を揃えたレスポンシブ */
+
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: #2c2117;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(37, 93, 155, 0.18), transparent 55%),
+    radial-gradient(ellipse 90% 60% at 100% 40%, rgba(201, 142, 43, 0.12), transparent 50%),
+    linear-gradient(180deg, #fdfaf5 0%, #f7f1e7 45%, #efe6d8 100%);
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.5rem, 5vw, 3.5rem) clamp(1rem, 4vw, 2rem) clamp(2rem, 6vw, 4rem);
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Ccircle cx='2' cy='2' r='1' fill='%23255d9b' opacity='0.07'/%3E%3C/svg%3E");
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.heroInner {
+  position: relative;
+  z-index: 1;
+  max-width: 72rem;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .heroInner {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: 2rem 3rem;
+  }
+}
+
+.heroCopy {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+@media (min-width: 900px) {
+  .heroCopy {
+    text-align: left;
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  margin-bottom: 0.75rem;
+  font-size: clamp(0.72rem, 1.8vw, 0.82rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #1a5a3a;
+  background: linear-gradient(135deg, rgba(200, 240, 210, 0.95), rgba(180, 230, 200, 0.75));
+  border: 1px solid rgba(40, 120, 80, 0.25);
+  border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.badgeDot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+  animation: homePulse 2s ease-in-out infinite;
+}
+
+@keyframes homePulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badgeDot {
+    animation: none;
+  }
+}
+
+.title {
+  margin: 0 0 0.65rem;
+  font-size: clamp(1.85rem, 5vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  background: linear-gradient(120deg, #1a3d5c 0%, #255d9b 40%, #c98e2b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lead {
+  margin: 0 0 1.35rem;
+  max-width: 36rem;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: clamp(0.95rem, 2.2vw, 1.08rem);
+  line-height: 1.75;
+  color: #4a4038;
+}
+
+@media (min-width: 900px) {
+  .lead {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1rem;
+}
+
+@media (min-width: 900px) {
+  .ctaRow {
+    justify-content: flex-start;
+  }
+}
+
+.ctaPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.65rem 1.35rem;
+  font-size: clamp(0.95rem, 2.1vw, 1.05rem);
+  font-weight: 800;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 0.75rem;
+  background: linear-gradient(145deg, #2d6cb5 0%, #255d9b 45%, #1a4a73 100%);
+  box-shadow:
+    0 4px 20px rgba(37, 93, 155, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.ctaPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 28px rgba(37, 93, 155, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.ctaPrimary:focus-visible {
+  outline: 3px solid rgba(37, 93, 155, 0.45);
+  outline-offset: 3px;
+}
+
+.ctaGhost {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  padding: 0.65rem 1.1rem;
+  font-size: clamp(0.88rem, 2vw, 0.98rem);
+  font-weight: 600;
+  color: #3a2f24;
+  text-decoration: none;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(88, 62, 28, 0.22);
+  background: rgba(255, 255, 255, 0.55);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.ctaGhost:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(37, 93, 155, 0.35);
+}
+
+/* ヒーロー右：3人の立ち絵 */
+.heroStage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.avatarRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(0.35rem, 2vw, 1rem);
+  padding: clamp(0.75rem, 3vw, 1.25rem);
+  border-radius: 1.25rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 252, 246, 0.92));
+  border: 1px solid rgba(88, 62, 28, 0.12);
+  box-shadow:
+    0 16px 48px rgba(40, 32, 24, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.avatarCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: clamp(5.5rem, 22vw, 8.5rem);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.25s ease;
+}
+
+.avatarCard:hover {
+  transform: translateY(-4px);
+}
+
+.avatarCard:focus-visible {
+  outline: 3px solid rgba(37, 93, 155, 0.45);
+  outline-offset: 4px;
+  border-radius: 0.75rem;
+}
+
+.avatarFrame {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  max-height: min(200px, 48vw);
+  aspect-ratio: 140 / 180;
+  border-radius: 0.85rem;
+  overflow: hidden;
+  background: linear-gradient(180deg, #fff 0%, #faf6ef 100%);
+  border: 1px solid rgba(88, 62, 28, 0.1);
+  box-shadow: 0 12px 32px rgba(40, 32, 24, 0.1);
+}
+
+.avatarFrameRink {
+  animation: homeFloatA 3.2s ease-in-out infinite;
+}
+
+.avatarFrameKonta {
+  animation: homeFloatB 2.6s ease-in-out infinite;
+}
+
+.avatarFrameTanunee {
+  animation: homeFloatC 3.5s ease-in-out infinite;
+}
+
+@keyframes homeFloatA {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-8px) rotate(1.5deg);
+  }
+}
+
+@keyframes homeFloatB {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-10px) scale(1.03);
+  }
+}
+
+@keyframes homeFloatC {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+
+  50% {
+    transform: translateY(-7px) translateX(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatarFrameRink,
+  .avatarFrameKonta,
+  .avatarFrameTanunee {
+    animation: none;
+  }
+}
+
+.avatarImg {
+  display: block;
+  width: auto;
+  max-width: min(140px, 100%);
+  height: auto;
+  max-height: min(180px, 100%);
+  object-fit: contain;
+  object-position: bottom center;
+}
+
+.avatarName {
+  font-size: clamp(0.75rem, 2vw, 0.88rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.avatarNameRink {
+  color: #1a4a73;
+}
+
+.avatarNameKonta {
+  color: #a84300;
+}
+
+.avatarNameTanunee {
+  color: #4f3558;
+}
+
+.stageCaption {
+  margin: 0;
+  font-size: clamp(0.78rem, 1.9vw, 0.86rem);
+  color: #6b5d52;
+  text-align: center;
+}
+
+/* カード詳細セクション */
+.section {
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem);
+  background: rgba(255, 255, 255, 0.45);
+  border-top: 1px solid rgba(88, 62, 28, 0.1);
+  flex: 1;
+}
+
+.sectionInner {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.sectionTitle {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.15rem, 3vw, 1.45rem);
+  font-weight: 800;
+  text-align: center;
+  color: #3a2f24;
+}
+
+.sectionLead {
+  margin: 0 auto 1.75rem;
+  max-width: 40rem;
+  font-size: clamp(0.88rem, 2vw, 0.96rem);
+  line-height: 1.65;
+  text-align: center;
+  color: #5c5248;
+}
+
+.usageList {
+  margin: 0 auto 1.25rem;
+  max-width: 40rem;
+  padding-left: 1.35rem;
+  text-align: left;
+  font-size: clamp(0.88rem, 2vw, 0.96rem);
+  line-height: 1.72;
+  color: #4a4038;
+}
+
+.usageList li {
+  margin-bottom: 0.55rem;
+}
+
+.usageList li:last-child {
+  margin-bottom: 0;
+}
+
+.usageMore {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(0.86rem, 2vw, 0.94rem);
+}
+
+.usageMore a {
+  font-weight: 700;
+  color: #255d9b;
+  text-decoration: none;
+}
+
+.usageMore a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .cardGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.15rem;
+  }
+}
+
+.detailCard {
+  display: flex;
+  flex-direction: column;
+  padding: 1.15rem 1.1rem 1.25rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(88, 62, 28, 0.1);
+  box-shadow: 0 8px 28px rgba(40, 32, 24, 0.06);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.detailCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 36px rgba(40, 32, 24, 0.1);
+}
+
+.cardName {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.05rem, 2.4vw, 1.2rem);
+  font-weight: 800;
+  color: #3a2f24;
+}
+
+.detailRole {
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #255d9b;
+}
+
+.detailBody {
+  margin: 0;
+  font-size: clamp(0.86rem, 2vw, 0.92rem);
+  line-height: 1.65;
+  color: #4a4038;
+  flex: 1;
+}
+
+.detailLink {
+  margin-top: 0.85rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #255d9b;
+  text-decoration: none;
+}
+
+.detailLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.footer {
+  padding: 1.25rem clamp(1rem, 4vw, 2rem) 2rem;
+  text-align: center;
+  font-size: clamp(0.78rem, 1.8vw, 0.84rem);
+  color: #7a6d62;
+  border-top: 1px solid rgba(88, 62, 28, 0.08);
+}
+
+.footer a {
+  color: #255d9b;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

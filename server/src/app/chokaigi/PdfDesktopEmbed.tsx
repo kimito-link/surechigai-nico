@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import styles from "./chokaigi.module.css";
 import {
   MAP_PDF_DESKTOP_DETAILS_NOTE,
@@ -10,20 +10,31 @@ import {
 
 const DESKTOP_QUERY = "(min-width: 900px)";
 
-export function PdfDesktopEmbed() {
-  const [isDesktop, setIsDesktop] = useState(false);
+function subscribeDesktop(callback: () => void) {
+  const mq = window.matchMedia(DESKTOP_QUERY);
+  const handler = () => callback();
+  if (typeof mq.addEventListener === "function") {
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }
+  mq.addListener(handler);
+  return () => mq.removeListener(handler);
+}
 
-  useEffect(() => {
-    const media = window.matchMedia(DESKTOP_QUERY);
-    const update = () => setIsDesktop(media.matches);
-    update();
-    if (typeof media.addEventListener === "function") {
-      media.addEventListener("change", update);
-      return () => media.removeEventListener("change", update);
-    }
-    media.addListener(update);
-    return () => media.removeListener(update);
-  }, []);
+function getDesktopSnapshot(): boolean {
+  return window.matchMedia(DESKTOP_QUERY).matches;
+}
+
+function getDesktopServerSnapshot(): boolean {
+  return false;
+}
+
+export function PdfDesktopEmbed() {
+  const isDesktop = useSyncExternalStore(
+    subscribeDesktop,
+    getDesktopSnapshot,
+    getDesktopServerSnapshot
+  );
 
   if (!isDesktop) {
     return null;

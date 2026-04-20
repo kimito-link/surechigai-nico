@@ -1,6 +1,4 @@
-export const metadata = {
-  title: "すれちがいライト API",
-};
+import "./globals.css";
 
 export default function RootLayout({
   children,

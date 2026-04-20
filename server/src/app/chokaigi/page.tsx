@@ -14,6 +14,8 @@ import {
   LP_TITLE,
   AFTER_EVENT_SECTION_BODY,
   AFTER_EVENT_SECTION_TITLE,
+  MAP_HALL_LIST_DIALOGUE_HINT_AFTER,
+  MAP_HALL_LIST_DIALOGUE_HINT_BEFORE,
   MAP_HALL_LIST_NOTE,
   MAP_HALL_LIST_TITLE,
   MAP_PDF_MOBILE_EMPHASIS,
@@ -26,6 +28,11 @@ import {
   MAP_SCHEMATIC_TITLE,
   MAP_SECTION_INTRO,
   MAP_SECTION_TITLE,
+  USAGE_FOOTNOTE,
+  USAGE_SECTION_HEADING_ID,
+  USAGE_SECTION_INTRO,
+  USAGE_SECTION_TITLE,
+  USAGE_STEPS,
   VENUE_SECTION_INTRO,
   VENUE_SECTION_POINTS,
   VENUE_SECTION_TITLE,
@@ -35,6 +42,7 @@ import styles from "./chokaigi.module.css";
 import { VenueMapIllustration } from "./VenueMapIllustration";
 import { VenueHallList } from "./VenueHallList";
 import { PdfDesktopEmbed } from "./PdfDesktopEmbed";
+import { YukkuriDialogue } from "./YukkuriDialogue";
 
 export default function ChokaigiPage() {
   return (
@@ -78,6 +86,22 @@ export default function ChokaigiPage() {
             </div>
           </div>
         </header>
+
+        <YukkuriDialogue />
+
+        <section
+          className={styles.section}
+          aria-labelledby={USAGE_SECTION_HEADING_ID}
+        >
+          <h2 id={USAGE_SECTION_HEADING_ID}>{USAGE_SECTION_TITLE}</h2>
+          <p className={styles.sectionLead}>{USAGE_SECTION_INTRO}</p>
+          <ol className={styles.mapHowToList}>
+            {USAGE_STEPS.map((line, i) => (
+              <li key={i}>{line}</li>
+            ))}
+          </ol>
+          <p className={styles.mapFinePrint}>{USAGE_FOOTNOTE}</p>
+        </section>
 
         <section className={styles.section} aria-labelledby="venue-heading">
           <h2 id="venue-heading">{VENUE_SECTION_TITLE}</h2>
@@ -127,6 +151,13 @@ export default function ChokaigiPage() {
           {/* ③ ホール別ガイド（モバイルの主役・テキスト検索可能） */}
           <h3 className={styles.mapSubheading}>{MAP_HALL_LIST_TITLE}</h3>
           <p className={styles.mapFinePrint}>{MAP_HALL_LIST_NOTE}</p>
+          <p className={styles.mapDialogueHint}>
+            {MAP_HALL_LIST_DIALOGUE_HINT_BEFORE}
+            <a href="#yukkuri-dialogue-heading" className={styles.mapDialogueHintLink}>
+              「ゆっくり超解説」
+            </a>
+            {MAP_HALL_LIST_DIALOGUE_HINT_AFTER}
+          </p>
           <VenueHallList />
 
           {/* ① 概略図SVG: モバイルはチェックボックスで折りたたみ、デスクトップは常時表示 */}
@@ -167,7 +198,7 @@ export default function ChokaigiPage() {
         <section className={styles.section} aria-labelledby="guides-heading">
           <h2 id="guides-heading">3人のゆっくりガイド（君斗りんく）</h2>
           <p className={styles.sectionLead}>
-            立ち絵・プロフィールは{" "}
+            ページ冒頭の「ゆっくり超解説」でも登場した3人。アプリ内でも同じトーンで案内する想定です。立ち絵・プロフィールは{" "}
             <a
               href="https://kimito-link.com/characters/"
               target="_blank"
@@ -223,6 +254,11 @@ export default function ChokaigiPage() {
         </section>
 
         <footer className={styles.footer}>
+          <p className={styles.footerNav}>
+            <a href="/">サイトトップ</a>
+            <span aria-hidden="true"> · </span>
+            <a href="/chokaigi">この企画LP（/chokaigi）</a>
+          </p>
           <div className={styles.footerBrand}>
             <Image
               src={LOGO_CREATOR_CROSS_HORIZONTAL_SRC}
