@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>アバター作成</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+	<meta charset="utf-8">
+
+	<link href="svgavatars/css/normalize.css" rel="stylesheet">
+	<link href="svgavatars/css/spectrum.css" rel="stylesheet">
+	<link href="svgavatars/css/svgavatars.css" rel="stylesheet">
+
+	<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,300,700|Roboto:400,300,500,700&subset=latin,cyrillic-ext,cyrillic,latin-ext" rel="stylesheet" type="text/css">
+
+	<script src="svgavatars/js/jquery-3.5.1.min.js"></script>
+
+	<script src="svgavatars/js/svgavatars.tools.js"></script>
+	<script src="svgavatars/js/svgavatars.defaults.js"></script>
+	<script src="svgavatars/js/languages/svgavatars.ja.js"></script>
+	<script src="svgavatars/js/svgavatars.core.min.js"></script>
+
+	<script>
+	// jQuery ajaxのsend前にfilenameを記録 + 完了時にアプリに通知
+	var _lastAvatarFilename = '';
+
+	$.ajaxPrefilter(function(options, originalOptions) {
+		if (options.url && options.url.indexOf('save-ready-avatar') !== -1) {
+			var data = originalOptions.data;
+			if (data && data.filename) {
+				_lastAvatarFilename = data.filename;
+			}
+		}
+	});
+
+	$(document).ajaxComplete(function(event, xhr, settings) {
+		if (settings.url && settings.url.indexOf('save-ready-avatar') !== -1) {
+			if (xhr.responseText === 'saved_custom' && _lastAvatarFilename) {
+				var avatarPath = xhr.getResponseHeader('X-Avatar-Path');
+				if (!avatarPath) {
+					avatarPath = '/svgavatars/ready-avatars/' + _lastAvatarFilename;
+				}
+				if (window.ReactNativeWebView) {
+					$('#svga-work-overlay, #svga-message').hide();
+					window.ReactNativeWebView.postMessage(JSON.stringify({
+						type: 'avatar_saved',
+						url: avatarPath
+					}));
+				}
+			}
+		}
+	});
+	</script>
+
+</head>
+<body>
+
+	<div id="svgAvatars"></div>
+
+</body>
+</html>

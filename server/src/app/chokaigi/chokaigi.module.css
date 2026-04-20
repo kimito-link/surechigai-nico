@@ -1,0 +1,824 @@
+.pageRoot {
+  min-height: 100vh;
+  font-family: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  color: #2c2117;
+  background:
+    radial-gradient(ellipse 85% 55% at 6% 96%, rgba(36, 28, 58, 0.06), transparent 52%),
+    radial-gradient(ellipse 70% 48% at 98% 4%, rgba(255, 210, 228, 0.2), transparent 46%),
+    linear-gradient(180deg, #f7f1e7, #f1e7da 46%, #e8dac4);
+}
+
+.shell {
+  width: min(100% - 2rem, 72rem);
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 2.5rem) 0 clamp(2.5rem, 6vw, 4rem);
+}
+
+.hero {
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-radius: 1.25rem;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 251, 245, 0.97),
+    rgba(232, 218, 196, 0.55)
+  );
+  border: 1px solid rgba(88, 62, 28, 0.12);
+  box-shadow: 0 18px 44px rgba(70, 49, 20, 0.08);
+}
+
+.heroBand {
+  display: grid;
+  gap: clamp(1.1rem, 3vw, 1.75rem);
+  align-items: center;
+  justify-items: center;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .heroBand {
+    grid-template-columns: auto 1fr;
+    justify-items: stretch;
+    text-align: left;
+  }
+
+  .heroBrandCol {
+    justify-self: start;
+  }
+}
+
+.heroBrandCol {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .heroBrandCol {
+    width: auto;
+  }
+}
+
+.heroBrandRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.85rem, 2.5vw, 1.5rem);
+}
+
+@media (min-width: 640px) {
+  .heroBrandRow {
+    justify-content: flex-start;
+  }
+}
+
+.heroKimitoLink {
+  display: block;
+  line-height: 0;
+  border-radius: 0.5rem;
+}
+
+.heroKimitoLink:focus-visible {
+  outline: 2px solid #255d9b;
+  outline-offset: 3px;
+}
+
+.logoKimitoHero {
+  width: auto;
+  max-height: clamp(3.25rem, 16vw, 5.5rem);
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.logoVertical {
+  width: clamp(100px, 26vw, 140px);
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.heroCopy {
+  min-width: 0;
+}
+
+.hero h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.35rem, 4vw, 2rem);
+  line-height: 1.25;
+  color: #2c2117;
+}
+
+.hero p {
+  margin: 0;
+  font-size: clamp(0.95rem, 2.4vw, 1.05rem);
+  line-height: 1.75;
+  color: #4f4338;
+}
+
+.badge {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #5a3d16;
+  background: rgba(201, 142, 43, 0.2);
+  border-radius: 999px;
+}
+
+.section {
+  margin-top: clamp(2rem, 5vw, 3rem);
+}
+
+.section h2 {
+  margin: 0 0 1rem;
+  padding-left: 0.6rem;
+  border-left: 4px solid #c98e2b;
+  font-size: clamp(1.1rem, 2.8vw, 1.35rem);
+  color: #2c2117;
+}
+
+.sectionLead {
+  margin: -0.25rem 0 1.25rem;
+  font-size: clamp(0.88rem, 2.2vw, 0.95rem);
+  line-height: 1.65;
+  color: #5c5046;
+}
+
+.sectionLead a {
+  color: #255d9b;
+  text-underline-offset: 3px;
+}
+
+.tipList {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: clamp(0.88rem, 2.2vw, 0.95rem);
+  line-height: 1.7;
+  color: #4f4338;
+}
+
+.tipList li {
+  margin-bottom: 0.5rem;
+}
+
+.tipList li:last-child {
+  margin-bottom: 0;
+}
+
+.mapHowToList {
+  margin: 0 0 1.25rem;
+  padding-left: 1.35rem;
+  font-size: clamp(0.86rem, 2.1vw, 0.94rem);
+  line-height: 1.65;
+  color: #4f4338;
+}
+
+.mapHowToList li {
+  margin-bottom: 0.45rem;
+}
+
+.mapHowToList li:last-child {
+  margin-bottom: 0;
+}
+
+.mapSubheading {
+  margin: 1.35rem 0 0.4rem;
+  padding-left: 0.45rem;
+  border-left: 3px solid rgba(201, 142, 43, 0.75);
+  font-size: clamp(1rem, 2.5vw, 1.12rem);
+  font-weight: 700;
+  color: #3a2f24;
+}
+
+.mapSubheading:first-of-type {
+  margin-top: 0.25rem;
+}
+
+.mapFinePrint {
+  margin: 0 0 0.5rem;
+  font-size: clamp(0.8rem, 2vw, 0.88rem);
+  line-height: 1.55;
+  color: #6b5d52;
+}
+
+.mapPdfCtaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.mapPdfCtaRow > a {
+  flex: 1 1 100%;
+}
+
+.mapPrimaryCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.65rem;
+  padding: 0.55rem 1.15rem;
+  font-size: clamp(0.92rem, 2.2vw, 1rem);
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 0.65rem;
+  background: linear-gradient(180deg, #2d6fb8, #255d9b);
+  border: 1px solid rgba(20, 60, 110, 0.35);
+  box-shadow: 0 4px 14px rgba(37, 93, 155, 0.28);
+}
+
+.mapPrimaryCta:hover {
+  filter: brightness(1.05);
+}
+
+.mapPrimaryCta:focus-visible {
+  outline: 2px solid #255d9b;
+  outline-offset: 3px;
+}
+
+.mapSecondaryCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.65rem;
+  padding: 0.55rem 1rem;
+  font-size: clamp(0.88rem, 2vw, 0.95rem);
+  font-weight: 600;
+  color: #255d9b;
+  text-decoration: none;
+  border-radius: 0.65rem;
+  background: rgba(37, 93, 155, 0.08);
+  border: 1px solid rgba(37, 93, 155, 0.28);
+}
+
+.mapSecondaryCta:hover {
+  background: rgba(37, 93, 155, 0.12);
+}
+
+.mapSecondaryCta:focus-visible {
+  outline: 2px solid #255d9b;
+  outline-offset: 3px;
+}
+
+.mapMobileEmphasis {
+  margin-top: 0.2rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(37, 93, 155, 0.2);
+  background: rgba(37, 93, 155, 0.08);
+  color: #4b3f34;
+  font-weight: 600;
+}
+
+.mapPdfDesktopOnly {
+  display: none;
+}
+
+.mapPdfDesktopNote {
+  margin-top: 0.3rem;
+}
+
+@media (min-width: 640px) {
+  .mapPdfCtaRow > a {
+    flex: 0 1 auto;
+  }
+}
+
+@media (min-width: 900px) {
+  .mapMobileEmphasis {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #6b5d52;
+    font-weight: 500;
+  }
+
+  .mapPdfDesktopOnly {
+    display: block;
+  }
+}
+
+.mapSvgOuter {
+  width: 100%;
+  margin-top: 0.5rem;
+  border-radius: 0.85rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid rgba(88, 62, 28, 0.14);
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow: 0 8px 28px rgba(45, 36, 28, 0.06);
+}
+
+.venueMapSvg {
+  display: block;
+  width: 100%;
+  min-width: 900px;
+  height: auto;
+  max-height: min(92vh, 1100px);
+  font-family: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+}
+
+@media (min-width: 900px) {
+  .venueMapSvg {
+    min-width: 0;
+  }
+  .mapSvgOuter {
+    overflow: hidden;
+  }
+}
+
+/* ---------- ① 概略図: モバイルはチェックボックス式トグル・デスクトップは常時表示 ---------- */
+.mapSvgBlock {
+  margin: 1rem 0 0;
+}
+
+.mapSvgToggleInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mapSvgToggleLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  min-height: 2.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(88, 62, 28, 0.12);
+  background: rgba(255, 251, 245, 0.6);
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #3a2f24;
+  font-weight: 700;
+  gap: 0.6rem;
+  user-select: none;
+}
+
+.mapSvgToggleInput:focus-visible ~ .mapSvgToggleLabel {
+  outline: 2px solid #255d9b;
+  outline-offset: 2px;
+}
+
+.mapSvgToggleLabelText {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mapSvgToggleChevron {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  color: #6b5d52;
+  transition: transform 0.2s ease;
+}
+
+.mapSvgToggleInput:checked ~ .mapSvgToggleLabel .mapSvgToggleChevron {
+  transform: rotate(180deg);
+}
+
+.mapSvgReveal {
+  display: none;
+  padding-top: 0.5rem;
+}
+
+.mapSvgToggleInput:checked ~ .mapSvgReveal {
+  display: block;
+}
+
+.mapSvgDesktopHeading {
+  display: none;
+}
+
+/* デスクトップ: トグル完全に無効化して常に表示 */
+@media (min-width: 900px) {
+  .mapSvgToggleLabel {
+    display: none;
+  }
+  .mapSvgReveal {
+    display: block;
+    padding-top: 0;
+  }
+  .mapSvgDesktopHeading {
+    display: block;
+  }
+}
+
+/* ---------- ③ ホール別ガイド（モバイルの主役） ---------- */
+.hallListWrap {
+  margin-top: 0.25rem;
+}
+
+.hallGuideNote {
+  margin: 0.25rem 0 0.8rem;
+  font-size: clamp(0.8rem, 2vw, 0.88rem);
+  line-height: 1.55;
+  color: #5c5046;
+}
+
+.hallGroupHeading {
+  margin: 1.1rem 0 0.55rem;
+  padding-left: 0.35rem;
+  font-size: clamp(0.92rem, 2.2vw, 1rem);
+  font-weight: 700;
+  color: #3a2f24;
+  letter-spacing: 0.01em;
+}
+
+.hallGroupHeading:first-of-type {
+  margin-top: 0.25rem;
+}
+
+.hallCardGrid {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .hallCardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hallCardGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.hallCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(88, 62, 28, 0.12);
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(45, 36, 28, 0.05);
+  padding: 0.75rem 0.9rem 0.85rem 1.15rem;
+}
+
+.hallCardBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 6px;
+}
+
+.hallCardHead {
+  margin-bottom: 0.55rem;
+}
+
+.hallCardTitle {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 0.55rem;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.hallCardLabel {
+  font-size: clamp(0.98rem, 2.4vw, 1.05rem);
+  font-weight: 800;
+  color: #2c2117;
+}
+
+.hallCardSummary {
+  font-size: clamp(0.76rem, 2vw, 0.82rem);
+  font-weight: 500;
+  color: #6b5d52;
+}
+
+.hallCardList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hallCardItem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.45rem;
+  padding: 0.22rem 0;
+  font-size: clamp(0.84rem, 2.1vw, 0.88rem);
+  line-height: 1.45;
+  color: #3a2f24;
+}
+
+.hallCardBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.8rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.hallCardCode {
+  font-weight: 700;
+  color: #255d9b;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+}
+
+.hallCardName {
+  flex: 1 1 auto;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.hallCardSub {
+  color: #6b5d52;
+  font-size: 0.78rem;
+  font-weight: 400;
+}
+
+.hallCardDetails {
+  margin-top: 0.55rem;
+  border-top: 1px dashed rgba(88, 62, 28, 0.2);
+  padding-top: 0.5rem;
+}
+
+.hallCardDetailsSummary {
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #255d9b;
+  list-style: none;
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+}
+
+.hallCardDetailsSummary::-webkit-details-marker {
+  display: none;
+}
+
+.hallCardDetailsSummary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: 0.4rem;
+  font-size: 0.78rem;
+  transition: transform 0.15s ease;
+}
+
+.hallCardDetails[open] > .hallCardDetailsSummary::before {
+  transform: rotate(90deg);
+}
+
+.hallCardFullList {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: #4f4338;
+}
+
+.hallCardFullList li {
+  margin-bottom: 0.15rem;
+}
+
+.hallCardNote {
+  margin: 0.55rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: #6b5d52;
+}
+
+.mapPdfDetails {
+  margin-top: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(88, 62, 28, 0.12);
+  background: rgba(255, 251, 245, 0.6);
+  overflow: hidden;
+}
+
+.mapPdfSummary {
+  cursor: pointer;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4f4338;
+  list-style: none;
+}
+
+.mapPdfSummary::-webkit-details-marker {
+  display: none;
+}
+
+.mapPdfDetails[open] .mapPdfSummary {
+  border-bottom: 1px solid rgba(88, 62, 28, 0.12);
+}
+
+.mapEmbedWrap {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(88, 62, 28, 0.14);
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow: 0 8px 28px rgba(45, 36, 28, 0.06);
+}
+
+.mapFrame {
+  display: block;
+  width: 100%;
+  min-height: min(55vh, 520px);
+  border: 0;
+}
+
+@media (max-width: 639px) {
+  .mapFrame {
+    min-height: min(42vh, 360px);
+  }
+}
+
+.mapActions {
+  margin: 0.85rem 0 0;
+  font-size: clamp(0.86rem, 2.1vw, 0.93rem);
+  color: #5c5046;
+}
+
+.mapActionLink {
+  color: #255d9b;
+  text-underline-offset: 3px;
+  font-weight: 600;
+}
+
+.mapActionsSep {
+  color: #a09084;
+}
+
+.aspiration {
+  margin: 0;
+  padding: 1rem 1.15rem;
+  border-radius: 0.85rem;
+  font-size: clamp(0.9rem, 2.2vw, 0.98rem);
+  line-height: 1.75;
+  color: #3a3428;
+  background: rgba(15, 94, 79, 0.07);
+  border: 1px solid rgba(15, 94, 79, 0.14);
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card {
+  padding: 1rem 1rem 1.15rem;
+  border-radius: 1rem;
+  background: rgba(255, 251, 245, 0.92);
+  border: 1px solid rgba(88, 62, 28, 0.1);
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.cardFigure {
+  display: block;
+  margin: 0 0 0.65rem;
+  line-height: 0;
+  border-radius: 0.85rem;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 4px 18px rgba(45, 36, 28, 0.08);
+  max-width: min(200px, 100%);
+}
+
+.cardFigure:focus-visible {
+  outline: 2px solid #255d9b;
+  outline-offset: 3px;
+}
+
+.avatarImg {
+  width: 100%;
+  height: auto;
+  max-height: min(200px, 40vw);
+  object-fit: contain;
+}
+
+.cardTitle {
+  margin: 0 0 0.35rem;
+  font-size: 1.08rem;
+  color: #2c2117;
+}
+
+.cardTitle a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.cardTitle a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.role {
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #255d9b;
+}
+
+.cardBody {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: #4f4338;
+  text-align: left;
+  width: 100%;
+}
+
+.note {
+  margin: 0;
+  padding: 1rem 1.15rem;
+  border-radius: 0.85rem;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: #3d342c;
+  background: rgba(37, 93, 155, 0.08);
+  border: 1px solid rgba(37, 93, 155, 0.15);
+}
+
+.footer {
+  margin-top: clamp(2.5rem, 6vw, 3.5rem);
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(88, 62, 28, 0.12);
+  font-size: 0.82rem;
+  color: #6b5d52;
+}
+
+.footerBrand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1rem, 3vw, 1.75rem);
+  margin-bottom: 1.15rem;
+  padding: 0.75rem 0;
+}
+
+.footerKimitoLink {
+  display: block;
+  line-height: 0;
+}
+
+.footerKimitoLink:focus-visible {
+  outline: 2px solid #255d9b;
+  outline-offset: 3px;
+}
+
+.logoHorizontal {
+  width: min(100%, 22rem);
+  height: auto;
+  max-height: clamp(3rem, 10vw, 4.25rem);
+  object-fit: contain;
+}
+
+.logoKimitoFooter {
+  width: auto;
+  max-height: clamp(2.25rem, 7vw, 3.25rem);
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.footer a {
+  color: #255d9b;
+  text-underline-offset: 3px;
+}

@@ -1,0 +1,48 @@
+{
+  "name": "surechigai-app",
+  "version": "0.1.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "eas:login": "npx eas-cli login",
+    "eas:configure": "npx eas-cli build:configure",
+    "eas:build:ios": "npx eas-cli build --platform ios --profile production",
+    "eas:build:android": "npx eas-cli build --platform android --profile production",
+    "eas:build:all": "npx eas-cli build --platform all --profile production",
+    "eas:submit:ios": "npx eas-cli submit --platform ios --latest",
+    "eas:submit:android": "npx eas-cli submit --platform android --latest"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^14.0.0",
+    "expo": "~52.0.0",
+    "expo-asset": "~11.0.5",
+    "expo-constants": "~17.0.8",
+    "expo-file-system": "~18.0.12",
+    "expo-font": "~13.0.4",
+    "expo-linking": "~7.0.5",
+    "expo-location": "~18.0.0",
+    "expo-notifications": "~0.29.0",
+    "expo-router": "~4.0.0",
+    "expo-secure-store": "~14.0.0",
+    "expo-status-bar": "~2.0.0",
+    "expo-store-review": "~8.0.1",
+    "expo-task-manager": "~12.0.0",
+    "next": "^15.5.12",
+    "react": "18.3.1",
+    "react-dom": "^19.2.4",
+    "react-native": "0.76.6",
+    "react-native-maps": "1.18.0",
+    "react-native-safe-area-context": "~4.14.0",
+    "react-native-screens": "~4.4.0",
+    "react-native-svg": "~15.8.0",
+    "react-native-webview": "13.12.5",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "~18.3.0",
+    "typescript": "~5.3.0"
+  },
+  "private": true
+}

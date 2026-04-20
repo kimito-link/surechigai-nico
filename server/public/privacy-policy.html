@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>プライバシーポリシー - すれちがいライト</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #FFF9F2;
+  color: #333;
+  font-family: "Noto Sans JP", -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+  line-height: 1.8;
+  padding: 20px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+h1 {
+  font-size: 1.5rem;
+  color: #E8734A;
+  border-bottom: 3px solid #E8734A;
+  padding-bottom: 8px;
+  margin-bottom: 24px;
+}
+h2 {
+  font-size: 1.15rem;
+  color: #E8734A;
+  margin-top: 32px;
+  margin-bottom: 12px;
+  padding-left: 12px;
+  border-left: 4px solid #E8734A;
+}
+p, li {
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+ul {
+  padding-left: 1.5em;
+  margin-bottom: 12px;
+}
+li { margin-bottom: 4px; }
+.app-name { font-weight: bold; color: #E8734A; }
+.updated {
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 24px;
+}
+.contact {
+  background: #fff;
+  border: 1px solid #e0d6cc;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 32px;
+}
+.contact a { color: #E8734A; }
+footer {
+  text-align: center;
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid #e0d6cc;
+  font-size: 0.8rem;
+  color: #aaa;
+}
+</style>
+</head>
+<body>
+
+<h1>プライバシーポリシー</h1>
+<p class="updated">最終更新日: 2026年3月22日</p>
+
+<p><span class="app-name">すれちがいライト</span>(以下「本アプリ」)は ユーザーのプライバシーを尊重し 個人情報の保護に努めます. 本ポリシーでは 本アプリが収集する情報とその取り扱いについて説明します.</p>
+
+<h2>1. 収集する情報</h2>
+<p>本アプリでは以下の情報を収集します.</p>
+<ul>
+  <li><strong>位置情報(GPS)</strong>: すれ違い判定のためにバックグラウンドを含む位置情報を取得します</li>
+  <li><strong>ニックネーム</strong>: 他のユーザーに表示される名前です(本名は不要)</li>
+  <li><strong>アバター情報</strong>: ユーザーが作成したアバターの設定データ</li>
+  <li><strong>ひとこと(hitokoto)</strong>: すれ違い時に共有される短いメッセージ</li>
+  <li><strong>Spotify楽曲情報</strong>: すれ違い時に共有する楽曲のタイトル・アーティスト名・トラックID</li>
+  <li><strong>端末識別子(UUID)</strong>: ゲスト認証に使用する匿名の識別子</li>
+  <li><strong>認証情報</strong>: Apple ID / Googleアカウントでログインした場合のアカウント情報(任意)</li>
+  <li><strong>プッシュ通知トークン</strong>: Firebase Cloud Messaging(FCM)によるプッシュ通知の送信に使用</li>
+  <li><strong>年代・性別</strong>: 任意で設定できる属性情報です. 公開設定をONにした場合のみ すれ違い相手に表示されます</li>
+</ul>
+
+<h2>2. 位置情報の取得について</h2>
+<p>本アプリの主要機能である「すれ違い」の判定には 位置情報が不可欠です.</p>
+<ul>
+  <li>アプリがバックグラウンドにある状態でも位置情報を定期的に取得します</li>
+  <li>位置情報は すれ違い判定の処理にのみ使用します</li>
+  <li>精密な位置情報(緯度・経度)はサーバーに一時的に保存され すれ違い判定後に丸められた情報のみ保持します</li>
+  <li>位置情報の取得は 端末の設定からいつでも無効にできます</li>
+  <li>位置情報はサーバーに保存され すれ違い判定・統計分析・サービス改善の目的で継続的に保持されます</li>
+</ul>
+
+<h2>2-2. おさんぽ機能について</h2>
+<p>本アプリには 自分の分身を別の都道府県に送り出してその街の人とすれ違える「おさんぽ」機能があります.</p>
+<ul>
+  <li>おさんぽ先の都道府県・市区町村は ユーザーの選択とランダム決定により設定されます</li>
+  <li>おさんぽ中に設定した「旅のひとこと」は おさんぽ先で出会った相手に表示されます</li>
+  <li>おさんぽによるすれ違い記録は 通常のすれ違いと同様にサーバーに保存されます</li>
+</ul>
+
+<h2>3. 情報の利用目的</h2>
+<p>収集した情報は以下の目的で利用します.</p>
+<ul>
+  <li>すれ違いの判定と記録</li>
+  <li>すれ違い相手へのニックネーム・アバター・ひとこと・楽曲の表示</li>
+  <li>プッシュ通知の送信(すれ違い発生時の通知など)</li>
+  <li>アプリの改善および不具合の修正</li>
+  <li>不正利用の防止</li>
+</ul>
+
+<h2>4. 第三者サービスとの連携</h2>
+<p>本アプリでは以下の第三者サービスを利用しています. 各サービスのプライバシーポリシーもご確認ください.</p>
+<ul>
+  <li><strong>Firebase (Google)</strong>: 認証・プッシュ通知・分析に使用
+    <br><a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">Firebase プライバシーポリシー</a></li>
+  <li><strong>Spotify</strong>: 楽曲検索・楽曲情報の取得に使用
+    <br><a href="https://www.spotify.com/legal/privacy-policy/" target="_blank" rel="noopener">Spotify プライバシーポリシー</a></li>
+  <li><strong>Google AdMob</strong>(将来導入予定): 広告の表示に使用. 導入時に本ポリシーを更新します
+    <br><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google プライバシーポリシー</a></li>
+</ul>
+
+<h2>5. データの保存と管理</h2>
+<ul>
+  <li>収集したデータはセキュリティ対策を施したサーバー上に保存します</li>
+  <li>パスワードや決済情報は収集・保存しません</li>
+  <li>データへのアクセスは運営者に限定されています</li>
+  <li>位置情報およびすれ違い履歴は サービス改善・統計分析の目的で継続的に保持されます</li>
+</ul>
+
+<h2>6. データの削除</h2>
+<p>ユーザーは以下の方法でデータの削除を請求できます.</p>
+<ul>
+  <li>アプリ内の設定画面から「アカウント削除」を実行する</li>
+  <li>下記の連絡先にメールで削除を依頼する</li>
+</ul>
+<p>削除請求を受けた場合 合理的な期間内にユーザーの個人データを全て削除します.</p>
+
+<h2>7. 児童のプライバシー</h2>
+<p>本アプリは13歳未満の児童を対象としていません. 13歳未満であることが判明したユーザーの情報は速やかに削除します. 13歳未満の児童の情報が収集されていることに気づいた場合は 下記の連絡先までお知らせください.</p>
+
+<h2>8. EU圏ユーザーの権利(GDPR)</h2>
+<p>EUおよびEEA圏にお住まいのユーザーは 以下の権利を有します.</p>
+<ul>
+  <li>個人データへのアクセス権</li>
+  <li>個人データの訂正権</li>
+  <li>個人データの削除権(忘れられる権利)</li>
+  <li>データ処理の制限権</li>
+  <li>データポータビリティの権利</li>
+</ul>
+<p>これらの権利を行使する場合は 下記の連絡先までご連絡ください.</p>
+
+<h2>9. ポリシーの変更</h2>
+<p>本ポリシーは必要に応じて変更することがあります. 重要な変更がある場合はアプリ内で通知します. 変更後も本アプリを継続して利用する場合 変更後のポリシーに同意したものとみなします.</p>
+
+<div class="contact">
+  <h2 style="margin-top: 0;">10. お問い合わせ</h2>
+  <p>本ポリシーに関するご質問やデータ削除の依頼は 以下の連絡先までお願いします.</p>
+  <p>メール: <a href="mailto:{{CONTACT_EMAIL}}">{{CONTACT_EMAIL}}</a></p>
+</div>
+
+<footer>
+  &copy; 2026 すれちがいライト
+</footer>
+
+</body>
+</html>
