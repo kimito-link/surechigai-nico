@@ -76,11 +76,24 @@
   width: 100%;
 }
 
+.clerkCardBox {
+  box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
+  width: 100% !important;
+}
+
 .clerkCard {
   box-shadow: none !important;
   border: none !important;
   padding: 0 !important;
+  margin: 0 !important;
   background: transparent !important;
+  width: 100% !important;
+}
+
+.clerkMain {
+  width: 100% !important;
 }
 
 .clerkHidden {
@@ -93,19 +106,25 @@
   font-size: clamp(1rem, 3vw, 1.125rem) !important;
   font-weight: 700 !important;
   border-radius: 2rem !important;
-  border: 2px solid rgba(0, 0, 0, 0.08) !important;
-  background: #fff !important;
+  border: none !important;
+  background: #000 !important;
+  color: #fff !important;
   transition: all 0.2s ease !important;
 }
 
 .clerkSocialButton:hover {
   transform: translateY(-3px) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
-  border-color: rgba(37, 93, 155, 0.3) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  background: #1a1a1a !important;
 }
 
 .clerkSocialButton:active {
   transform: translateY(-1px) !important;
+}
+
+.clerkSocialButton span,
+.clerkSocialButton p {
+  color: #fff !important;
 }
 
 .clerkFooter {

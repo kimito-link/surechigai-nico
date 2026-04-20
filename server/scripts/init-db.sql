@@ -19,6 +19,9 @@ CREATE TABLE IF NOT EXISTS users (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   uuid VARCHAR(36) NOT NULL UNIQUE COMMENT 'ゲストUUID（端末生成）',
   firebase_uid VARCHAR(128) NULL UNIQUE COMMENT 'Firebase Auth UID（任意ログイン時）',
+  clerk_id VARCHAR(255) NULL UNIQUE COMMENT 'Clerkユーザー ID',
+  clerk_email VARCHAR(255) NULL COMMENT 'Clerk登録メール',
+  twitter_handle VARCHAR(30) NULL COMMENT 'Twitter ハンドル',
   nickname VARCHAR(20) NOT NULL DEFAULT '匿名さん',
   avatar_config JSON NULL COMMENT 'DiceBear アバター設定',
   hitokoto VARCHAR(100) NULL COMMENT 'ひとこと（今の気分）',
@@ -49,7 +52,8 @@ CREATE TABLE IF NOT EXISTS users (
   ghost_hitokoto VARCHAR(100) NULL COMMENT '旅のひとこと',
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_firebase_uid (firebase_uid)
+  INDEX idx_firebase_uid (firebase_uid),
+  INDEX idx_clerk_id (clerk_id)
 ) ENGINE=InnoDB;
 
 -- ============================================================

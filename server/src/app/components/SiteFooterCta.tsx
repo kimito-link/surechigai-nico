@@ -2,9 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import styles from "./SiteFooterCta.module.css";
 
+const HIDDEN_PATHS = ["/sign-in", "/sign-up", "/onboarding", "/app"];
+
 export function SiteFooterCta() {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -15,6 +19,8 @@ export function SiteFooterCta() {
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  if (HIDDEN_PATHS.some((p) => pathname?.startsWith(p))) return null;
 
   return (
     <footer className={`${styles.footer} ${visible ? styles.visible : ""}`}>

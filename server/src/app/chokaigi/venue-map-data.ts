@@ -108,9 +108,9 @@ export const MAIN_HALLS: Hall[] = [
         h: 102,
         fs: 10,
       },
-      { code: "C3", name: "超配信者", area: "exp", guidePriority: 2, x: 6, y: 114, w: 48, h: 58 },
-      { code: "C4", name: "超遊戯2026", area: "exp", guidePriority: 3, x: 57, y: 114, w: 48, h: 58 },
-      { code: "C5", name: "超痛車天国", area: "exp", guidePriority: 4, x: 108, y: 114, w: 48, h: 58 },
+      { code: "C3", name: "超配信者", area: "exp", guidePriority: 2, x: 6, y: 114, w: 48, h: 58, fs: 7 },
+      { code: "C4", name: "超遊戯2026", area: "exp", guidePriority: 3, x: 57, y: 114, w: 48, h: 58, fs: 6 },
+      { code: "C5", name: "超痛車天国", area: "exp", guidePriority: 4, x: 108, y: 114, w: 48, h: 58, fs: 6 },
       {
         name: "クリエイタークロス",
         sub: "分散配置",
@@ -147,7 +147,7 @@ export const MAIN_HALLS: Hall[] = [
         h: 76,
       },
       { code: "C7", name: "超神社", area: "shrine", guidePriority: 3, x: 4, y: 88, w: 48, h: 46 },
-      { code: "C8", name: "VTuber ASMR足湯", area: "exp", guidePriority: 5, x: 54, y: 88, w: 52, h: 46, fs: 7 },
+      { code: "C8", name: "VTuber ASMR足湯", area: "exp", guidePriority: 5, x: 54, y: 88, w: 52, h: 46, fs: 5.5 },
       {
         code: "C9",
         name: "超コスプレ",
@@ -238,7 +238,7 @@ export const MAIN_HALLS: Hall[] = [
       // 下段: 大学 B90-B99
       { code: "B98", name: "超スパコン", sub: "富岳", area: "exp", guidePriority: 3, x: 4, y: 190, w: 52, h: 32, fs: 7 },
       { code: "B99", name: "磁石祭", sub: "N校", area: "exp", guidePriority: 4, x: 58, y: 190, w: 52, h: 32, fs: 7 },
-      { code: "B90", name: "超KEK / B91 文教大 / B92 湘南工科 / B93 産総研", area: "exp", guidePriority: 5, x: 112, y: 190, w: 52, h: 32, fs: 6 },
+      { code: "B90〜", name: "大学系", sub: "KEK/文教/湘南工科/産総研", area: "exp", guidePriority: 5, x: 112, y: 190, w: 52, h: 32, fs: 7 },
       // 最下段: トイレ + インフォ + 四駆
       { code: "B102", name: "超おトイレ", area: "toilet", x: 4, y: 226, w: 48, h: 44, fs: 7 },
       { code: "B103", name: "超ニコニコインフォ", area: "info", x: 54, y: 226, w: 58, h: 44, fs: 7 },
@@ -444,9 +444,9 @@ export const SUB_HALLS: Hall[] = [
       { code: "D8", name: "超てんちゃん", area: "exp", x: 74, y: 72, w: 66, h: 28, fs: 7 },
       { code: "D9", name: "超秋葉原 REAL AKIBA", area: "cc", guidePriority: 2, x: 4, y: 104, w: 136, h: 28, fs: 7 },
       { code: "D10", name: "超ポーカー", area: "exp", guidePriority: 3, x: 4, y: 136, w: 66, h: 28, fs: 7 },
-      { code: "D13", name: "超音声合成×オフ会", area: "cc", guidePriority: 4, x: 74, y: 136, w: 66, h: 28, fs: 7 },
-      { code: "D14", name: "超ギビングリリーフ", area: "exp", x: 4, y: 168, w: 66, h: 70, fs: 7 },
-      { code: "D15", name: "ZUN/ひろゆきビール", area: "food", x: 74, y: 168, w: 66, h: 70, fs: 7 },
+      { code: "D13", name: "音声合成", sub: "×オフ会", area: "cc", guidePriority: 4, x: 74, y: 136, w: 66, h: 28, fs: 7 },
+      { code: "D14", name: "ギビング", sub: "リリーフ", area: "exp", x: 4, y: 168, w: 66, h: 70, fs: 7 },
+      { code: "D15", name: "ZUN/ひろゆき", sub: "ビール", area: "food", x: 74, y: 168, w: 66, h: 70, fs: 6 },
     ],
   },
   {
@@ -535,7 +535,7 @@ export const OVERVIEW_MAP = {
 };
 
 /** 凡例エリア */
-export const LEGEND_AREA = { x: 40, y: 720, w: 1200, h: 76 };
+export const LEGEND_AREA = { x: 40, y: 740, w: 1200, h: 76 };
 
 /** 色凡例 */
 export const LEGEND_ENTRIES: { area: AreaKind; label: string }[] = [

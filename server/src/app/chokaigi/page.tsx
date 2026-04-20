@@ -45,7 +45,10 @@ import { JapanVenueLocator } from "./JapanVenueLocator";
 import { VenueWanderMini } from "./VenueWanderMini";
 import { UsageGuide } from "./UsageGuide";
 import { ChokaigiExperienceSection } from "./ChokaigiExperienceSection";
+import { VenueTour3D } from "./VenueTour3D";
 import { YukkuriDialogue } from "./YukkuriDialogue";
+import { VenueMapInteractive } from "./VenueMapInteractive";
+import { CharacterTip } from "./CharacterTip";
 
 export default function ChokaigiPage() {
   return (
@@ -94,19 +97,34 @@ export default function ChokaigiPage() {
 
         <ChokaigiExperienceSection />
 
+        <VenueTour3D />
+
         <section
           className={styles.section}
           aria-labelledby={USAGE_SECTION_HEADING_ID}
         >
           <h2 id={USAGE_SECTION_HEADING_ID}>{USAGE_SECTION_TITLE}</h2>
           <p className={styles.sectionLead}>{USAGE_SECTION_INTRO}</p>
+          <CharacterTip
+            character="rink"
+            message="アプリの操作はシンプルだよ！歩いてるだけで、近くにいる人と自動でマッチングするんだ。"
+          />
           <UsageGuide />
+          <CharacterTip
+            character="tanunee"
+            message="初めての人も安心してね。困ったら私たちがサポートするから！"
+            position="right"
+          />
           <p className={styles.mapFinePrint}>{USAGE_FOOTNOTE}</p>
         </section>
 
         <section className={styles.section} aria-labelledby="venue-heading">
           <h2 id="venue-heading">{VENUE_SECTION_TITLE}</h2>
           <p className={styles.sectionLead}>{VENUE_SECTION_INTRO}</p>
+          <CharacterTip
+            character="konta"
+            message="幕張メッセはめちゃくちゃ広いからね！事前に回るルートを考えておくと効率的だよ。"
+          />
           <ul className={styles.tipList}>
             {VENUE_SECTION_POINTS.map((line) => (
               <li key={line}>{line}</li>
@@ -118,6 +136,15 @@ export default function ChokaigiPage() {
         <section className={styles.section} aria-labelledby="map-heading">
           <h2 id="map-heading">{MAP_SECTION_TITLE}</h2>
           <p className={styles.sectionLead}>{MAP_SECTION_INTRO}</p>
+          <CharacterTip
+            character="rink"
+            message="各ホールをタップすると詳細が見れるよ！行きたいブースを見つけてね。"
+          />
+
+          {/* インタラクティブマップ */}
+          <h3 className={styles.mapSubheading}>ホールをタップして詳細を見る</h3>
+          <VenueMapInteractive />
+
           <ol className={styles.mapHowToList}>
             {MAP_QUICK_STEPS.map((line, i) => (
               <li key={i}>{line}</li>
@@ -162,38 +189,29 @@ export default function ChokaigiPage() {
           </p>
           <VenueHallList />
 
-          {/* ① 概略図SVG: モバイルはチェックボックスで折りたたみ、デスクトップは常時表示 */}
-          <div className={styles.mapSvgBlock}>
-            <input
-              type="checkbox"
-              id="chokaigi-svg-toggle"
-              className={styles.mapSvgToggleInput}
-            />
-            <label
-              htmlFor="chokaigi-svg-toggle"
-              className={styles.mapSvgToggleLabel}
-            >
-              <span className={styles.mapSvgToggleLabelText}>
-                {MAP_SCHEMATIC_TITLE}（地図イメージを表示）
-              </span>
-              <span className={styles.mapSvgToggleChevron} aria-hidden="true">
-                ▾
-              </span>
-            </label>
-            <div className={styles.mapSvgReveal}>
-              <h3 className={`${styles.mapSubheading} ${styles.mapSvgDesktopHeading}`}>
-                {MAP_SCHEMATIC_TITLE}
-              </h3>
-              <p className={styles.mapFinePrint}>{MAP_SCHEMATIC_NOTE}</p>
-              <div className={styles.mapSvgOuter}>
+          {/* 詳細マップ（折りたたみ） */}
+          <details className={styles.detailMapBlock}>
+            <summary className={styles.detailMapSummary}>
+              📍 詳細マップを表示
+            </summary>
+            <div className={styles.detailMapContent}>
+              <p className={styles.mapFinePrint}>
+                👆 スマホでは横スクロールで全体を見れます。PCでは全体が見やすいです。
+              </p>
+              <div className={styles.mapSvgScroll}>
                 <VenueMapIllustration />
               </div>
             </div>
-          </div>
+          </details>
         </section>
 
         <section className={styles.section} aria-labelledby="after-event-heading">
           <h2 id="after-event-heading">{AFTER_EVENT_SECTION_TITLE}</h2>
+          <CharacterTip
+            character="tanunee"
+            message="超会議が終わっても、すれちがいライトは続くよ！全国のイベントで使えるようになるかも…？"
+            position="right"
+          />
           <JapanVenueLocator />
           <div className={styles.aspiration}>
             {AFTER_EVENT_SECTION_PARAGRAPHS.map((para, i) => (
@@ -202,10 +220,18 @@ export default function ChokaigiPage() {
               </p>
             ))}
           </div>
+          <CharacterTip
+            character="konta"
+            message="みんなの声を聞いて、もっと良くしていくからね！楽しみにしててね〜！"
+          />
         </section>
 
         <section className={styles.section} aria-labelledby="guides-heading">
           <h2 id="guides-heading">3人のゆっくりガイド（君斗りんく）</h2>
+          <CharacterTip
+            character="rink"
+            message="ここまで読んでくれてありがとう！僕たち3人のことも知ってもらえたら嬉しいな。"
+          />
           <p className={styles.sectionLead}>
             ページ冒頭の「ゆっくり超解説」でも登場した3人。アプリ内でも同じトーンで案内する想定です。立ち絵・プロフィールは{" "}
             <a
