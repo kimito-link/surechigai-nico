@@ -1,0 +1,318 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f7f1e7 0%, #fafaf8 100%);
+  padding: 20px;
+}
+
+.appHeader {
+  max-width: 600px;
+  margin: 0 auto 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.loginBadge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.headerAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #255d9b;
+  flex-shrink: 0;
+}
+
+.loginInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.loginLabel {
+  font-size: 11px;
+  color: #999;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.loginName {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.2;
+}
+
+.loginHandle {
+  font-size: 12px;
+  color: #555;
+}
+
+.signOutButton {
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.signOutButton:hover {
+  background: #f5f5f5;
+  border-color: #bbb;
+  color: #333;
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(37, 93, 155, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(37, 93, 155, 0.12);
+}
+
+.cardContent {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  border: 3px solid #255d9b;
+  transform: translateZ(0);
+  will-change: transform;
+  image-rendering: auto;
+}
+
+.userInfo {
+  flex: 1;
+}
+
+.nickname {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 4px;
+}
+
+.email {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.twitterHandle {
+  font-size: 14px;
+  color: #1d9bf0;
+  margin: 2px 0 0;
+  font-weight: 500;
+}
+
+.twitterId {
+  font-size: 12px;
+  color: #aaa;
+  margin: 2px 0 0;
+}
+
+.cardTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 12px;
+}
+
+.cardDescription {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+.button {
+  width: 100%;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #255d9b 0%, #1a4070 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 93, 155, 0.3);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.editButton {
+  width: 100%;
+  padding: 12px 16px;
+  background: #f0f0f0;
+  color: #255d9b;
+  border: 2px solid #255d9b;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.editButton:hover {
+  background: #255d9b;
+  color: white;
+}
+
+.successMessage {
+  color: #28a745;
+  font-size: 14px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #f0fdf4;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.errorMessage {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #fef2f2;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  grid-column: span 1;
+}
+
+.statCard {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 2px solid #c98e2b;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.statValue {
+  font-size: 36px;
+  font-weight: 700;
+  color: #255d9b;
+  margin: 0 0 8px;
+}
+
+.statLabel {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* メニューボタン */
+.menuButton {
+  padding: 8px 16px;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #1a1a1a;
+  transition: all 0.2s;
+}
+
+.menuButton:hover {
+  background: #e0e0e0;
+}
+
+.menu {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .content {
+    grid-template-columns: 1fr;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .cardContent {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .avatar {
+    width: 64px;
+    height: 64px;
+  }
+}

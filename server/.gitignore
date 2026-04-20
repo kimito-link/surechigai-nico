@@ -4,3 +4,6 @@
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# Playwright 手動レビュー用スクリーンショット
+screenshots/
