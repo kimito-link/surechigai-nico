@@ -56,6 +56,20 @@
   }
 }
 
+/* ロゴ：中央に大きく */
+.logoRow {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.heroLogo {
+  width: auto;
+  height: clamp(48px, 10vw, 80px);
+  max-width: 90%;
+  object-fit: contain;
+}
+
 /* 「準備中」向け：緑の「稼働中」ではなく琥珀系 */
 .badge {
   display: inline-flex;
@@ -196,7 +210,7 @@
   border-color: rgba(37, 93, 155, 0.35);
 }
 
-/* ヒーロー右：3人の立ち絵 */
+/* ヒーロー右：グリッド列をまたいで左のコピーへ描画が重なるのを防ぐ */
 .heroStage {
   position: relative;
   z-index: 1;
@@ -205,6 +219,8 @@
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .avatarRow {
@@ -213,6 +229,9 @@
   align-items: flex-end;
   justify-content: center;
   gap: clamp(0.35rem, 2vw, 1rem);
+  width: 100%;
+  max-width: min(28rem, 100%);
+  box-sizing: border-box;
   padding: clamp(0.75rem, 3vw, 1.25rem);
   border-radius: 1.25rem;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 252, 246, 0.92));
@@ -228,7 +247,11 @@
   flex-direction: column;
   align-items: center;
   gap: 0.35rem;
-  width: clamp(5.5rem, 22vw, 8.5rem);
+  /* 画像の固有幅で Flex が膨らまないよう幅を固定（中の枠と同じ 140px） */
+  width: 140px;
+  max-width: min(140px, calc(100vw - 2rem));
+  flex: 0 0 auto;
+  min-width: 0;
   text-decoration: none;
   color: inherit;
   transition: transform 0.25s ease;
@@ -244,19 +267,39 @@
   border-radius: 0.75rem;
 }
 
+/* 外枠：サイズ固定＋三重クリップ（/chokaigi と同じ contain: strict を採用） */
 .avatarFrame {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
   position: relative;
-  width: 100%;
-  max-height: min(200px, 48vw);
-  aspect-ratio: 140 / 180;
+  box-sizing: border-box;
+  width: 140px;
+  height: 180px;
+  max-width: min(140px, calc(100vw - 2rem));
+  max-height: 180px;
+  flex-shrink: 0;
   border-radius: 0.85rem;
   overflow: hidden;
+  contain: strict;
+  clip-path: inset(0);
   background: linear-gradient(180deg, #fff 0%, #faf6ef 100%);
   border: 1px solid rgba(88, 62, 28, 0.1);
   box-shadow: 0 12px 32px rgba(40, 32, 24, 0.1);
+}
+
+/* 内側：親に完全閉じ込め＋浮きアニメ＋立ち絵（background なので intrinsic 幅が出ない） */
+.avatarFrameFloat {
+  position: absolute;
+  inset: 0;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  max-width: min(140px, calc(100vw - 2rem));
+  max-height: 180px;
+  min-height: 0;
+  min-width: 0;
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: contain;
 }
 
 .avatarFrameRink {
@@ -285,11 +328,11 @@
 @keyframes homeFloatB {
   0%,
   100% {
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 
   50% {
-    transform: translateY(-10px) scale(1.03);
+    transform: translateY(-10px);
   }
 }
 
@@ -312,16 +355,6 @@
   }
 }
 
-.avatarImg {
-  display: block;
-  width: auto;
-  max-width: min(140px, 100%);
-  height: auto;
-  max-height: min(180px, 100%);
-  object-fit: contain;
-  object-position: bottom center;
-}
-
 .avatarName {
   font-size: clamp(0.75rem, 2vw, 0.88rem);
   font-weight: 800;
@@ -338,6 +371,294 @@
 
 .avatarNameTanunee {
   color: #4f3558;
+}
+
+/* 会場示意：画面幅いっぱいに広がるマップ（heroInner の外に配置） */
+.venueWanderWrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 72rem;
+  min-width: 0;
+  margin: 0 auto;
+  padding: 1.5rem clamp(1rem, 4vw, 2rem) 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.venueWanderLead {
+  margin: 0;
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-weight: 700;
+  color: #3a2f24;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.venueWanderLead strong {
+  font-weight: 800;
+  color: #255d9b;
+}
+
+/* 画面幅いっぱい・どのサイズでも */
+.venueWander {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin-inline: auto;
+  aspect-ratio: 100 / 50;
+  max-height: min(24rem, 55vh);
+  border-radius: 1.25rem;
+  border: 1px solid rgba(88, 62, 28, 0.1);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(247, 241, 231, 0.95));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 32px rgba(40, 32, 24, 0.1);
+  overflow: hidden;
+}
+
+@media (max-width: 480px) {
+  .venueWander {
+    aspect-ratio: 100 / 60;
+    max-height: min(20rem, 50vh);
+    border-radius: 1rem;
+  }
+}
+
+.venueWanderFloor {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.venueWanderTrack {
+  position: absolute;
+  width: 0;
+  height: 0;
+  z-index: 2;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* 立ち絵：画面幅に応じてスケール */
+.venueWanderSprite {
+  position: absolute;
+  box-sizing: border-box;
+  width: clamp(48px, 8vw, 80px);
+  height: clamp(60px, 10vw, 100px);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  contain: strict;
+  clip-path: inset(0);
+  transform: translate(-50%, -50%);
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: contain;
+  filter: drop-shadow(0 4px 12px rgba(40, 32, 24, 0.3));
+  pointer-events: none;
+}
+
+/* 吹き出し：キャラの上にフェードイン・アウト */
+.venueWanderBubble {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  margin-bottom: 6px;
+  padding: 0.4rem 0.75rem;
+  font-size: clamp(0.75rem, 1.5vw, 0.95rem);
+  font-weight: 700;
+  white-space: nowrap;
+  color: #3a2f24;
+  background: #fff;
+  border-radius: 0.6rem;
+  box-shadow: 0 3px 12px rgba(40, 32, 24, 0.18);
+  opacity: 0;
+  animation: venueBubblePop 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.venueWanderBubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #fff;
+}
+
+/* キャラごとに吹き出しのタイミングをずらす */
+.venueWanderBubbleRink {
+  animation-delay: 0s;
+}
+
+.venueWanderBubbleKonta {
+  animation-delay: 2s;
+}
+
+.venueWanderBubbleTanunee {
+  animation-delay: 4s;
+}
+
+@keyframes venueBubblePop {
+  0%,
+  15%,
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px) scale(0.9);
+  }
+
+  20%,
+  45% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  50% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-2px) scale(0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .venueWanderBubble {
+    animation: none;
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+}
+
+/* viewBox 高さ 56 に対する top% = (y / 56) * 100 */
+@keyframes venueLoopRink {
+  0% {
+    left: 10%;
+    top: 78.57%;
+  }
+
+  25% {
+    left: 88%;
+    top: 78.57%;
+  }
+
+  50% {
+    left: 88%;
+    top: 21.43%;
+  }
+
+  75% {
+    left: 10%;
+    top: 21.43%;
+  }
+
+  100% {
+    left: 10%;
+    top: 78.57%;
+  }
+}
+
+@keyframes venueLoopKonta {
+  0% {
+    left: 78%;
+    top: 21.43%;
+  }
+
+  20% {
+    left: 50%;
+    top: 21.43%;
+  }
+
+  40% {
+    left: 50%;
+    top: 50%;
+  }
+
+  60% {
+    left: 78%;
+    top: 50%;
+  }
+
+  80% {
+    left: 78%;
+    top: 21.43%;
+  }
+
+  100% {
+    left: 78%;
+    top: 21.43%;
+  }
+}
+
+@keyframes venueLoopTanunee {
+  0% {
+    left: 14%;
+    top: 50%;
+  }
+
+  25% {
+    left: 40%;
+    top: 78.57%;
+  }
+
+  50% {
+    left: 68%;
+    top: 50%;
+  }
+
+  75% {
+    left: 40%;
+    top: 21.43%;
+  }
+
+  100% {
+    left: 14%;
+    top: 50%;
+  }
+}
+
+.venueWanderTrackRink {
+  animation-name: venueLoopRink;
+  animation-duration: 16s;
+}
+
+.venueWanderTrackKonta {
+  animation-name: venueLoopKonta;
+  animation-duration: 13s;
+  animation-delay: -3.5s;
+}
+
+.venueWanderTrackTanunee {
+  animation-name: venueLoopTanunee;
+  animation-duration: 18s;
+  animation-delay: -6s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .venueWanderTrackRink,
+  .venueWanderTrackKonta,
+  .venueWanderTrackTanunee {
+    animation: none;
+  }
+
+  .venueWanderTrackRink {
+    left: 40%;
+    top: 50%;
+  }
+
+  .venueWanderTrackKonta {
+    left: 64%;
+    top: 36%;
+  }
+
+  .venueWanderTrackTanunee {
+    left: 22%;
+    top: 64%;
+  }
 }
 
 .stageCaption {

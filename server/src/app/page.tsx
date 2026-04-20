@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import {
@@ -12,6 +11,7 @@ import {
   LP_TITLE,
   USAGE_SECTION_HEADING_ID,
 } from "./chokaigi/lp-content";
+import { HomeVenueWander } from "./HomeVenueWander";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -38,6 +38,14 @@ export default function Home() {
       <header className={styles.hero}>
         <div className={styles.heroInner}>
           <div className={styles.heroCopy}>
+            <div className={styles.logoRow}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/chokaigi/logos/kimito-link-logo.png"
+                alt="kimito-link"
+                className={styles.heroLogo}
+              />
+            </div>
             <span className={styles.badge}>
               <span className={styles.badgeDot} aria-hidden="true" />
               {HOME_HERO_BADGE}
@@ -72,15 +80,11 @@ export default function Home() {
                     className={styles.avatarCard}
                     aria-label={`${g.name}のキャラ紹介（kimito-link）`}
                   >
-                    <div className={`${styles.avatarFrame} ${frameClass}`}>
-                      <Image
-                        src={g.imageSrc}
-                        alt=""
-                        width={140}
-                        height={180}
-                        sizes="(max-width: 639px) 28vw, 140px"
-                        className={styles.avatarImg}
-                        priority={i === 0}
+                    <div className={styles.avatarFrame}>
+                      <div
+                        className={`${styles.avatarFrameFloat} ${frameClass}`}
+                        style={{ backgroundImage: `url("${g.imageSrc}")` }}
+                        aria-hidden
                       />
                     </div>
                     <span className={`${styles.avatarName} ${nameClass}`}>
@@ -95,6 +99,7 @@ export default function Home() {
             </p>
           </div>
         </div>
+        <HomeVenueWander />
       </header>
 
       <section className={styles.section} aria-labelledby="home-usage-heading">

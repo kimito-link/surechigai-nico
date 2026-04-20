@@ -8,6 +8,10 @@ const baseURL = `http://127.0.0.1:${PORT}`;
  * 既に `next dev` が動いていれば reuseExistingServer で流用します。
  *
  * デスクトップのみ: `npm run test:e2e:desktop`（`--project=desktop-chrome`）
+ *
+ * 古い `next dev` が 3002 に残っていると、テストが古い UI を見て失敗することがあります。
+ * そのときは別ポートで新規サーバーを立てる（例: PowerShell で
+ * `$env:CI='true'; $env:PLAYWRIGHT_PORT='3011'; npx playwright test ...`）。
  */
 export default defineConfig({
   testDir: "./e2e",

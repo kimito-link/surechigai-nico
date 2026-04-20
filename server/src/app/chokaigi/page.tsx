@@ -12,8 +12,9 @@ import {
   LOGO_KIMITO_LINK_SRC,
   LOGO_KIMITO_LINK_WIDTH,
   LP_TITLE,
-  AFTER_EVENT_SECTION_BODY,
+  AFTER_EVENT_SECTION_PARAGRAPHS,
   AFTER_EVENT_SECTION_TITLE,
+  JAPAN_LOCATOR_TITLE,
   MAP_HALL_LIST_DIALOGUE_HINT_AFTER,
   MAP_HALL_LIST_DIALOGUE_HINT_BEFORE,
   MAP_HALL_LIST_NOTE,
@@ -42,6 +43,8 @@ import styles from "./chokaigi.module.css";
 import { VenueMapIllustration } from "./VenueMapIllustration";
 import { VenueHallList } from "./VenueHallList";
 import { PdfDesktopEmbed } from "./PdfDesktopEmbed";
+import { JapanVenueLocator } from "./JapanVenueLocator";
+import { ChokaigiExperienceSection } from "./ChokaigiExperienceSection";
 import { YukkuriDialogue } from "./YukkuriDialogue";
 
 export default function ChokaigiPage() {
@@ -89,6 +92,8 @@ export default function ChokaigiPage() {
 
         <YukkuriDialogue />
 
+        <ChokaigiExperienceSection />
+
         <section
           className={styles.section}
           aria-labelledby={USAGE_SECTION_HEADING_ID}
@@ -116,6 +121,10 @@ export default function ChokaigiPage() {
         <section className={styles.section} aria-labelledby="map-heading">
           <h2 id="map-heading">{MAP_SECTION_TITLE}</h2>
           <p className={styles.sectionLead}>{MAP_SECTION_INTRO}</p>
+          <h3 id="japan-locator-heading" className={styles.mapSubheading}>
+            {JAPAN_LOCATOR_TITLE}
+          </h3>
+          <JapanVenueLocator />
           <ol className={styles.mapHowToList}>
             {MAP_QUICK_STEPS.map((line, i) => (
               <li key={i}>{line}</li>
@@ -192,7 +201,13 @@ export default function ChokaigiPage() {
 
         <section className={styles.section} aria-labelledby="after-event-heading">
           <h2 id="after-event-heading">{AFTER_EVENT_SECTION_TITLE}</h2>
-          <p className={styles.aspiration}>{AFTER_EVENT_SECTION_BODY}</p>
+          <div className={styles.aspiration}>
+            {AFTER_EVENT_SECTION_PARAGRAPHS.map((para, i) => (
+              <p key={i} className={styles.aspirationPara}>
+                {para}
+              </p>
+            ))}
+          </div>
         </section>
 
         <section className={styles.section} aria-labelledby="guides-heading">

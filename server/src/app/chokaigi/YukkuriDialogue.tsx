@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {
   YUKKURI_DIALOGUE_LEAD,
   YUKKURI_DIALOGUE_TITLE,
@@ -42,16 +41,12 @@ export function YukkuriDialogue() {
               data-speaker={line.speaker}
             >
               <div className={styles.yukkuriAvatarBlock}>
-                <div
-                  className={`${styles.yukkuriAvatarInner} ${AVATAR_MOTION[line.speaker]}`}
-                >
-                  <Image
-                    src={meta.imageSrc}
-                    alt={meta.imageAlt}
-                    width={140}
-                    height={180}
-                    sizes="(max-width: 599px) 96px, 140px"
-                    className={styles.yukkuriAvatarImg}
+                <div className={styles.yukkuriAvatarInner}>
+                  <div
+                    className={`${styles.yukkuriAvatarMotion} ${AVATAR_MOTION[line.speaker]}`}
+                    role="img"
+                    aria-label={meta.imageAlt}
+                    style={{ backgroundImage: `url("${meta.imageSrc}")` }}
                   />
                 </div>
                 <span className={styles.yukkuriNameBadge}>{meta.label}</span>

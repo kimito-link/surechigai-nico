@@ -7,10 +7,10 @@ export const YUKKURI_AVATAR_MOTION_CSS = `
   50% { transform: translate3d(0, -12px, 0) rotate(2.5deg); }
 }
 @keyframes yukkuriChokaigiKonta {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  25% { transform: translate3d(0, -14px, 0) scale(1.05); }
-  50% { transform: translate3d(0, -5px, 0) scale(1); }
-  75% { transform: translate3d(0, -11px, 0) scale(1.04); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(0, -14px, 0); }
+  50% { transform: translate3d(0, -5px, 0); }
+  75% { transform: translate3d(0, -11px, 0); }
 }
 @keyframes yukkuriChokaigiTanunee {
   0%, 100% { transform: translate3d(0, 0, 0); }

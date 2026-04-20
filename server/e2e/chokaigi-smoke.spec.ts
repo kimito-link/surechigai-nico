@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import {
+  EXPERIENCE_SECTION_TITLE,
   HERO_HEADING,
+  JAPAN_LOCATOR_TITLE,
   MAP_HALL_LIST_TITLE,
   MAP_SECTION_TITLE,
   USAGE_SECTION_TITLE,
@@ -25,6 +27,10 @@ test.describe("chokaigi スモーク", () => {
     ).toBeVisible();
 
     await expect(
+      page.getByRole("heading", { name: EXPERIENCE_SECTION_TITLE, level: 2 })
+    ).toBeVisible();
+
+    await expect(
       page.getByRole("heading", { name: USAGE_SECTION_TITLE, level: 2 })
     ).toBeVisible();
 
@@ -34,6 +40,10 @@ test.describe("chokaigi スモーク", () => {
 
     await expect(
       page.getByRole("heading", { name: MAP_SECTION_TITLE, level: 2 })
+    ).toBeVisible();
+
+    await expect(
+      page.getByRole("heading", { name: JAPAN_LOCATOR_TITLE, level: 3 })
     ).toBeVisible();
 
     await expect(

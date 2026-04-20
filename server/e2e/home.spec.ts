@@ -18,6 +18,8 @@ test.describe("ルート /", () => {
     await expect(page.getByText("こん太").first()).toBeVisible();
     await expect(page.getByText("たぬ姉").first()).toBeVisible();
 
+    await expect(page.getByText(/すれちがうイメージ（示意・ループ）/)).toBeVisible();
+
     const lp = page.getByRole("link", {
       name: /ニコニコ超会議 企画予告/,
     });

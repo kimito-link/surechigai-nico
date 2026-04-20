@@ -154,6 +154,7 @@
   font-size: clamp(0.95rem, 2.4vw, 1.08rem);
   line-height: 1.78;
   color: #4a4038;
+  white-space: pre-line;
 }
 
 .badge {
@@ -265,6 +266,86 @@
 
 .mapHowToList li:last-child {
   margin-bottom: 0;
+}
+
+/* 日本・関東の位置イメージ（示意） */
+.mapJapanLocator {
+  margin: 0 0 1.25rem;
+  padding: 0;
+  max-width: min(100%, 28rem);
+}
+
+.mapJapanSvgWrap {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(88, 62, 28, 0.12);
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 6px 20px rgba(45, 36, 28, 0.06);
+}
+
+.mapJapanSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: min(280px, 58vw);
+}
+
+.mapJapanPrefBlock {
+  margin: 0.65rem 0 0;
+  padding: 0.55rem 0.65rem 0.65rem;
+  border-radius: 0.6rem;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(88, 62, 28, 0.1);
+}
+
+.mapJapanPrefHeading {
+  margin: 0 0 0.4rem;
+  font-size: clamp(0.72rem, 1.9vw, 0.8rem);
+  font-weight: 700;
+  color: #5c5046;
+}
+
+.mapJapanPrefList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.2rem 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: clamp(0.68rem, 1.85vw, 0.78rem);
+  line-height: 1.35;
+  color: #6d5d52;
+}
+
+@media (max-width: 520px) {
+  .mapJapanPrefList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 360px) {
+  .mapJapanPrefList {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mapJapanCaption {
+  margin: 0.55rem 0 0;
+  font-size: clamp(0.8rem, 2vw, 0.88rem);
+  line-height: 1.55;
+  color: #5c5046;
+}
+
+.mapJapanMapLink {
+  color: #1a5a8a;
+  font-weight: 700;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
+.mapJapanMapLink:hover,
+.mapJapanMapLink:focus-visible {
+  text-decoration: underline;
 }
 
 .mapSubheading {
@@ -800,6 +881,14 @@
   box-shadow: 0 10px 32px rgba(15, 94, 79, 0.08);
 }
 
+.aspirationPara {
+  margin: 0;
+}
+
+.aspirationPara + .aspirationPara {
+  margin-top: 1rem;
+}
+
 .grid {
   display: grid;
   gap: 1.2rem;
@@ -1049,62 +1138,38 @@
   flex-direction: column;
   align-items: center;
   gap: 0.45rem;
-  width: clamp(6rem, 24vw, 10rem);
-  max-width: 10rem;
+  width: 140px;
+  max-width: min(140px, calc(100vw - 2rem));
   min-width: 0;
 }
 
-@media (max-width: 599px) {
-  .yukkuriAvatarBlock {
-    width: min(9rem, 42vw);
-    max-width: 9rem;
-  }
-}
-
-@media (min-width: 900px) {
-  .yukkuriAvatarBlock {
-    width: clamp(7.5rem, 14vw, 10rem);
-    max-width: 10rem;
-  }
-}
-
+/* 外枠：140×180 固定・クリップ（transform なし） */
 .yukkuriAvatarInner {
   position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
   box-sizing: border-box;
-  width: 100%;
-  max-width: 140px;
+  width: 140px;
+  height: 180px;
+  max-width: min(140px, calc(100vw - 2rem));
   margin-inline: auto;
-  max-height: min(200px, 42vw);
-  aspect-ratio: 140 / 180;
-  overflow: visible;
+  flex-shrink: 0;
+  overflow: hidden;
+  contain: strict;
   border-radius: 0.75rem;
   background: transparent;
   border: 0;
   box-shadow: none;
-  transform-origin: 50% 88%;
-  filter: none;
 }
 
-/* Next/Image のラッパー span が白く見えるのを防ぐ */
-.yukkuriAvatarInner :global(span) {
-  display: block !important;
-  max-height: 100%;
-  background: transparent !important;
-  line-height: 0;
-}
-
-.yukkuriAvatarImg {
-  display: block;
-  width: auto;
-  max-width: min(140px, 100%);
-  height: auto;
-  max-height: min(180px, 100%);
-  object-fit: contain;
-  object-position: bottom center;
-  background: transparent !important;
+/* 内側：ゆっくり浮きアニメ＋立ち絵（background のみ・img なし） */
+.yukkuriAvatarMotion {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: contain;
   filter: drop-shadow(0 3px 10px rgba(40, 32, 24, 0.12));
 }
 
@@ -1233,4 +1298,198 @@
   font-size: clamp(0.88rem, 2.2vw, 0.95rem);
   line-height: 1.72;
   color: #2f2820;
+}
+
+/* ---------- 没入・スクロール演出・AR お試し ---------- */
+.experienceSection {
+  position: relative;
+}
+
+.experienceRevealGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin: 1rem auto 0;
+  max-width: 58rem;
+}
+
+@media (min-width: 720px) {
+  .experienceRevealGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.1rem;
+  }
+}
+
+.experienceRevealCard {
+  padding: 1rem 1.05rem 1.15rem;
+  border-radius: 1rem;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.95), rgba(247, 241, 232, 0.92));
+  border: 1px solid rgba(88, 62, 28, 0.1);
+  box-shadow:
+    0 4px 0 rgba(88, 62, 28, 0.04),
+    0 18px 40px rgba(40, 32, 24, 0.08);
+  transform: translate3d(0, 18px, 0) scale(0.97);
+  opacity: 0;
+  transition:
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.55s ease,
+    box-shadow 0.4s ease;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experienceRevealCard {
+    transform: none;
+    opacity: 1;
+    transition: none;
+  }
+}
+
+.experienceRevealCardVisible {
+  transform: translate3d(0, 0, 0) scale(1);
+  opacity: 1;
+  box-shadow:
+    0 2px 0 rgba(88, 62, 28, 0.06),
+    0 22px 48px rgba(40, 32, 24, 0.12);
+}
+
+.experienceRevealCardTitle {
+  margin: 0 0 0.45rem;
+  font-size: clamp(0.95rem, 2.2vw, 1.05rem);
+  font-weight: 800;
+  color: #2a231c;
+  letter-spacing: -0.02em;
+}
+
+.experienceRevealCardBody {
+  margin: 0;
+  font-size: clamp(0.82rem, 2vw, 0.9rem);
+  line-height: 1.65;
+  color: #4f453c;
+}
+
+.arExperiencePanel {
+  margin: 1.75rem auto 0;
+  padding: clamp(1rem, 3vw, 1.35rem);
+  max-width: 42rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(37, 93, 155, 0.15);
+  box-shadow: 0 12px 36px rgba(37, 93, 155, 0.07);
+}
+
+.arExperienceTitle {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.02rem, 2.5vw, 1.18rem);
+  font-weight: 800;
+  color: #1a4a73;
+  letter-spacing: -0.02em;
+}
+
+.arExperienceIntro {
+  margin: 0 0 0.85rem;
+  font-size: clamp(0.86rem, 2vw, 0.94rem);
+  line-height: 1.65;
+  color: #4a4038;
+}
+
+.arWebxrStatus {
+  margin: 0 0 1rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.5rem;
+  font-size: clamp(0.78rem, 1.9vw, 0.86rem);
+  line-height: 1.5;
+  color: #3d5248;
+  background: rgba(37, 93, 155, 0.06);
+  border: 1px solid rgba(37, 93, 155, 0.12);
+}
+
+.arCameraDemo {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+.arCameraBtn,
+.arCameraBtnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.85rem;
+  padding: 0.55rem 1.1rem;
+  font-size: clamp(0.86rem, 2vw, 0.94rem);
+  font-weight: 700;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.arCameraBtn {
+  color: #fff;
+  background: linear-gradient(180deg, #2d6fad, #255d9b);
+  box-shadow: 0 4px 14px rgba(37, 93, 155, 0.35);
+}
+
+.arCameraBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 93, 155, 0.4);
+}
+
+.arCameraBtnSecondary {
+  color: #1a4a73;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(37, 93, 155, 0.35);
+}
+
+.arCameraBtn:focus-visible,
+.arCameraBtnSecondary:focus-visible {
+  outline: 3px solid rgba(37, 93, 155, 0.45);
+  outline-offset: 2px;
+}
+
+.arCameraViewport {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  border-radius: 0.85rem;
+  overflow: hidden;
+  background: #1a1a1a;
+  aspect-ratio: 4 / 3;
+  max-height: min(52vh, 420px);
+}
+
+.arCameraVideo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.arCameraOverlayImg {
+  position: absolute;
+  right: 4%;
+  bottom: 2%;
+  width: auto;
+  max-width: min(38%, 140px);
+  height: auto;
+  max-height: 42%;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.35));
+}
+
+.arCameraError {
+  margin: 0.5rem 0 0;
+  font-size: clamp(0.8rem, 1.9vw, 0.88rem);
+  color: #b71c1c;
+}
+
+.arCameraFinePrint {
+  margin: 0.85rem 0 0;
+  font-size: clamp(0.72rem, 1.85vw, 0.82rem);
+  line-height: 1.55;
+  color: #6d5d52;
 }
