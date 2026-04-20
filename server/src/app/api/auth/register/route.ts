@@ -1,23 +1,23 @@
 import { NextRequest } from "next/server";
 import pool from "@/lib/db";
-import type { RowDataPacket, ResultSetHeader } from "mysql2";
+import type { RowDataPacket } from "mysql2";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { uuid } = body;
+    const { clerkId } = body;
 
-    if (!uuid || typeof uuid !== "string" || uuid.length > 36) {
+    if (!clerkId || typeof clerkId !== "string") {
       return Response.json(
-        { error: "有効なUUIDを指定してください" },
+        { error: "有効な clerkId を指定してください" },
         { status: 400 }
       );
     }
 
-    // 既存ユーザーチェック
+    // Clerk ID から既存ユーザーを取得
     const [existing] = await pool.execute<RowDataPacket[]>(
-      "SELECT id, uuid, nickname FROM users WHERE uuid = ? AND is_deleted = FALSE",
-      [uuid]
+      "SELECT id, uuid, nickname FROM users WHERE clerk_id = ? AND is_deleted = FALSE",
+      [clerkId]
     );
 
     if (existing.length > 0) {
@@ -31,22 +31,12 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 新規ユーザー作成
-    const [result] = await pool.execute<ResultSetHeader>(
-      "INSERT INTO users (uuid) VALUES (?)",
-      [uuid]
-    );
-
+    // Clerkウェブフックで既にユーザーが作成されているはず
+    // (user.created イベント で UUID が発行されている)
+    // ここでは確認のためのレスポンスを返す
     return Response.json(
-      {
-        user: {
-          id: result.insertId,
-          uuid,
-          nickname: "匿名さん",
-        },
-        isNew: true,
-      },
-      { status: 201 }
+      { error: "ユーザーが見つかりません。もう一度ログインしてください。" },
+      { status: 404 }
     );
   } catch (error) {
     console.error("ユーザー登録エラー:", error);

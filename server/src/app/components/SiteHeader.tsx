@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useUser, useClerk } from "@clerk/nextjs";
 import styles from "./SiteHeader.module.css";
 
@@ -11,9 +12,12 @@ const NAV_LINKS = [
   { href: "/chokaigi#usage-heading", label: "つかいかた" },
 ] as const;
 
+const HIDDEN_PATHS = ["/sign-in", "/sign-up", "/onboarding", "/app"];
+
 export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
   const { isSignedIn, user } = useUser();
   const { signOut } = useClerk();
 
@@ -27,6 +31,8 @@ export function SiteHeader() {
   }, []);
 
   const closeMenu = () => setMenuOpen(false);
+
+  if (HIDDEN_PATHS.some((p) => pathname?.startsWith(p))) return null;
 
   return (
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ""}`}>

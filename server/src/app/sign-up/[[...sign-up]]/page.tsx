@@ -28,8 +28,10 @@ export default function SignUpPage() {
           appearance={{
             elements: {
               rootBox: styles.clerkRoot,
+              cardBox: styles.clerkCardBox,
               card: styles.clerkCard,
               header: styles.clerkHidden,
+              main: styles.clerkMain,
               socialButtonsBlockButton: styles.clerkSocialButton,
               footer: styles.clerkFooter,
               footerAction: styles.clerkFooterAction,

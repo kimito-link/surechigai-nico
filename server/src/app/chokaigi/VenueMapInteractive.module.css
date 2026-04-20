@@ -1,0 +1,418 @@
+.container {
+  background: linear-gradient(180deg, #fff8f0 0%, #fff 100%);
+  border-radius: 1rem;
+  padding: clamp(0.75rem, 3vw, 2rem);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  max-width: 100%;
+}
+
+/* フィルターバー */
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px dashed rgba(0, 0, 0, 0.1);
+}
+
+.filterBtn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 10px;
+  border: 2px solid #ddd;
+  border-radius: 50px;
+  background: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filterBtn:hover {
+  border-color: var(--cat-color, #888);
+  color: var(--cat-color, #333);
+}
+
+.filterBtnActive {
+  background: var(--cat-color, #333);
+  border-color: var(--cat-color, #333);
+  color: #fff !important;
+}
+
+.filterIcon {
+  font-size: 0.9rem;
+}
+
+.filterLabel {
+  display: none;
+}
+
+@media (min-width: 400px) {
+  .filterBtn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+  .filterLabel {
+    display: inline;
+  }
+}
+
+@media (min-width: 600px) {
+  .filterBar {
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+  }
+  .filterBtn {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+}
+
+/* マップエリア */
+.mapArea {
+  margin-bottom: 1.5rem;
+}
+
+.mainHallsLabel,
+.subHallsLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #5c5248;
+  margin-bottom: 0.75rem;
+}
+
+.floorBadge {
+  background: #667eea;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.subHallsLabel .floorBadge {
+  background: #66bb6a;
+}
+
+/* ホールカード */
+.mainHalls,
+.subHalls {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 1rem;
+}
+
+.mainHalls {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.subHalls {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (min-width: 600px) {
+  .mainHalls,
+  .subHalls {
+    gap: 8px;
+  }
+  .mainHalls {
+    grid-template-columns: repeat(8, 1fr);
+  }
+  .subHalls {
+    max-width: 50%;
+  }
+}
+
+.hallCard {
+  position: relative;
+  border: none;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #fff;
+}
+
+.hallCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.hallCardSelected {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.hallCardDimmed {
+  opacity: 0.4;
+}
+
+.hallHeader {
+  background: var(--hall-color);
+  color: #fff;
+  padding: 8px 4px;
+  font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+  font-weight: 700;
+  text-align: center;
+}
+
+.hallBody {
+  padding: 8px 4px;
+  font-size: clamp(0.55rem, 1.4vw, 0.75rem);
+  color: #333;
+  text-align: center;
+  line-height: 1.3;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  word-break: break-all;
+}
+
+.matchBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #e91e63;
+  color: #fff;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 入口表示 */
+.entranceIndicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+}
+
+.entranceArrow {
+  font-size: 1.5rem;
+  color: #667eea;
+  animation: bounceUp 1s ease-in-out infinite;
+}
+
+@keyframes bounceUp {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.entranceText {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #667eea;
+}
+
+/* 詳細パネル */
+.detailPanel {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+}
+
+.detailTitle {
+  flex: 1;
+  padding: 12px 20px;
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.closeBtn {
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.closeBtn:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* ガイドコメント */
+.guideTip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #fef7f0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.guideAvatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.guideBubble {
+  flex: 1;
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+  font-weight: 600;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: relative;
+  word-break: keep-all;
+}
+
+.guideBubble::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 8px solid transparent;
+  border-right-color: #fff;
+}
+
+/* セクション一覧 */
+.sectionList {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+
+@media (min-width: 600px) {
+  .sectionList {
+    gap: 8px;
+    padding: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
+
+.sectionItem {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 2px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: transform 0.2s;
+}
+
+.sectionItem:hover {
+  transform: scale(1.02);
+}
+
+.sectionFeatured {
+  border-width: 3px;
+}
+
+.sectionCode {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #666;
+}
+
+.sectionName {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.sectionSub {
+  font-size: 0.7rem;
+  color: #666;
+}
+
+.featuredStar {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.9rem;
+}
+
+.sectionItem {
+  position: relative;
+}
+
+.noMatch {
+  padding: 20px;
+  text-align: center;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+/* 凡例 */
+.legend {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+
+.legendTitle {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.legendItems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}

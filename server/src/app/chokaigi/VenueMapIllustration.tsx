@@ -23,7 +23,7 @@ import {
   IconToilet,
 } from "./venue-map-icons";
 
-const VB = { w: 1280, h: 820 };
+const VB = { w: 1280, h: 880 };
 
 function SectionRect({
   sec,
@@ -399,14 +399,14 @@ function OverviewMapBlock() {
 /** 凡例 */
 function LegendBlock() {
   const { x, y, w } = LEGEND_AREA;
-  const cols = 4;
-  const rowH = 18;
-  const colW = (w - 16) / cols;
+  const cols = 6;
+  const rowH = 14;
+  const colW = (w - 20) / cols;
 
   return (
     <g>
-      <rect x={x} y={y} width={w} height={76} rx={8} fill="rgba(255,251,245,0.95)" stroke="rgba(88,62,28,0.2)" strokeWidth="1" />
-      <text x={x + 12} y={y + 16} fill="#2c2117" fontSize="11" fontWeight={700} fontFamily="inherit">
+      <rect x={x} y={y} width={w} height={90} rx={8} fill="rgba(255,251,245,0.95)" stroke="rgba(88,62,28,0.2)" strokeWidth="1" />
+      <text x={x + 12} y={y + 12} fill="#2c2117" fontSize="9" fontWeight={700} fontFamily="inherit">
         凡例（公式マップの色分けに準拠した目安）
       </text>
 
@@ -414,12 +414,12 @@ function LegendBlock() {
         const col = i % cols;
         const row = Math.floor(i / cols);
         const lx = x + 14 + col * colW;
-        const ly = y + 32 + row * rowH;
+        const ly = y + 24 + row * rowH;
         const color = AREA_COLORS[entry.area];
         return (
           <g key={entry.label}>
-            <rect x={lx} y={ly - 8} width={14} height={11} rx={2} fill={color.fill} stroke={color.stroke} strokeWidth="1" />
-            <text x={lx + 20} y={ly + 1} fill="#2c2117" fontSize="9" fontFamily="inherit">
+            <rect x={lx} y={ly - 5} width={10} height={8} rx={1.5} fill={color.fill} stroke={color.stroke} strokeWidth="0.6" />
+            <text x={lx + 14} y={ly + 1} fill="#2c2117" fontSize="7" fontFamily="inherit">
               {entry.label}
             </text>
           </g>
@@ -431,35 +431,27 @@ function LegendBlock() {
 
 /** 施設アイコン凡例 */
 function FacilityLegend({ x, y }: { x: number; y: number }) {
+  const items = [
+    { Icon: IconInfo, label: "インフォ", size: 4 },
+    { Icon: IconToilet, label: "トイレ", size: 5 },
+    { Icon: IconCharge, label: "充電", size: 5 },
+    { Icon: IconSmoking, label: "喫煙所", size: 5 },
+    { Icon: IconShrine, label: "神社", size: 6 },
+    { Icon: IconStar, label: "ステージ", size: 4 },
+  ];
+  const spacing = 70;
+  
   return (
     <g>
-      <text x={x} y={y - 4} fill="#6d4c41" fontSize="10" fontWeight={700} fontFamily="inherit">
-        施設アイコン
+      <text x={x} y={y} fill="#6d4c41" fontSize="8" fontWeight={700} fontFamily="inherit">
+        施設アイコン:
       </text>
-      <g transform={`translate(${x + 8} ${y + 14})`}>
-        <IconInfo cx={0} cy={0} size={5} />
-        <text x={12} y={3} fill="#2c2117" fontSize="9" fontFamily="inherit">超インフォ</text>
-      </g>
-      <g transform={`translate(${x + 88} ${y + 14})`}>
-        <IconToilet cx={0} cy={0} size={6} />
-        <text x={14} y={3} fill="#2c2117" fontSize="9" fontFamily="inherit">超おトイレ</text>
-      </g>
-      <g transform={`translate(${x + 170} ${y + 14})`}>
-        <IconCharge cx={0} cy={0} size={6} />
-        <text x={12} y={3} fill="#2c2117" fontSize="9" fontFamily="inherit">充電</text>
-      </g>
-      <g transform={`translate(${x + 234} ${y + 14})`}>
-        <IconSmoking cx={0} cy={0} size={6} />
-        <text x={14} y={3} fill="#2c2117" fontSize="9" fontFamily="inherit">超喫煙所</text>
-      </g>
-      <g transform={`translate(${x + 306} ${y + 14})`}>
-        <IconShrine cx={0} cy={0} size={7} />
-        <text x={12} y={3} fill="#2c2117" fontSize="9" fontFamily="inherit">超神社</text>
-      </g>
-      <g transform={`translate(${x + 370} ${y + 14})`}>
-        <IconStar cx={0} cy={0} size={5} />
-        <text x={12} y={3} fill="#2c2117" fontSize="9" fontFamily="inherit">大ステージ</text>
-      </g>
+      {items.map((item, i) => (
+        <g key={item.label} transform={`translate(${x + 70 + i * spacing} ${y - 2})`}>
+          <item.Icon cx={0} cy={0} size={item.size} />
+          <text x={10} y={3} fill="#2c2117" fontSize="7" fontFamily="inherit">{item.label}</text>
+        </g>
+      ))}
     </g>
   );
 }
@@ -489,6 +481,7 @@ export function VenueMapIllustration() {
     <svg
       className={styles.venueMapSvg}
       viewBox={`0 0 ${VB.w} ${VB.h}`}
+      preserveAspectRatio="xMidYMid meet"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
       aria-label="ニコニコ超会議2026・幕張メッセ会場の概略図。上段にメイン棟HALL 1〜8（左=8, 右=1）、下段にHALL 9〜11、幕張イベントホール、会場全体図、色分け凡例を配置。各ホールの主要ブース・ステージを公式PDFの情報を元に描画。"
@@ -600,12 +593,12 @@ export function VenueMapIllustration() {
       </text>
       <OverviewMapBlock />
 
+      {/* 水分補給ふきだし - 凡例の上、右寄せ */}
+      <HydrationNote x={LEGEND_AREA.x + LEGEND_AREA.w - 290} y={LEGEND_AREA.y - 58} />
+
       {/* 凡例 */}
       <LegendBlock />
-      <FacilityLegend x={LEGEND_AREA.x + 600} y={LEGEND_AREA.y + 20} />
-
-      {/* 水分補給ふきだし */}
-      <HydrationNote x={LEGEND_AREA.x + LEGEND_AREA.w - 300} y={LEGEND_AREA.y + 6} />
+      <FacilityLegend x={LEGEND_AREA.x + 14} y={LEGEND_AREA.y + 68} />
 
       {/* フッター注意書き */}
       <text x={VB.w / 2} y={VB.h - 10} textAnchor="middle" fill="#8a7a6a" fontSize="10" fontFamily="inherit">
