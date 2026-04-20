@@ -1,4 +1,6 @@
 import "./globals.css";
+import { SiteHeader } from "./components/SiteHeader";
+import { SiteFooterCta } from "./components/SiteFooterCta";
 
 export default function RootLayout({
   children,
@@ -7,7 +9,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body>{children}</body>
+      <body>
+        <SiteHeader />
+        <div style={{ paddingTop: "56px", paddingBottom: "80px" }}>
+          {children}
+        </div>
+        <SiteFooterCta />
+      </body>
     </html>
   );
 }

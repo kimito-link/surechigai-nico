@@ -1,260 +1,129 @@
-import {
-  JAPAN_LOCATOR_CAPTION,
-  JAPAN_LOCATOR_MAP_LINK_LABEL,
-  JAPAN_LOCATOR_PREF_HEADING,
-  JAPAN_PREFECTURE_NAMES,
-  VENUE_GOOGLE_MAPS_URL,
-} from "./lp-content";
+"use client";
+
 import styles from "./chokaigi.module.css";
 
 /**
- * 日本列島の示意シルエット（地方ごとの塗り分け）＋関東7都県の拡大＋幕張目印。
- * 正確な海岸線・県境ではありません。
+ * 超会議が終わったら全国に散らばるけど、みんな同じ方向を見ている
+ * — エモーショナルな演出
  */
 export function JapanVenueLocator() {
   return (
     <figure
-      className={styles.mapJapanLocator}
-      aria-labelledby="japan-locator-caption"
+      className={styles.scatterWrap}
+      aria-label="超会議で出会ったみんなが、全国へ散らばっていくイメージ"
     >
-      <div className={styles.mapJapanSvgWrap}>
+      <div className={styles.scatterMap}>
         <svg
-          className={styles.mapJapanSvg}
-          viewBox="0 0 400 248"
+          className={styles.scatterSvg}
+          viewBox="0 0 320 220"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
         >
           <defs>
-            <linearGradient id="japanSea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#e3f2fd" />
-              <stop offset="100%" stopColor="#bbdefb" />
+            <linearGradient id="scatterSea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#e8f4fc" />
+              <stop offset="100%" stopColor="#d4e9f7" />
             </linearGradient>
-            <filter id="japanInsetShadow" x="-10%" y="-10%" width="120%" height="120%">
-              <feDropShadow dx="0" dy="1" stdDeviation="1.2" floodOpacity="0.12" />
-            </filter>
           </defs>
-          <rect width="400" height="248" rx="10" fill="url(#japanSea)" />
+          <rect width="320" height="220" fill="url(#scatterSea)" rx="12" />
 
-          {/* 関東7都県（拡大パネル） */}
-          <g filter="url(#japanInsetShadow)">
-            <rect
-              x="6"
-              y="36"
-              width="118"
-              height="176"
-              rx="9"
-              fill="rgba(255, 255, 255, 0.92)"
-              stroke="rgba(141, 110, 99, 0.55)"
-              strokeWidth="1"
-            />
-            <text
-              x="65"
-              y="54"
-              textAnchor="middle"
-              fill="#37474f"
-              fontSize="10"
-              fontWeight={700}
-              fontFamily="inherit"
-            >
-              関東（拡大）
-            </text>
-            {/* 3×2 + 千葉 */}
-            <g fontSize="7.5" fontWeight={600} fill="#4e342e" fontFamily="inherit">
-              <rect x="12" y="62" width="34" height="26" rx="4" fill="#efebe9" stroke="#a1887f" />
-              <text x="29" y="79" textAnchor="middle">
-                茨城
-              </text>
-              <rect x="48" y="62" width="34" height="26" rx="4" fill="#efebe9" stroke="#a1887f" />
-              <text x="65" y="79" textAnchor="middle">
-                栃木
-              </text>
-              <rect x="84" y="62" width="34" height="26" rx="4" fill="#efebe9" stroke="#a1887f" />
-              <text x="101" y="79" textAnchor="middle">
-                群馬
-              </text>
-              <rect x="12" y="92" width="34" height="26" rx="4" fill="#efebe9" stroke="#a1887f" />
-              <text x="29" y="109" textAnchor="middle">
-                埼玉
-              </text>
-              <rect x="48" y="92" width="34" height="26" rx="4" fill="#efebe9" stroke="#a1887f" />
-              <text x="65" y="109" textAnchor="middle">
-                東京
-              </text>
-              <rect x="84" y="92" width="34" height="26" rx="4" fill="#efebe9" stroke="#a1887f" />
-              <text x="101" y="109" textAnchor="middle">
-                神奈川
-              </text>
-              <rect
-                x="30"
-                y="124"
-                width="70"
-                height="32"
-                rx="5"
-                fill="rgba(255, 235, 59, 0.42)"
-                stroke="rgba(198, 40, 40, 0.75)"
-                strokeWidth="1.2"
-              />
-              <text x="65" y="144" textAnchor="middle" fill="#b71c1c" fontWeight={700} fontSize="9">
-                千葉（会場）
-              </text>
-            </g>
-            <text x="65" y="174" textAnchor="middle" fill="#6d4c41" fontSize="6.5" fontFamily="inherit">
-              幕張メッセは
-            </text>
-            <text x="65" y="184" textAnchor="middle" fill="#6d4c41" fontSize="6.5" fontFamily="inherit">
-              東京湾側・沿岸
-            </text>
+          {/* 日本列島シルエット（シンプル） */}
+          <g fill="#f5f0eb" stroke="#c9b8a8" strokeWidth="1.2" strokeLinejoin="round">
+            {/* 北海道 */}
+            <path d="M 230 25 Q 270 20 280 35 Q 285 50 270 55 Q 250 60 235 50 Q 225 40 230 25 Z" />
+            {/* 本州 */}
+            <path d="M 235 65 Q 260 60 270 75 Q 275 95 265 115 Q 250 135 230 145 Q 200 155 170 150 Q 140 145 120 130 Q 110 120 115 105 Q 125 90 145 85 Q 170 80 195 75 Q 220 70 235 65 Z" />
+            {/* 四国 */}
+            <path d="M 145 140 Q 170 135 175 150 Q 170 165 145 160 Q 130 155 145 140 Z" />
+            {/* 九州 */}
+            <path d="M 95 135 Q 120 130 125 150 Q 120 175 100 180 Q 80 175 75 160 Q 80 140 95 135 Z" />
+            {/* 沖縄 */}
+            <ellipse cx="65" cy="200" rx="18" ry="8" />
           </g>
 
-          {/* 本島群（地方ごとに塗り分け） */}
-          <g transform="translate(128, 4)" strokeLinejoin="round">
+          {/* 幕張（中心・スタート地点） */}
+          <g className={styles.scatterCenter}>
+            <circle cx="245" cy="105" r="10" fill="#c62828" opacity="0.9" />
+            <circle cx="245" cy="105" r="4" fill="#fff" />
             <text
-              x="136"
-              y="20"
+              x="245"
+              y="125"
               textAnchor="middle"
-              fill="#37474f"
-              fontSize="11"
-              fontWeight={700}
+              fill="#5d4037"
+              fontSize="9"
+              fontWeight="700"
               fontFamily="inherit"
             >
-              日本（示意）
-            </text>
-            {/* 北海道 */}
-            <ellipse
-              cx="178"
-              cy="36"
-              rx="62"
-              ry="19"
-              fill="#efebe9"
-              stroke="#8d6e63"
-              strokeWidth="1"
-            />
-            <text x="178" y="40" textAnchor="middle" fill="#5d4037" fontSize="7" fontWeight={600} fontFamily="inherit">
-              北海道
-            </text>
-            {/* 東北 */}
-            <path
-              d="M 128 58 L 198 52 L 212 98 L 168 108 L 118 88 Z"
-              fill="#efebe9"
-              stroke="#8d6e63"
-              strokeWidth="0.9"
-            />
-            <text x="158" y="82" textAnchor="middle" fill="#5d4037" fontSize="7" fontWeight={600} fontFamily="inherit">
-              東北
-            </text>
-            {/* 関東（ハイライト） */}
-            <path
-              d="M 168 108 L 212 98 L 228 132 L 198 142 L 172 132 Z"
-              fill="rgba(255, 235, 59, 0.32)"
-              stroke="rgba(245, 127, 23, 0.55)"
-              strokeWidth="1"
-            />
-            <text x="198" y="122" textAnchor="middle" fill="#5d4037" fontSize="7" fontWeight={700} fontFamily="inherit">
-              関東
-            </text>
-            {/* 中部 */}
-            <path
-              d="M 172 132 L 228 132 L 238 178 L 192 185 L 165 155 Z"
-              fill="#efebe9"
-              stroke="#8d6e63"
-              strokeWidth="0.9"
-            />
-            <text x="200" y="158" textAnchor="middle" fill="#5d4037" fontSize="7" fontWeight={600} fontFamily="inherit">
-              中部
-            </text>
-            {/* 近畿 */}
-            <path
-              d="M 192 185 L 238 178 L 232 208 L 188 215 L 175 198 Z"
-              fill="#efebe9"
-              stroke="#8d6e63"
-              strokeWidth="0.9"
-            />
-            <text x="205" y="200" textAnchor="middle" fill="#5d4037" fontSize="7" fontWeight={600} fontFamily="inherit">
-              近畿
-            </text>
-            {/* 中国 */}
-            <path
-              d="M 175 198 L 232 208 L 215 235 L 138 228 L 148 205 Z"
-              fill="#efebe9"
-              stroke="#8d6e63"
-              strokeWidth="0.9"
-            />
-            <text x="178" y="220" textAnchor="middle" fill="#5d4037" fontSize="7" fontWeight={600} fontFamily="inherit">
-              中国
-            </text>
-            {/* 四国 */}
-            <path
-              d="M 118 168 L 158 162 L 165 195 L 128 200 Z"
-              fill="#efebe9"
-              stroke="#8d6e63"
-              strokeWidth="0.85"
-            />
-            <text x="142" y="184" textAnchor="middle" fill="#5d4037" fontSize="7" fontWeight={600} fontFamily="inherit">
-              四国
-            </text>
-            {/* 九州 */}
-            <path
-              d="M 38 175 L 118 168 L 132 218 L 72 232 L 22 205 Z"
-              fill="#efebe9"
-              stroke="#8d6e63"
-              strokeWidth="0.9"
-            />
-            <text x="78" y="200" textAnchor="middle" fill="#5d4037" fontSize="7" fontWeight={600} fontFamily="inherit">
-              九州
-            </text>
-            {/* 沖縄（示意） */}
-            <ellipse cx="48" cy="238" rx="14" ry="5" fill="#efebe9" stroke="#8d6e63" strokeWidth="0.7" />
-            <text x="48" y="240" textAnchor="middle" fill="#5d4037" fontSize="6" fontWeight={600} fontFamily="inherit">
-              沖縄
-            </text>
-            {/* 幕張ピン（千葉・太平洋岸寄りのイメージ） */}
-            <g transform="translate(222 118)">
-              <circle r="6.5" fill="#c62828" opacity="0.92" />
-              <circle r="2.8" fill="#fff" />
-            </g>
-            <text x="238" y="122" fill="#4e342e" fontSize="7.5" fontWeight={700} fontFamily="inherit">
               幕張
             </text>
           </g>
 
-          <text
-            x="200"
-            y="240"
-            textAnchor="middle"
-            fill="#6d4c41"
-            fontSize="7"
-            fontFamily="inherit"
-          >
-            ※ 形状・県境・距離はイメージです
-          </text>
+          {/* 散らばっていく人々（全員同じ方向を向いている） */}
+          {/* 北海道 */}
+          <g className={`${styles.scatterPerson} ${styles.scatterDelay1}`}>
+            <circle cx="255" cy="40" r="5" fill="#255d9b" />
+            <path d="M 258 38 L 262 40 L 258 42" fill="#255d9b" />
+          </g>
+          {/* 東北 */}
+          <g className={`${styles.scatterPerson} ${styles.scatterDelay2}`}>
+            <circle cx="250" cy="75" r="5" fill="#c98e2b" />
+            <path d="M 253 73 L 257 75 L 253 77" fill="#c98e2b" />
+          </g>
+          {/* 北陸 */}
+          <g className={`${styles.scatterPerson} ${styles.scatterDelay3}`}>
+            <circle cx="200" cy="90" r="5" fill="#4f3558" />
+            <path d="M 203 88 L 207 90 L 203 92" fill="#4f3558" />
+          </g>
+          {/* 関西 */}
+          <g className={`${styles.scatterPerson} ${styles.scatterDelay4}`}>
+            <circle cx="180" cy="125" r="5" fill="#255d9b" />
+            <path d="M 183 123 L 187 125 L 183 127" fill="#255d9b" />
+          </g>
+          {/* 中国 */}
+          <g className={`${styles.scatterPerson} ${styles.scatterDelay5}`}>
+            <circle cx="140" cy="115" r="5" fill="#c98e2b" />
+            <path d="M 143 113 L 147 115 L 143 117" fill="#c98e2b" />
+          </g>
+          {/* 四国 */}
+          <g className={`${styles.scatterPerson} ${styles.scatterDelay6}`}>
+            <circle cx="155" cy="150" r="5" fill="#4f3558" />
+            <path d="M 158 148 L 162 150 L 158 152" fill="#4f3558" />
+          </g>
+          {/* 九州 */}
+          <g className={`${styles.scatterPerson} ${styles.scatterDelay7}`}>
+            <circle cx="100" cy="155" r="5" fill="#255d9b" />
+            <path d="M 103 153 L 107 155 L 103 157" fill="#255d9b" />
+          </g>
+          {/* 沖縄 */}
+          <g className={`${styles.scatterPerson} ${styles.scatterDelay8}`}>
+            <circle cx="65" cy="195" r="5" fill="#c98e2b" />
+            <path d="M 68 193 L 72 195 L 68 197" fill="#c98e2b" />
+          </g>
+
+          {/* 幕張から放射状の軌跡（薄く） */}
+          <g stroke="#c62828" strokeWidth="1" strokeDasharray="4 3" opacity="0.25" fill="none">
+            <path d="M 245 105 Q 250 70 255 40" />
+            <path d="M 245 105 Q 248 88 250 75" />
+            <path d="M 245 105 Q 220 95 200 90" />
+            <path d="M 245 105 Q 210 115 180 125" />
+            <path d="M 245 105 Q 190 110 140 115" />
+            <path d="M 245 105 Q 195 130 155 150" />
+            <path d="M 245 105 Q 170 130 100 155" />
+            <path d="M 245 105 Q 150 150 65 195" />
+          </g>
         </svg>
       </div>
 
-      <figcaption id="japan-locator-caption" className={styles.mapJapanCaption}>
-        {JAPAN_LOCATOR_CAPTION}{" "}
-        <a
-          href={VENUE_GOOGLE_MAPS_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.mapJapanMapLink}
-        >
-          {JAPAN_LOCATOR_MAP_LINK_LABEL}
-        </a>
-      </figcaption>
-
-      <div className={styles.mapJapanPrefBlock}>
-        <p className={styles.mapJapanPrefHeading} id="japan-pref-heading">
-          {JAPAN_LOCATOR_PREF_HEADING}
+      <figcaption className={styles.scatterCaption}>
+        <p className={styles.scatterMessage}>
+          超会議で出会ったみんなが、
+          <br />
+          <strong>全国へ散らばっても、同じ方向を見ている。</strong>
         </p>
-        <ul
-          className={styles.mapJapanPrefList}
-          aria-labelledby="japan-pref-heading"
-        >
-          {JAPAN_PREFECTURE_NAMES.map((name) => (
-            <li key={name}>{name}</li>
-          ))}
-        </ul>
-      </div>
+        <p className={styles.scatterSub}>
+          また、どこかで<span className={styles.scatterHighlight}>すれちがおう</span>。
+        </p>
+      </figcaption>
     </figure>
   );
 }

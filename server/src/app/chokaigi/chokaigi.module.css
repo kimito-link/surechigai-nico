@@ -1493,3 +1493,476 @@
   line-height: 1.55;
   color: #6d5d52;
 }
+
+/* ========================================
+   散らばり演出（超会議後、全国へ）
+   ======================================== */
+
+.scatterWrap {
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.scatterMap {
+  width: 100%;
+  max-width: min(100%, 28rem);
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(88, 62, 28, 0.1);
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 28px rgba(45, 36, 28, 0.08);
+}
+
+.scatterSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.scatterCenter {
+  animation: scatterPulse 2s ease-in-out infinite;
+}
+
+@keyframes scatterPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* 散らばる人々 */
+.scatterPerson {
+  opacity: 0;
+  animation: scatterFlyOut 4s ease-out infinite;
+}
+
+@keyframes scatterFlyOut {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0.6;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+.scatterDelay1 { animation-delay: 0s; }
+.scatterDelay2 { animation-delay: 0.3s; }
+.scatterDelay3 { animation-delay: 0.6s; }
+.scatterDelay4 { animation-delay: 0.9s; }
+.scatterDelay5 { animation-delay: 1.2s; }
+.scatterDelay6 { animation-delay: 1.5s; }
+.scatterDelay7 { animation-delay: 1.8s; }
+.scatterDelay8 { animation-delay: 2.1s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .scatterCenter,
+  .scatterPerson {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+.scatterCaption {
+  text-align: center;
+  padding: 0 1rem;
+}
+
+.scatterMessage {
+  margin: 0 0 0.75rem;
+  font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+  line-height: 1.6;
+  color: #3a2f24;
+}
+
+.scatterMessage strong {
+  font-weight: 800;
+  color: #255d9b;
+}
+
+.scatterSub {
+  margin: 0;
+  font-size: clamp(1.1rem, 3vw, 1.35rem);
+  font-weight: 700;
+  color: #5c5248;
+}
+
+.scatterHighlight {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  margin-left: 0.25rem;
+  background: linear-gradient(135deg, rgba(37, 93, 155, 0.12), rgba(201, 142, 43, 0.12));
+  border-radius: 0.4rem;
+  color: #255d9b;
+  font-weight: 800;
+}
+
+/* ========================================
+   会場内すれちがいミニマップ（VenueWanderMini）
+   ======================================== */
+
+.venueWanderMini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+  width: 100%;
+}
+
+.venueWanderMiniMap {
+  position: relative;
+  width: 100%;
+  max-width: min(100%, 24rem);
+  aspect-ratio: 100 / 56;
+  max-height: min(14rem, 45vw);
+  border-radius: 1rem;
+  border: 1px solid rgba(88, 62, 28, 0.1);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(247, 241, 231, 0.95));
+  box-shadow: 0 8px 24px rgba(40, 32, 24, 0.08);
+  overflow: hidden;
+}
+
+.venueWanderMiniSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.venueWanderMiniTrack {
+  position: absolute;
+  width: 0;
+  height: 0;
+  z-index: 2;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.venueWanderMiniSprite {
+  position: absolute;
+  box-sizing: border-box;
+  width: clamp(36px, 7vw, 56px);
+  height: clamp(45px, 9vw, 70px);
+  overflow: hidden;
+  contain: strict;
+  clip-path: inset(0);
+  transform: translate(-50%, -50%);
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: contain;
+  filter: drop-shadow(0 3px 8px rgba(40, 32, 24, 0.25));
+  pointer-events: none;
+}
+
+.venueWanderMiniBubble {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  margin-bottom: 4px;
+  padding: 0.3rem 0.6rem;
+  font-size: clamp(0.65rem, 1.4vw, 0.8rem);
+  font-weight: 700;
+  white-space: nowrap;
+  color: #3a2f24;
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(40, 32, 24, 0.15);
+  opacity: 0;
+  animation: venueMiniBubblePop 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.venueWanderMiniBubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #fff;
+}
+
+@keyframes venueMiniBubblePop {
+  0%, 15%, 100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px) scale(0.9);
+  }
+  20%, 45% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+  50% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-2px) scale(0.95);
+  }
+}
+
+.venueWanderMiniBubble1 { animation-delay: 0s; }
+.venueWanderMiniBubble2 { animation-delay: 2s; }
+.venueWanderMiniBubble3 { animation-delay: 4s; }
+
+/* 軌道アニメーション */
+@keyframes venueMiniLoop1 {
+  0% { left: 10%; top: 78.57%; }
+  25% { left: 88%; top: 78.57%; }
+  50% { left: 88%; top: 21.43%; }
+  75% { left: 10%; top: 21.43%; }
+  100% { left: 10%; top: 78.57%; }
+}
+
+@keyframes venueMiniLoop2 {
+  0% { left: 78%; top: 21.43%; }
+  20% { left: 50%; top: 21.43%; }
+  40% { left: 50%; top: 50%; }
+  60% { left: 78%; top: 50%; }
+  80% { left: 78%; top: 21.43%; }
+  100% { left: 78%; top: 21.43%; }
+}
+
+@keyframes venueMiniLoop3 {
+  0% { left: 14%; top: 50%; }
+  25% { left: 40%; top: 78.57%; }
+  50% { left: 68%; top: 50%; }
+  75% { left: 40%; top: 21.43%; }
+  100% { left: 14%; top: 50%; }
+}
+
+.venueWanderMiniTrack1 {
+  animation-name: venueMiniLoop1;
+  animation-duration: 14s;
+}
+
+.venueWanderMiniTrack2 {
+  animation-name: venueMiniLoop2;
+  animation-duration: 11s;
+  animation-delay: -3s;
+}
+
+.venueWanderMiniTrack3 {
+  animation-name: venueMiniLoop3;
+  animation-duration: 16s;
+  animation-delay: -5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .venueWanderMiniTrack1,
+  .venueWanderMiniTrack2,
+  .venueWanderMiniTrack3 {
+    animation: none;
+  }
+  .venueWanderMiniTrack1 { left: 30%; top: 50%; }
+  .venueWanderMiniTrack2 { left: 55%; top: 35%; }
+  .venueWanderMiniTrack3 { left: 70%; top: 65%; }
+  .venueWanderMiniBubble {
+    animation: none;
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+}
+
+.venueWanderMiniCaption {
+  margin: 0;
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  font-weight: 600;
+  color: #5c5248;
+  text-align: center;
+}
+
+.venueWanderMiniCaption strong {
+  font-weight: 800;
+  color: #255d9b;
+}
+
+/* ========================================
+   つかいかたガイド（UsageGuide）
+   スマホ画面 + 3人のキャラが説明
+   ======================================== */
+
+.usageGuide {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin: 1.5rem 0;
+  width: 100%;
+}
+
+.usageStep {
+  display: grid;
+  grid-template-columns: auto 1fr 2fr;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(247, 241, 231, 0.95));
+  border-radius: 1rem;
+  border: 1px solid rgba(88, 62, 28, 0.08);
+  box-shadow: 0 4px 16px rgba(40, 32, 24, 0.06);
+}
+
+.usageStepReverse {
+  grid-template-columns: auto 2fr 1fr;
+}
+
+.usageStepReverse .usagePhoneWrap {
+  order: 2;
+}
+
+.usageStepReverse .usageExplain {
+  order: 1;
+  flex-direction: row-reverse;
+}
+
+.usageStepReverse .usageBubble {
+  text-align: right;
+}
+
+.usageStepReverse .usageBubble::after {
+  left: auto;
+  right: -6px;
+  border-left-color: #fff;
+  border-right-color: transparent;
+}
+
+.usageStepNum {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(2rem, 5vw, 2.5rem);
+  height: clamp(2rem, 5vw, 2.5rem);
+  font-size: clamp(1rem, 3vw, 1.25rem);
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #255d9b, #1a4a7a);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(37, 93, 155, 0.3);
+  flex-shrink: 0;
+}
+
+.usagePhoneWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.usagePhone {
+  width: clamp(60px, 12vw, 90px);
+  height: auto;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+}
+
+.usageExplain {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.usageAvatar {
+  flex-shrink: 0;
+  width: clamp(48px, 10vw, 72px);
+  height: clamp(60px, 12vw, 90px);
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: contain;
+  filter: drop-shadow(0 2px 6px rgba(40, 32, 24, 0.2));
+}
+
+.usageBubble {
+  position: relative;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(40, 32, 24, 0.1);
+  max-width: 100%;
+}
+
+.usageBubble::after {
+  content: "";
+  position: absolute;
+  top: 1.5rem;
+  left: -6px;
+  border: 6px solid transparent;
+  border-right-color: #fff;
+}
+
+.usageName {
+  display: block;
+  font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+  font-weight: 700;
+  color: #c98e2b;
+  margin-bottom: 0.25rem;
+}
+
+.usageSpeech {
+  margin: 0;
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  font-weight: 500;
+  color: #3a2f24;
+  line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .usageStep,
+  .usageStepReverse {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .usageStepNum {
+    grid-row: 1 / 3;
+  }
+
+  .usagePhoneWrap {
+    order: 0;
+    justify-content: flex-start;
+  }
+
+  .usageStepReverse .usagePhoneWrap {
+    order: 0;
+  }
+
+  .usageExplain {
+    order: 1;
+    grid-column: 2;
+  }
+
+  .usageStepReverse .usageExplain {
+    order: 1;
+    flex-direction: row;
+  }
+
+  .usageStepReverse .usageBubble {
+    text-align: left;
+  }
+
+  .usageStepReverse .usageBubble::after {
+    left: -6px;
+    right: auto;
+    border-right-color: #fff;
+    border-left-color: transparent;
+  }
+
+  .usageAvatar {
+    width: clamp(40px, 12vw, 56px);
+    height: clamp(50px, 15vw, 70px);
+  }
+
+  .usagePhone {
+    width: clamp(50px, 15vw, 70px);
+  }
+}
