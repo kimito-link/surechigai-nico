@@ -1,0 +1,6 @@
+# Environment variables (secrets)
+.env.local
+.env*.local
+
+# clerk configuration (can include secrets)
+/.clerk/

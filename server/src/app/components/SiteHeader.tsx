@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useUser, useClerk } from "@clerk/nextjs";
 import styles from "./SiteHeader.module.css";
 
 const NAV_LINKS = [
@@ -13,6 +14,8 @@ const NAV_LINKS = [
 export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { isSignedIn, user } = useUser();
+  const { signOut } = useClerk();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,6 +47,31 @@ export function SiteHeader() {
           ))}
         </nav>
 
+        <div className={styles.authArea}>
+          {isSignedIn ? (
+            <button
+              onClick={() => signOut()}
+              className={styles.userButton}
+            >
+              {user?.imageUrl ? (
+                <img
+                  src={user.imageUrl}
+                  alt=""
+                  className={styles.userAvatar}
+                />
+              ) : (
+                <span className={styles.userInitial}>
+                  {user?.firstName?.[0] || "U"}
+                </span>
+              )}
+            </button>
+          ) : (
+            <Link href="/sign-in" className={styles.signInButton}>
+              ログイン
+            </Link>
+          )}
+        </div>
+
         <button
           className={`${styles.hamburger} ${menuOpen ? styles.hamburgerOpen : ""}`}
           onClick={() => setMenuOpen(!menuOpen)}
@@ -72,6 +100,27 @@ export function SiteHeader() {
             {link.label}
           </Link>
         ))}
+        <div className={styles.mobileAuthArea}>
+          {isSignedIn ? (
+            <button
+              onClick={() => {
+                signOut();
+                closeMenu();
+              }}
+              className={styles.mobileSignOutButton}
+            >
+              ログアウト
+            </button>
+          ) : (
+            <Link
+              href="/sign-in"
+              className={styles.mobileSignInButton}
+              onClick={closeMenu}
+            >
+              ログイン
+            </Link>
+          )}
+        </div>
       </nav>
 
       {menuOpen && (
