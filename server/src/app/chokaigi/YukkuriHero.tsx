@@ -1,0 +1,155 @@
+"use client";
+
+import Image from "next/image";
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import styles from "./YukkuriHero.module.css";
+
+type Dialogue = { rink: string; konta: string; tanunee: string };
+
+const CHARS = [
+  { key: "rink"    as const, label: "りんく",  src: "/chokaigi/yukkuri/rink.png",    color: "#ff7eb3" },
+  { key: "konta"   as const, label: "こん太",  src: "/chokaigi/yukkuri/konta.png",   color: "#7ec8ff" },
+  { key: "tanunee" as const, label: "たぬ姉", src: "/chokaigi/yukkuri/tanunee.png", color: "#a8e6a3" },
+];
+
+const BASE_URL = "https://surechigai-nico.link";
+
+function buildShareCardUrl(handle: string, d: Dialogue) {
+  const url = new URL(`${BASE_URL}/yukkuri`);
+  url.searchParams.set("h", handle);
+  url.searchParams.set("r", d.rink);
+  url.searchParams.set("k", d.konta);
+  url.searchParams.set("t", d.tanunee);
+  return url.toString();
+}
+
+function buildTweetUrl(handle: string, d: Dialogue) {
+  const cardUrl = buildShareCardUrl(handle, d);
+  const text = `りんく・こん太・たぬ姉に @${handle} さんをゆっくり解説してもらったよ！\n#すれちがいライト #ニコニコ超会議2026\n${cardUrl}`;
+  return `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
+}
+
+export function YukkuriHero() {
+  const router = useRouter();
+  const [handle, setHandle]     = useState("");
+  const [dialogue, setDialogue] = useState<Dialogue | null>(null);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
+
+  const raw = handle.trim().replace(/^@+/, "");
+  const hasInput = raw.length > 0;
+
+  const handleYukkuri = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!raw) return;
+    setLoading(true);
+    setError("");
+    setDialogue(null);
+    try {
+      const res = await fetch("/api/yukkuri-explain", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ xHandle: raw, name: `@${raw}` }),
+      });
+      if (!res.ok) throw new Error();
+      setDialogue(await res.json());
+    } catch {
+      setError("失敗しました。もう一度お試しください。");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <section className={styles.hero} aria-label="ゆっくり解説ヒーロー">
+      <p className={styles.headline}>
+        あなたの X ID を入れてみて！
+      </p>
+
+      {/* キャラクター3人 */}
+      <div className={styles.chars}>
+        {CHARS.map(({ key, label, src, color }, i) => (
+          <div key={key} className={styles.charCard} style={{ animationDelay: `${i * 0.18}s` }}>
+            <div className={styles.charImgWrap}>
+              <Image src={src} alt={label} width={100} height={100} className={styles.charImg} />
+            </div>
+            <span className={styles.charLabel} style={{ background: color, color: "#0a0e1a" }}>
+              {label}
+            </span>
+            {dialogue && (
+              <div className={styles.charBubble}>
+                {dialogue[key]}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* 検索フォーム */}
+      <form className={styles.form} onSubmit={handleYukkuri}>
+        <div className={styles.inputRow}>
+          <span className={styles.at}>@</span>
+          <input
+            type="text"
+            className={styles.input}
+            value={handle}
+            onChange={(e) => setHandle(e.target.value)}
+            placeholder="あなたのX ID"
+            aria-label="XアカウントのID"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+          />
+        </div>
+
+        {hasInput ? (
+          <div className={styles.btnRow}>
+            <button
+              type="submit"
+              className={styles.btnYukkuri}
+              disabled={loading}
+            >
+              {loading ? "解説中…" : "ゆっくり解説してもらう"}
+            </button>
+            <button
+              type="button"
+              className={styles.btnRegister}
+              onClick={() => router.push("/sign-in")}
+            >
+              すれ違い通信に登録する
+            </button>
+          </div>
+        ) : (
+          <p className={styles.hint}>
+            IDを入れると　りんく・こん太・たぬ姉があなたを紹介してくれます
+          </p>
+        )}
+      </form>
+
+      {/* エラー */}
+      {error && <p className={styles.error} role="alert">{error}</p>}
+
+      {/* 結果後のシェア */}
+      {dialogue && (
+        <div className={styles.shareRow}>
+          <a
+            href={buildTweetUrl(raw, dialogue)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.shareBtn}
+          >
+            Xでシェアする
+          </a>
+          <button
+            type="button"
+            className={styles.btnRegister}
+            onClick={() => router.push("/sign-in")}
+          >
+            すれ違い通信に登録する
+          </button>
+        </div>
+      )}
+    </section>
+  );
+}

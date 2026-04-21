@@ -53,17 +53,15 @@ import { CharacterTip } from "./CharacterTip";
 import { VenueLiveMap } from "./VenueLiveMap";
 import { CreatorCrossSearch } from "./CreatorCrossSearch";
 import { StarField } from "./StarField";
+import { YukkuriHero } from "./YukkuriHero";
 
 export default function ChokaigiPage() {
   return (
     <main className={styles.shell}>
       <StarField />
       <article>
-        <div className={styles.topSearchArea}>
-          <Suspense fallback={null}>
-            <CreatorCrossSearch />
-          </Suspense>
-        </div>
+        {/* ===== ファーストビュー：キャラ3人 + 検索 + 2択 ===== */}
+        <YukkuriHero />
 
         <div className={styles.unofficialBar} role="note">
           このページは有志による非公式アプリ企画です。ニコニコ超会議の公式サイトではありません。
