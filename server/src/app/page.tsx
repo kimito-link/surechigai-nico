@@ -14,6 +14,7 @@ import {
 } from "./chokaigi/lp-content";
 import { HomeVenueWander } from "./HomeVenueWander";
 import { CreatorCrossSearch } from "./chokaigi/CreatorCrossSearch";
+import { YukkuriHero } from "./chokaigi/YukkuriHero";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -37,6 +38,7 @@ const AVATAR_FRAME: [string, string][] = [
 export default function Home() {
   return (
     <main className={styles.shell}>
+      <YukkuriHero />
       <header className={styles.hero}>
         <div className={styles.heroInner}>
           <div className={styles.heroCopy}>
