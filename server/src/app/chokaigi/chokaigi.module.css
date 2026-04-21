@@ -4,6 +4,8 @@
   color: #1e1510;
   background: #f5f0e8;
   padding-top: 52px; /* StickyXSearchBar の高さ分 */
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* ===== Sticky X 検索バー ===== */
