@@ -51,3 +51,31 @@
 ---
 
 落ち着いて **1 → 2 → 3 → 4** の順だけ進めてください。ここまでできれば接続は通ります。
+
+---
+
+## 5. 「テーブルが見つかりません」が出るとき
+
+Vercel では `next start` 前の **bootstrap-db** が**動きません**（`npm start` 用のため）。本番の MySQL には、初回に **`init-db.sql` を流さない限り** `locations` などのテーブルが作られません。
+
+### 手順 A（推奨）: 手元から 1 コマンド
+
+1. リポジトリの **`server` ディレクトリ**に移動する。  
+2. **Vercel / Railway に入っている `MYSQL_PUBLIC_URL`（`mysql://` 1 行）**を、このシェルで使えるようにする（`server/.env.local` に書く、または一時的に `set` / `export`）。  
+3. 次を実行する。  
+
+   ```bash
+   npm run db:ensure:chokaigi
+   ```  
+
+4. 成功ログが出たら、本番 `/app` で「現在地を送信」を再試行する。  
+
+`locations`（位置ログ）と `blocks`（ライブマップ用）だけ `CREATE IF NOT EXISTS` します。`users` は既にある前提です。
+
+### 手順 B: Railway の MySQL 画面から SQL
+
+1. [railway.app](https://railway.app) → MySQL サービス → **Data** または **Query** / 外部クライアント。  
+2. 接続先 **データベース名**を、Vercel の `MYSQL_DATABASE`（接続 URL のパス部分）と**同じ**にする。  
+3. リポジトリの `server/scripts/ensure-chokaigi-tables.sql` の**全文**を貼り付けて実行する。  
+
+`users` すらまだない場合は、**`init-db.sql` 全体**を同じ DB に対して流してください。
