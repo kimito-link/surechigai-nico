@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 // fetch() は host ヘッダーを禁止しているため node:https を使用
 const FAPI_HOSTNAME = "frontend-api.clerk.services";
-const FAPI_HOST_OVERRIDE = "clerk.surechigai-nico.link";
+const PROXY_URL = "https://surechigai-nico.link/api/clerk-proxy";
 
 const HOP_BY_HOP = new Set([
   "connection",
@@ -51,7 +51,8 @@ async function handler(
     const search = req.nextUrl.search;
 
     const forwardHeaders: Record<string, string> = {
-      host: FAPI_HOST_OVERRIDE,
+      host: FAPI_HOSTNAME,
+      "clerk-proxy-url": PROXY_URL,
     };
     req.headers.forEach((value, key) => {
       const lower = key.toLowerCase();
