@@ -197,19 +197,18 @@ function buildOfficialAccountLinks(
   links: Array<{ label: string; href: string; handle: string }>,
   name: string
 ) {
-  const mapped: AccountLink[] = links
-    .map((link) => {
-      const explicit = normalizeHandle(link.handle ?? "");
-      const inferred = extractXHandleFromUrl(link.href);
-      const handle = explicit || inferred;
-      if (!handle) return null;
-      return {
-        label: `X: @${handle}`,
-        href: toXProfileUrl(handle),
-        kind: "official" as const,
-      };
-    })
-    .filter((v): v is AccountLink => v !== null);
+  const mapped: AccountLink[] = [];
+  for (const link of links) {
+    const explicit = normalizeHandle(link.handle ?? "");
+    const inferred = extractXHandleFromUrl(link.href);
+    const handle = explicit || inferred;
+    if (!handle) continue;
+    mapped.push({
+      label: `X: @${handle}`,
+      href: toXProfileUrl(handle),
+      kind: "official",
+    });
+  }
 
   if (mapped.length === 0) {
     mapped.push({
