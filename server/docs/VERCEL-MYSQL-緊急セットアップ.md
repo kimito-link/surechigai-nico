@@ -58,7 +58,17 @@
 
 Vercel では `next start` 前の **bootstrap-db** が**動きません**（`npm start` 用のため）。本番の MySQL には、初回に **`init-db.sql` を流さない限り** `locations` などのテーブルが作られません。
 
-### 手順 A（推奨）: 手元から 1 コマンド
+### 手順 0（いまのコード想定）: 再デプロイだけ
+
+リポジトリの `package.json` では、**`next build` の前**に `ensure-chokaigi-tables.mjs` が走り、**Vercel のビルド環境に `MYSQL_PUBLIC_URL`（`mysql://` 1 行）が入っていれば**、自動的に `locations` / `blocks` を `CREATE IF NOT EXISTS` します。  
+
+1. Vercel → **Settings** → **Environment Variables** で **`MYSQL_PUBLIC_URL` が Production にあり、Preview を使うなら Preview にもある**ことを確認。  
+2. 変数の **Environment** で **Build** にも有効**になっている**ことを確認（Vercel の「Available at Build Time」相当）。`mysql://` がビルド用シークレットに入っていないと、スキップされます。  
+3. **Deployments** → **Redeploy** 本番。  
+
+成功するとビルドログに `[ensure-chokaigi] 完了` が出ます（既にテーブルがある場合も 2 行の `ok`）。  
+
+### 手順 A: 手元から 1 コマンド
 
 1. リポジトリの **`server` ディレクトリ**に移動する。  
 2. **Vercel / Railway に入っている `MYSQL_PUBLIC_URL`（`mysql://` 1 行）**を、このシェルで使えるようにする（`server/.env.local` に書く、または一時的に `set` / `export`）。  

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node -e \"try{require('fs').rmSync('.next',{recursive:true,force:true})}catch(e){}\" && next dev --port 3010",
     "dev:clean": "node -e \"try{require('fs').rmSync('.next',{recursive:true,force:true})}catch(e){}\" && next dev --port 3010",
-    "build": "next build",
+    "build": "node scripts/ensure-chokaigi-tables.mjs && next build",
     "start": "node scripts/bootstrap-db.js && next start --port 3010",
     "db:init": "node scripts/bootstrap-db.js",
     "db:ensure:chokaigi": "node -r dotenv/config scripts/ensure-chokaigi-tables.mjs",

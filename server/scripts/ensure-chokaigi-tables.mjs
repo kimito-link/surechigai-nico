@@ -1,9 +1,8 @@
 /**
  * 本番 Railway MySQL に locations / blocks を「無ければ作る」
- * 使い方（プロジェクトの server/ で）:
- *   MYSQL_PUBLIC_URL="mysql://..." node scripts/ensure-chokaigi-tables.mjs
- * または .env.local に MYSQL_PUBLIC_URL があるなら:
- *   node -r dotenv/config scripts/ensure-chokaigi-tables.mjs
+ *
+ * - Vercel の `next build` の前に走らせる（package.json の build）。接続情報が無ければスキップ。
+ * - 手元で明示実行: `npm run db:ensure:chokaigi`（.env に mysql:// が無いと失敗）
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -105,6 +104,26 @@ const useSsl =
   !explicitSslOff &&
   (process.env.DATABASE_SSL === "1" || hostSuggestsCloudTls);
 
+const hasCredentials =
+  Boolean(mysqlUri && (mysqlUri.startsWith("mysql://") || mysqlUri.startsWith("mysql2://"))) ||
+  Boolean(host && user && password && database);
+
+const explicitEnsure = process.env.npm_lifecycle_event === "db:ensure:chokaigi";
+
+if (!hasCredentials) {
+  if (explicitEnsure) {
+    console.error(
+      "[ensure-chokaigi] 接続できません。server/.env.local に MYSQL_PUBLIC_URL（mysql://... 1行）を入れるか、\n" +
+        "  Railway / Vercel の mysql 接続と同じ値を設定してから再実行してください。"
+    );
+    process.exit(1);
+  }
+  console.log(
+    "[ensure-chokaigi] skip: MySQL の接続文字列なし（ローカル build では正常。Vercel 本番では MYSQL_PUBLIC_URL がビルド時に渡ればここで DDL が流れます）"
+  );
+  process.exit(0);
+}
+
 const sqlPath = path.join(__dirname, "ensure-chokaigi-tables.sql");
 const sql = fs.readFileSync(sqlPath, "utf8");
 const statements = parseSqlStatements(sql);
@@ -120,7 +139,7 @@ if (mysqlUri && (mysqlUri.startsWith("mysql://") || mysqlUri.startsWith("mysql2:
     timezone: "+09:00",
     ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
   });
-} else if (host && user && password && database) {
+} else {
   conn = await mysql.createConnection({
     host,
     port,
@@ -131,13 +150,6 @@ if (mysqlUri && (mysqlUri.startsWith("mysql://") || mysqlUri.startsWith("mysql2:
     timezone: "+09:00",
     ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
   });
-} else {
-  console.error(
-    "[ensure-chokaigi] 接続できません。次のいずれかを設定してください:\n" +
-      "  MYSQL_PUBLIC_URL（mysql://... 1行・Vercel / Railway の値と同じ）\n" +
-      "  または MYSQLHOST, MYSQLUSER, MYSQLPASSWORD, MYSQLDATABASE"
-  );
-  process.exit(1);
 }
 
 for (const st of statements) {
