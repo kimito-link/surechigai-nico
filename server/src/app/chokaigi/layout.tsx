@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { ChokaigiJsonLd } from "./ChokaigiJsonLd";
+import { StickyXSearchBar } from "./StickyXSearchBar";
 import {
   LP_DESCRIPTION,
   LP_TITLE,
@@ -45,6 +46,7 @@ export default function ChokaigiLayout({
   return (
     <div className={styles.pageRoot}>
       <ChokaigiJsonLd />
+      <StickyXSearchBar />
       {children}
     </div>
   );
