@@ -5,16 +5,16 @@
   right: 0;
   z-index: 1000;
   background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid transparent;
   transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 .scrolled {
-  background: rgba(255, 255, 255, 0.95);
-  border-bottom-color: rgba(88, 62, 28, 0.1);
-  box-shadow: 0 2px 12px rgba(40, 32, 24, 0.08);
+  background: rgba(255, 255, 255, 0.97);
+  border-bottom-color: rgba(37, 93, 155, 0.12);
+  box-shadow: 0 2px 16px rgba(37, 93, 155, 0.08);
 }
 
 .inner {
@@ -53,7 +53,6 @@
   min-width: 0;
 }
 
-/* flex の gap が効かない場合でもリンクが一続きにならない */
 .navLink:not(:first-child) {
   margin-inline-start: 1.5rem;
 }
@@ -89,6 +88,183 @@
   width: 100%;
 }
 
+/* ===== Auth エリア ===== */
+.authArea {
+  display: flex;
+  align-items: center;
+  margin-left: 0.5rem;
+}
+
+/* ログインボタン（X ブランド） */
+.signInButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  background: #000;
+  border: none;
+  border-radius: 2rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.signInButton:hover {
+  background: #1a1a1a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* ===== ログイン中ピル ===== */
+.userPillWrap {
+  position: relative;
+}
+
+.userPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.2rem 0.65rem 0.2rem 0.2rem;
+  background: rgba(37, 93, 155, 0.06);
+  border: 1.5px solid rgba(37, 93, 155, 0.22);
+  border-radius: 2rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  max-width: 220px;
+}
+
+.userPill:hover {
+  background: rgba(37, 93, 155, 0.11);
+  border-color: rgba(37, 93, 155, 0.4);
+  box-shadow: 0 2px 10px rgba(37, 93, 155, 0.12);
+}
+
+/* オンライン緑ドット */
+.onlineDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+  animation: onlinePulse 2.4s ease-in-out infinite;
+}
+
+@keyframes onlinePulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25); }
+  50%       { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.08); }
+}
+
+.userPillAvatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(37, 93, 155, 0.3);
+  flex-shrink: 0;
+}
+
+.userPillInitial {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #255d9b, #1a4a7a);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.userPillInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.userPillName {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.userPillBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #255d9b;
+}
+
+.chevron {
+  color: #255d9b;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ===== ドロップダウン ===== */
+.userDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 170px;
+  background: #fff;
+  border: 1px solid rgba(37, 93, 155, 0.14);
+  border-radius: 0.85rem;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.13);
+  overflow: hidden;
+  z-index: 1002;
+  animation: dropIn 0.15s ease;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dropHandle {
+  margin: 0;
+  padding: 0.55rem 1rem 0.4rem;
+  font-size: 0.75rem;
+  color: #999;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.dropItem {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #dc2626;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.dropItem:hover {
+  background: rgba(220, 38, 38, 0.05);
+}
+
+/* ===== ハンバーガー ===== */
 .hamburger {
   display: none;
   flex-direction: column;
@@ -116,26 +292,25 @@
 .hamburgerOpen .hamburgerBar:nth-child(1) {
   transform: translateY(7px) rotate(45deg);
 }
-
 .hamburgerOpen .hamburgerBar:nth-child(2) {
   opacity: 0;
 }
-
 .hamburgerOpen .hamburgerBar:nth-child(3) {
   transform: translateY(-7px) rotate(-45deg);
 }
 
+/* ===== モバイルナビ ===== */
 .mobileNav {
   display: none;
   position: fixed;
   top: 56px;
   right: 0;
-  width: min(280px, 80vw);
+  width: min(300px, 85vw);
   max-height: calc(100vh - 56px);
   background: #fff;
   border-left: 1px solid rgba(88, 62, 28, 0.1);
   box-shadow: -4px 0 24px rgba(40, 32, 24, 0.15);
-  padding: 1rem 0;
+  padding: 0.5rem 0 1rem;
   transform: translateX(100%);
   transition: transform 0.3s ease-out;
   overflow-y: auto;
@@ -164,6 +339,102 @@
   color: #255d9b;
 }
 
+/* モバイル ユーザー情報 */
+.mobileUserInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(88, 62, 28, 0.08);
+  background: rgba(37, 93, 155, 0.03);
+}
+
+.mobileAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(37, 93, 155, 0.25);
+  flex-shrink: 0;
+}
+
+.mobileUserText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.mobileUserName {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobileHandle {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.mobileBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #255d9b;
+  margin-top: 0.1rem;
+}
+
+.mobileAuthArea {
+  padding: 1rem 1.5rem 0.5rem;
+}
+
+.mobileSignOutButton {
+  display: block;
+  width: 100%;
+  padding: 0.8rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.06);
+  border: 1.5px solid rgba(220, 38, 38, 0.2);
+  border-radius: 2rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mobileSignOutButton:hover {
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.mobileSignInButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  background: #000;
+  border: none;
+  border-radius: 2rem;
+  text-decoration: none;
+  text-align: center;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.mobileSignInButton:hover {
+  background: #1a1a1a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
 .overlay {
   display: none;
   position: fixed;
@@ -172,116 +443,7 @@
   z-index: 998;
 }
 
-.authArea {
-  display: flex;
-  align-items: center;
-  margin-left: 1rem;
-}
-
-.signInButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #fff;
-  background: linear-gradient(135deg, #255d9b, #1a4a7a);
-  border: none;
-  border-radius: 1.5rem;
-  text-decoration: none;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.signInButton:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 93, 155, 0.3);
-}
-
-.userAvatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.userButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  background: transparent;
-  border: 2px solid rgba(37, 93, 155, 0.2);
-  border-radius: 50%;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-
-.userButton:hover {
-  border-color: #255d9b;
-}
-
-.userInitial {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #255d9b;
-}
-
-.mobileSignOutButton {
-  display: block;
-  width: 100%;
-  padding: 0.875rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #5c5248;
-  background: #f0ebe3;
-  border: none;
-  border-radius: 2rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.mobileSignOutButton:hover {
-  background: #e8e0d5;
-}
-
-.mobileAuthArea {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid rgba(88, 62, 28, 0.1);
-  margin-top: 0.5rem;
-}
-
-.mobileSignInButton {
-  display: block;
-  width: 100%;
-  padding: 0.875rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #fff;
-  background: linear-gradient(135deg, #255d9b, #1a4a7a);
-  border: none;
-  border-radius: 2rem;
-  text-decoration: none;
-  text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.mobileSignInButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(37, 93, 155, 0.3);
-}
-
-.mobileUserInfo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #3a2f24;
-}
-
+/* ===== レスポンシブ ===== */
 @media (max-width: 1023px) {
   .desktopNav {
     display: none !important;
@@ -299,7 +461,6 @@
     display: block;
   }
 
-  /* 閉じているときはドロワーを操作・表示しない（画面外でも保険） */
   .mobileNav:not(.mobileNavOpen) {
     visibility: hidden;
     pointer-events: none;

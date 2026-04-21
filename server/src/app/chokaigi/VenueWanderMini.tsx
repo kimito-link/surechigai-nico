@@ -524,21 +524,24 @@ export function VenueWanderMini() {
 
             {/* ===== タイトルバナー ===== */}
             <rect x={0} y={0} width={W} height={TITLE_H} fill="url(#vmTitleBg)" />
-            <text x={20} y={30} fill="rgba(255,255,255,0.95)" fontSize={22} fontWeight={800}
+            <text x={20} y={28} fill="rgba(255,255,255,0.95)" fontSize={20} fontWeight={900}
               fontFamily="system-ui, 'BIZ UDPGothic', sans-serif">
-              幕張メッセ 超会議 会場マップ（示意）
+              幕張メッセ 超会議 会場マップ
             </text>
-            <text x={20} y={56} fill="rgba(255,255,255,0.78)" fontSize={15}
+            <text x={20} y={52} fill="rgba(255,255,255,0.82)" fontSize={14}
               fontFamily="system-ui, sans-serif">
-              HALL 1〜11 ＋ 国際会議場 ＋ 幕張イベントホール —— 展示内容＆クリエイタークロス 出演スケジュール
+              Xでログイン中のユーザーが会場に出現！ ▸ 展示内容＆クリエイタークロス 出演スケジュール
             </text>
-            {/* すれちがいカウント */}
-            <rect x={W - 195} y={10} width={182} height={50} rx={12} fill="rgba(255,255,255,0.18)" />
-            <text x={W - 104} y={32} textAnchor="middle" fill="rgba(255,255,255,0.85)" fontSize={13}
-              fontWeight={700} fontFamily="system-ui, sans-serif">すれちがい</text>
-            <text x={W - 104} y={54} textAnchor="middle" fill="white" fontSize={22}
+            {/* Xログイン中カウント */}
+            <rect x={W - 205} y={8} width={196} height={54} rx={12} fill="rgba(255,255,255,0.18)" />
+            {/* X(Twitter)ロゴ */}
+            <text x={W - 190} y={30} fill="white" fontSize={14} fontWeight={900}
+              fontFamily="system-ui, sans-serif">𝕏</text>
+            <text x={W - 174} y={30} fill="rgba(255,255,255,0.9)" fontSize={13}
+              fontWeight={700} fontFamily="system-ui, sans-serif">ログイン中</text>
+            <text x={W - 108} y={56} textAnchor="middle" fill="white" fontSize={24}
               fontWeight={900} fontFamily="system-ui, sans-serif">
-              {DEMO_ENCOUNTERS.length}人 遭遇中！
+              {DEMO_ENCOUNTERS.length}人 参加中！
             </text>
 
             {/* メイン棟ラベル */}
@@ -649,15 +652,15 @@ export function VenueWanderMini() {
             <circle cx={20} cy={LEGEND_Y + 20} r={11} fill="#1da1f2" />
             <text x={38} y={LEGEND_Y + 26} fill="#0d47a1" fontSize={16} fontWeight={700}
               fontFamily="system-ui, sans-serif">
-              = すれちがったユーザーのアイコン（デモ：りんく・こん太・たぬ姉ゆっくり）
+              = X（Twitter）アカウントでログインしたユーザーのアイコン（デモ表示）
             </text>
-            <text x={W / 2} y={LEGEND_Y + 52} textAnchor="middle" fill="#5c8fc7" fontSize={13}
-              fontFamily="system-ui, sans-serif">
-              ※ 出演者・スケジュールは 2026年4月時点の情報。最新情報は公式サイト・会場掲示をご確認ください。
+            <text x={W / 2} y={LEGEND_Y + 52} textAnchor="middle" fill="#1565c0" fontSize={14}
+              fontWeight={700} fontFamily="system-ui, 'BIZ UDPGothic', sans-serif">
+              Xでログインすると、あなたのアイコンが今いる会場エリアにリアルタイムで表示されます
             </text>
             <text x={W / 2} y={LEGEND_Y + 70} textAnchor="middle" fill="#8ab4d8" fontSize={12}
               fontFamily="system-ui, sans-serif">
-              実際のすれちがい通信では、会場に来たユーザーのTwitterサムネイルが各エリアに表示されます
+              ※ 出演者・スケジュールは2026年4月時点の情報。最新情報は公式サイト・会場掲示をご確認ください。
             </text>
           </svg>
         </div>
