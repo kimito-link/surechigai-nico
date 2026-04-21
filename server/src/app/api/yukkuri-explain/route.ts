@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = "edge";
+
 const MODELS = [
   "google/gemma-2-9b-it:free",
   "meta-llama/llama-3.2-3b-instruct:free",
