@@ -64,7 +64,7 @@ export function YukkuriHero() {
   return (
     <section className={styles.hero} aria-label="ゆっくり解説ヒーロー">
       <p className={styles.headline}>
-        あなたの X ID を入れてみて！
+        誰を紹介してもらう？
       </p>
 
       {/* キャラクター3人 */}
@@ -86,8 +86,11 @@ export function YukkuriHero() {
         ))}
       </div>
 
-      {/* 検索フォーム */}
+      {/* 解説フォーム */}
       <form className={styles.form} onSubmit={handleYukkuri}>
+        <label className={styles.inputLabel}>
+          紹介してほしい人のX IDを入力
+        </label>
         <div className={styles.inputRow}>
           <span className={styles.at}>@</span>
           <input
@@ -95,7 +98,7 @@ export function YukkuriHero() {
             className={styles.input}
             value={handle}
             onChange={(e) => setHandle(e.target.value)}
-            placeholder="あなたのX ID"
+            placeholder="X ID（自分でも他の人でもOK）"
             aria-label="XアカウントのID"
             autoCapitalize="none"
             autoCorrect="off"
@@ -103,29 +106,32 @@ export function YukkuriHero() {
           />
         </div>
 
-        {hasInput ? (
-          <div className={styles.btnRow}>
-            <button
-              type="submit"
-              className={styles.btnYukkuri}
-              disabled={loading}
-            >
-              {loading ? "解説中…" : "ゆっくり解説してもらう"}
-            </button>
-            <button
-              type="button"
-              className={styles.btnRegister}
-              onClick={() => router.push("/sign-in")}
-            >
-              すれ違い通信に登録する
-            </button>
-          </div>
-        ) : (
+        <button
+          type="submit"
+          className={styles.btnYukkuri}
+          disabled={loading || !hasInput}
+        >
+          {loading ? "解説中…" : "ゆっくり解説してもらう"}
+        </button>
+
+        {!hasInput && (
           <p className={styles.hint}>
-            IDを入れると　りんく・こん太・たぬ姉があなたを紹介してくれます
+            自分でも他の人でも入力できます
           </p>
         )}
       </form>
+
+      {/* 登録は入力欄と独立したCTA */}
+      <div className={styles.registerCta}>
+        <p className={styles.registerCtaText}>自分がすれ違い通信に参加する場合はこちら</p>
+        <button
+          type="button"
+          className={styles.btnRegister}
+          onClick={() => router.push("/sign-in")}
+        >
+          自分を登録する（Xでログイン）
+        </button>
+      </div>
 
       {/* エラー */}
       {error && <p className={styles.error} role="alert">{error}</p>}
