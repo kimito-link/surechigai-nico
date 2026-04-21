@@ -23,15 +23,45 @@ type AccountLink = {
   kind: "official" | "related" | "search";
 };
 
+type RegistryAccountItem = {
+  label: string;
+  kind?: "official" | "related" | "search";
+  handle?: string;
+  keyword?: string;
+  href?: string;
+};
+
 const CREATOR_SECTION_RE = /クリエイター|VOC@LOiD|ボカ|絵師|演奏|音声合成|初音ミク|M@STER/i;
 
 /**
  * ここに直接アカウントを入れると、検索リンクより優先して表示される。
  * key はブースコード優先。コードが無い場合は「HALL番号:名称」で登録できる。
  */
-const X_ACCOUNT_REGISTRY: Record<string, Array<{ label: string; handle: string; kind?: "official" | "related" }>> = {
+const X_ACCOUNT_REGISTRY: Record<string, RegistryAccountItem[]> = {
+  A10: [
+    { label: "君斗りんく（公式）", handle: "streamerfunch", kind: "official" },
+    { label: "関係者: りんく", keyword: "りんく", kind: "related" },
+    { label: "関係者: こん太", keyword: "こん太", kind: "related" },
+    { label: "関係者: たぬ姉", keyword: "たぬ姉", kind: "related" },
+  ],
   A17: [{ label: "クリプトン公式", handle: "cfm_miku", kind: "official" }],
-  "3:A9": [{ label: "ボカロ名刺交換（検索）", handle: "the_voca" }],
+  "3:A9": [{ label: "ボカロ名刺交換（検索）", keyword: "the_voca", kind: "search" }],
+};
+
+/**
+ * 検索窓ヒット用の別名（参加者名/ローマ字/企画名）を登録。
+ */
+const EXTRA_SEARCH_TERMS_REGISTRY: Record<string, string[]> = {
+  A10: [
+    "君斗",
+    "君斗りんく",
+    "kimito",
+    "kimito-link",
+    "kimito link",
+    "すれちがいライト",
+    "streamerfunch",
+    "クリエイター応援",
+  ],
 };
 
 function normalizeHandle(handle: string) {
@@ -55,6 +85,33 @@ function splitKeywords(text?: string) {
     .filter((v) => v.length >= 2 && !/^\d+$/.test(v));
 }
 
+function buildRegistryKeys(hallNo: string, code: string | undefined, name: string) {
+  const keys: string[] = [];
+  if (code) keys.push(code);
+  keys.push(`${hallNo}:${name}`);
+  return keys;
+}
+
+function buildSearchTermsFromRegistry(hallNo: string, code: string | undefined, name: string) {
+  return buildRegistryKeys(hallNo, code, name)
+    .flatMap((key) => EXTRA_SEARCH_TERMS_REGISTRY[key] ?? [])
+    .filter(Boolean);
+}
+
+function registryItemToLink(item: RegistryAccountItem): AccountLink | null {
+  const kind = item.kind ?? "official";
+  if (item.href) {
+    return { label: item.label, href: item.href, kind };
+  }
+  if (item.handle) {
+    return { label: item.label, href: toXProfileUrl(item.handle), kind };
+  }
+  if (item.keyword) {
+    return { label: item.label, href: toXUserSearchUrl(item.keyword), kind };
+  }
+  return null;
+}
+
 function dedupeLinks(links: AccountLink[]) {
   const seen = new Set<string>();
   const result: AccountLink[] = [];
@@ -72,13 +129,12 @@ function buildAccountLinks(
   name: string,
   sub: string | undefined
 ): AccountLink[] {
-  const direct = code ? X_ACCOUNT_REGISTRY[code] : undefined;
-  const byName = X_ACCOUNT_REGISTRY[`${hallNo}:${name}`];
-  const registered: AccountLink[] = [...(direct ?? []), ...(byName ?? [])].map((item) => ({
-    label: item.label,
-    href: toXProfileUrl(item.handle),
-    kind: item.kind ?? "official",
-  }));
+  const registeredItems = buildRegistryKeys(hallNo, code, name).flatMap(
+    (key) => X_ACCOUNT_REGISTRY[key] ?? []
+  );
+  const registered: AccountLink[] = registeredItems
+    .map(registryItemToLink)
+    .filter((v): v is AccountLink => v !== null);
 
   const keywords = [name, ...splitKeywords(sub)].slice(0, 6);
   const keywordLinks: AccountLink[] = keywords.map((keyword, idx) => ({
@@ -125,6 +181,7 @@ function createEntries(): CreatorEntry[] {
           section.name,
           section.sub ?? "",
           ...accountLinks.map((link) => link.label),
+          ...buildSearchTermsFromRegistry(hallNo, section.code, section.name),
         ]
           .join(" ")
           .toLowerCase(),
