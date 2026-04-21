@@ -3,9 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "edge";
 
 const MODELS = [
-  "google/gemma-2-9b-it:free",
+  "google/gemma-4-31b-it:free",
+  "google/gemma-4-26b-a4b-it:free",
+  "meta-llama/llama-3.3-70b-instruct:free",
   "meta-llama/llama-3.2-3b-instruct:free",
-  "mistralai/mistral-7b-instruct:free",
 ];
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
