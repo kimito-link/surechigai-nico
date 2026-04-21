@@ -12,6 +12,23 @@ const CHARS: Array<{ key: keyof Dialogue; label: string; speaker: "rink" | "kont
   { key: "tanunee", label: "たぬ姉", speaker: "tanunee" },
 ];
 
+const BASE_URL = "https://surechigai-nico.link";
+
+function buildShareCardUrl(handle: string, dialogue: Dialogue): string {
+  const url = new URL(`${BASE_URL}/yukkuri`);
+  url.searchParams.set("h", handle);
+  url.searchParams.set("r", dialogue.rink);
+  url.searchParams.set("k", dialogue.konta);
+  url.searchParams.set("t", dialogue.tanunee);
+  return url.toString();
+}
+
+function buildTweetUrl(handle: string, dialogue: Dialogue): string {
+  const cardUrl = buildShareCardUrl(handle, dialogue);
+  const text = `りんく・こん太・たぬ姉に @${handle} さんをゆっくり解説してもらったよ！\n#すれちがいライト #ニコニコ超会議2026\n${cardUrl}`;
+  return `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
+}
+
 export function StickyXSearchBar() {
   const router = useRouter();
   const [handle, setHandle]     = useState("");
@@ -21,13 +38,13 @@ export function StickyXSearchBar() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const hasInput = handle.trim().length > 0;
+  const rawHandle = handle.trim().replace(/^@+/, "");
 
   const dismiss = () => { setDialogue(null); setError(""); };
 
   const handleYukkuri = async (e: FormEvent) => {
     e.preventDefault();
-    const raw = handle.trim().replace(/^@+/, "");
-    if (!raw) return;
+    if (!rawHandle) return;
     setLoading(true);
     setError("");
     setDialogue(null);
@@ -35,7 +52,7 @@ export function StickyXSearchBar() {
       const res = await fetch("/api/yukkuri-explain", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ xHandle: raw, name: `@${raw}` }),
+        body: JSON.stringify({ xHandle: rawHandle, name: `@${rawHandle}` }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data: Dialogue = await res.json();
@@ -108,14 +125,33 @@ export function StickyXSearchBar() {
             </button>
             {error && <p className={styles.stickyXPanelError} role="alert">{error}</p>}
             {dialogue && (
-              <div className={styles.yukkuriCreatorTalkDialogue}>
-                {CHARS.map(({ key, label, speaker }) => (
-                  <div key={key} className={styles.yukkuriCreatorRow} data-speaker={speaker}>
-                    <span className={styles.yukkuriCreatorLabel}>{label}</span>
-                    <div className={styles.yukkuriCreatorBubble}>{dialogue[key]}</div>
-                  </div>
-                ))}
-              </div>
+              <>
+                <div className={styles.yukkuriCreatorTalkDialogue}>
+                  {CHARS.map(({ key, label, speaker }) => (
+                    <div key={key} className={styles.yukkuriCreatorRow} data-speaker={speaker}>
+                      <span className={styles.yukkuriCreatorLabel}>{label}</span>
+                      <div className={styles.yukkuriCreatorBubble}>{dialogue[key]}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className={styles.stickyXShareRow}>
+                  <a
+                    href={buildTweetUrl(rawHandle, dialogue)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.stickyXShareBtn}
+                  >
+                    Xでシェア
+                  </a>
+                  <button
+                    type="button"
+                    className={styles.stickyXBtnRegister}
+                    onClick={handleRegister}
+                  >
+                    すれ違い登録へ
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </>
