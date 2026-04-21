@@ -7,6 +7,7 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/logged-out",
   "/api/webhooks(.*)",
+  "/api/yukkuri-explain",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
