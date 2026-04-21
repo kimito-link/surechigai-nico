@@ -30,7 +30,7 @@ export default function RootLayout({
           }}
         >
           <SiteHeader />
-          <div style={{ paddingTop: "56px", paddingBottom: "80px" }}>
+          <div style={{ paddingTop: "64px", paddingBottom: "80px" }}>
             {children}
           </div>
           <SiteFooterCta />

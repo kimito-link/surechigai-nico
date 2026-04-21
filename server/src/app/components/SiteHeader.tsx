@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useUser, useClerk } from "@clerk/nextjs";
 import styles from "./SiteHeader.module.css";
 
@@ -33,10 +33,13 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [userDropOpen, setUserDropOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [creatorQuickQuery, setCreatorQuickQuery] = useState("");
   const pathname = usePathname();
+  const router = useRouter();
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
   const dropRef = useRef<HTMLDivElement>(null);
+  const isChokaigiPath = pathname?.startsWith("/chokaigi");
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -59,6 +62,16 @@ export function SiteHeader() {
 
   const closeMenu = () => setMenuOpen(false);
 
+  const handleCreatorQuickSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const keyword = creatorQuickQuery.trim();
+    const href = keyword
+      ? `/chokaigi?creator=${encodeURIComponent(keyword)}#creator-cross-search-heading`
+      : "/chokaigi#creator-cross-search-heading";
+    router.push(href);
+    closeMenu();
+  };
+
   if (HIDDEN_PATHS.some((p) => pathname?.startsWith(p))) return null;
 
   // ClerkはTwitter OAuthでログインするとusernameにTwitterハンドルが入る
@@ -75,6 +88,22 @@ export function SiteHeader() {
             className={styles.logoImg}
           />
         </Link>
+
+        {isChokaigiPath ? (
+          <form className={styles.quickCreatorSearch} onSubmit={handleCreatorQuickSearch}>
+            <input
+              type="search"
+              className={styles.quickCreatorInput}
+              value={creatorQuickQuery}
+              onChange={(event) => setCreatorQuickQuery(event.target.value)}
+              placeholder="参加者を検索"
+              aria-label="クリエイタークロス参加者を検索"
+            />
+            <button type="submit" className={styles.quickCreatorButton}>
+              検索
+            </button>
+          </form>
+        ) : null}
 
         <nav className={styles.desktopNav} aria-label="メインメニュー">
           {NAV_LINKS.map((link) => (

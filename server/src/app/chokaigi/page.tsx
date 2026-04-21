@@ -1,5 +1,6 @@
 /** viewport / canonical: chokaigi/layout.tsx */
 import Image from "next/image";
+import { Suspense } from "react";
 import {
   GUIDES,
   HERO_HEADING,
@@ -59,7 +60,9 @@ export default function ChokaigiPage() {
       <StarField />
       <article>
         <div className={styles.topSearchArea}>
-          <CreatorCrossSearch />
+          <Suspense fallback={null}>
+            <CreatorCrossSearch />
+          </Suspense>
         </div>
 
         <div className={styles.unofficialBar} role="note">

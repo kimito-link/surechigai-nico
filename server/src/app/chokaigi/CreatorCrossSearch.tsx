@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import styles from "./chokaigi.module.css";
 import { VENUE_GOOGLE_MAPS_URL } from "./lp-content";
 import { MAIN_HALLS, SUB_HALLS } from "./venue-map-data";
@@ -325,7 +326,14 @@ const CREATOR_ENTRIES = [...createMapEntries(), ...createOfficialEntries()].sort
 );
 
 export function CreatorCrossSearch() {
-  const [query, setQuery] = useState("");
+  const searchParams = useSearchParams();
+  const creatorParam = searchParams.get("creator")?.trim() ?? "";
+  const [query, setQuery] = useState(creatorParam);
+
+  useEffect(() => {
+    setQuery((prev) => (prev === creatorParam ? prev : creatorParam));
+  }, [creatorParam]);
+
   const normalized = query.trim().toLowerCase();
   const normalizedWithoutAt = normalized.replace(/^@+/, "");
 
