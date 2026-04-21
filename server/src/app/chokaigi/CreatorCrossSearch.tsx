@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import styles from "./chokaigi.module.css";
 import { VENUE_GOOGLE_MAPS_URL } from "./lp-content";
 import { MAIN_HALLS, SUB_HALLS } from "./venue-map-data";
+import { OFFICIAL_CREATORCROSS_ENTRIES } from "./creatorcross-official-data";
 
 type CreatorEntry = {
   id: string;
@@ -14,6 +15,7 @@ type CreatorEntry = {
   sub?: string;
   mapAnchor: string;
   accountLinks: AccountLink[];
+  detailUrl?: string;
   searchText: string;
 };
 
@@ -32,6 +34,7 @@ type RegistryAccountItem = {
 };
 
 const CREATOR_SECTION_RE = /クリエイター|VOC@LOiD|ボカ|絵師|演奏|音声合成|初音ミク|M@STER/i;
+const DEFAULT_VISIBLE_COUNT = 60;
 
 /**
  * ここに直接アカウントを入れると、検索リンクより優先して表示される。
@@ -146,7 +149,41 @@ function buildAccountLinks(
   return dedupeLinks([...registered, ...keywordLinks]);
 }
 
-function createEntries(): CreatorEntry[] {
+function normalizeUrl(url: string) {
+  return url.trim().replace(/^http:\/\/(x\.com|twitter\.com)/i, "https://$1");
+}
+
+function buildOfficialAccountLinks(
+  links: Array<{ label: string; href: string; handle: string }>,
+  name: string
+) {
+  const mapped: AccountLink[] = links.map((link) => {
+    const isX = Boolean(link.handle);
+    const label = isX ? `X: @${link.handle}` : link.label;
+    return {
+      label,
+      href: normalizeUrl(link.href),
+      kind: isX ? "official" : "related",
+    };
+  });
+
+  if (mapped.length === 0) {
+    mapped.push({
+      label: `${name} をX検索`,
+      href: toXUserSearchUrl(name),
+      kind: "search",
+    });
+  }
+
+  return dedupeLinks(mapped).slice(0, 4);
+}
+
+function hallSortValue(hallNo: string) {
+  const n = Number(hallNo);
+  return Number.isFinite(n) && n > 0 ? n : 99;
+}
+
+function createMapEntries(): CreatorEntry[] {
   const halls = [...MAIN_HALLS, ...SUB_HALLS];
   const entries: CreatorEntry[] = [];
 
@@ -189,25 +226,90 @@ function createEntries(): CreatorEntry[] {
     }
   }
 
-  return entries.sort((a, b) => {
-    const hallDiff = Number(a.hallNo) - Number(b.hallNo);
-    if (hallDiff !== 0) return hallDiff;
-    return a.name.localeCompare(b.name, "ja");
+  return entries;
+}
+
+function createOfficialEntries(): CreatorEntry[] {
+  return OFFICIAL_CREATORCROSS_ENTRIES.map((item) => {
+    const hallNo = item.hallNo || "";
+    const hallLabel = hallNo ? `HALL ${hallNo}` : "クリエイタークロス";
+    const sub = [item.genre.join(" / "), item.days.join("・")]
+      .filter(Boolean)
+      .join(" ｜ ");
+    const accountLinks = buildOfficialAccountLinks(item.links, item.name);
+
+    return {
+      id: `official-${item.id}`,
+      hallNo,
+      hallLabel,
+      code: item.booth || undefined,
+      name: item.name,
+      sub: sub || undefined,
+      mapAnchor: hallNo ? `#hall-card-${hallNo}` : "#map-heading",
+      accountLinks,
+      detailUrl: item.detailUrl,
+      searchText: [
+        hallNo,
+        hallLabel,
+        item.booth,
+        item.name,
+        item.intro,
+        ...item.genre,
+        ...item.categories,
+        ...item.days,
+        ...accountLinks.map((v) => v.label),
+      ]
+        .join(" ")
+        .toLowerCase(),
+    };
   });
 }
 
-const CREATOR_ENTRIES = createEntries();
+const CREATOR_ENTRIES = [...createMapEntries(), ...createOfficialEntries()].sort(
+  (a, b) => {
+    const hallDiff = hallSortValue(a.hallNo) - hallSortValue(b.hallNo);
+    if (hallDiff !== 0) return hallDiff;
+    return a.name.localeCompare(b.name, "ja");
+  }
+);
 
 export function CreatorCrossSearch() {
   const [query, setQuery] = useState("");
   const normalized = query.trim().toLowerCase();
 
-  const filtered = useMemo(() => {
-    if (!normalized) return CREATOR_ENTRIES;
-    return CREATOR_ENTRIES.filter((entry) =>
-      entry.searchText.includes(normalized)
-    );
+  const { filtered, totalHits, isTruncated } = useMemo(() => {
+    const allMatched = normalized
+      ? CREATOR_ENTRIES.filter((entry) =>
+          entry.searchText.includes(normalized)
+        )
+      : CREATOR_ENTRIES;
+
+    const visible = normalized
+      ? allMatched
+      : allMatched.slice(0, DEFAULT_VISIBLE_COUNT);
+
+    return {
+      filtered: visible,
+      totalHits: allMatched.length,
+      isTruncated: !normalized && allMatched.length > visible.length,
+    };
   }, [normalized]);
+
+  const featuredMatches = useMemo(
+    () =>
+      CREATOR_ENTRIES.filter((entry) =>
+        entry.searchText.includes("君斗".toLowerCase())
+      ).length,
+    []
+  );
+
+  const hasMatch = useMemo(
+    () =>
+      CREATOR_ENTRIES.some((entry) =>
+        entry.searchText.includes(normalized)
+      ),
+    [normalized]
+  );
 
   return (
     <section className={styles.creatorSearchWrap} aria-labelledby="creator-cross-search-heading">
@@ -215,7 +317,7 @@ export function CreatorCrossSearch() {
         参加者・関係者検索（クリエイタークロス）
       </h3>
       <p className={styles.mapFinePrint}>
-        参加者名・団体名・ブースコード（例: りんく / A14 / VOCALOID）ですぐ検索できます。結果から該当ホールのカードへジャンプでき、各行のXリンクから公式・関係者アカウント検索やプロフィールへ移動できます。
+        参加者名・団体名・ブースコード（例: 君斗 / りんく / H2 う-20 / VOCALOID）ですぐ検索できます。公式一覧の出展者データを統合し、Xリンクや会場位置へ移動できます。
       </p>
 
       <div className={styles.creatorSearchControls}>
@@ -223,7 +325,7 @@ export function CreatorCrossSearch() {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="検索ワードを入力（例: クリエイター / A14 / 絵師）"
+          placeholder="検索ワードを入力（例: 君斗 / りんく / H3 / ボカロ）"
           className={styles.creatorSearchInput}
           aria-label="クリエイタークロス参加ブース検索"
         />
@@ -238,7 +340,10 @@ export function CreatorCrossSearch() {
       </div>
 
       <div className={styles.creatorSearchMeta}>
-        <span>{filtered.length}件ヒット</span>
+        <span>
+          {totalHits}件ヒット
+          {isTruncated ? `（先頭${DEFAULT_VISIBLE_COUNT}件を表示）` : ""}
+        </span>
         <a
           href={VENUE_GOOGLE_MAPS_URL}
           target="_blank"
@@ -248,6 +353,21 @@ export function CreatorCrossSearch() {
           会場をGoogleマップで開く
         </a>
       </div>
+      {!normalized ? (
+        <p className={styles.mapFinePrint}>
+          参加者数が多いため、未入力時は先頭のみ表示しています。キーワード入力で全件から検索できます。
+        </p>
+      ) : null}
+      {normalized && !hasMatch ? (
+        <p className={styles.mapFinePrint}>
+          「{query}」の一致が無い場合は、表記ゆれ対策としてひらがな・カタカナ・英字でも試してください。
+        </p>
+      ) : null}
+      {featuredMatches > 0 ? null : (
+        <p className={styles.mapFinePrint}>
+          君斗りんく関連の検索語も順次追加中です。
+        </p>
+      )}
 
       {filtered.length > 0 ? (
         <ul className={styles.creatorSearchList}>
@@ -283,6 +403,11 @@ export function CreatorCrossSearch() {
                 ))}
               </div>
               <div className={styles.creatorSearchLinks}>
+                {entry.detailUrl ? (
+                  <a href={entry.detailUrl} target="_blank" rel="noopener noreferrer">
+                    公式詳細へ
+                  </a>
+                ) : null}
                 <a href={entry.mapAnchor}>このホールの詳細へ</a>
                 <a href="#map-heading">会場マップへ</a>
               </div>
