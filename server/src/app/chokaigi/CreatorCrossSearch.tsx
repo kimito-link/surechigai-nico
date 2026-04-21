@@ -25,6 +25,12 @@ type AccountLink = {
   kind: "official" | "related" | "search";
 };
 
+type XHandleCandidate = {
+  handle: string;
+  href: string;
+  count: number;
+};
+
 type RegistryAccountItem = {
   label: string;
   kind?: "official" | "related" | "search";
@@ -149,23 +155,61 @@ function buildAccountLinks(
   return dedupeLinks([...registered, ...keywordLinks]);
 }
 
-function normalizeUrl(url: string) {
-  return url.trim().replace(/^http:\/\/(x\.com|twitter\.com)/i, "https://$1");
+function extractXHandleFromUrl(href: string) {
+  try {
+    const url = new URL(href);
+    const host = url.hostname.toLowerCase();
+    const isXHost =
+      host === "x.com" ||
+      host === "www.x.com" ||
+      host === "twitter.com" ||
+      host === "www.twitter.com";
+    if (!isXHost) return "";
+
+    const first = url.pathname.split("/").filter(Boolean)[0] ?? "";
+    if (!first) return "";
+    const blocked = new Set([
+      "home",
+      "search",
+      "explore",
+      "settings",
+      "messages",
+      "notifications",
+      "i",
+      "intent",
+      "share",
+      "hashtag",
+    ]);
+    if (blocked.has(first.toLowerCase())) return "";
+
+    return normalizeHandle(first);
+  } catch {
+    return "";
+  }
+}
+
+function toXGlobalUserSearchUrl(keyword: string) {
+  const q = encodeURIComponent(keyword);
+  return `https://x.com/search?q=${q}&src=typed_query&f=user`;
 }
 
 function buildOfficialAccountLinks(
   links: Array<{ label: string; href: string; handle: string }>,
   name: string
 ) {
-  const mapped: AccountLink[] = links.map((link) => {
-    const isX = Boolean(link.handle);
-    const label = isX ? `X: @${link.handle}` : link.label;
-    return {
-      label,
-      href: normalizeUrl(link.href),
-      kind: isX ? "official" : "related",
-    };
-  });
+  const mapped: AccountLink[] = links
+    .map((link) => {
+      const explicit = normalizeHandle(link.handle ?? "");
+      const inferred = extractXHandleFromUrl(link.href);
+      const handle = explicit || inferred;
+      if (!handle) return null;
+      return {
+        label: `X: @${handle}`,
+        href: toXProfileUrl(handle),
+        kind: "official" as const,
+      };
+    })
+    .filter((v): v is AccountLink => v !== null);
 
   if (mapped.length === 0) {
     mapped.push({
@@ -277,7 +321,7 @@ export function CreatorCrossSearch() {
   const [query, setQuery] = useState("");
   const normalized = query.trim().toLowerCase();
 
-  const { filtered, totalHits, isTruncated } = useMemo(() => {
+  const { filtered, totalHits, isTruncated, allMatched } = useMemo(() => {
     const allMatched = normalized
       ? CREATOR_ENTRIES.filter((entry) =>
           entry.searchText.includes(normalized)
@@ -292,6 +336,7 @@ export function CreatorCrossSearch() {
       filtered: visible,
       totalHits: allMatched.length,
       isTruncated: !normalized && allMatched.length > visible.length,
+      allMatched,
     };
   }, [normalized]);
 
@@ -309,6 +354,40 @@ export function CreatorCrossSearch() {
         entry.searchText.includes(normalized)
       ),
     [normalized]
+  );
+
+  const xHandleCandidates = useMemo(() => {
+    const counter = new Map<string, XHandleCandidate>();
+
+    for (const entry of allMatched) {
+      for (const link of entry.accountLinks) {
+        const handle = extractXHandleFromUrl(link.href);
+        if (!handle) continue;
+        const key = handle.toLowerCase();
+        const current = counter.get(key);
+        if (current) {
+          current.count += 1;
+        } else {
+          counter.set(key, {
+            handle,
+            href: toXProfileUrl(handle),
+            count: 1,
+          });
+        }
+      }
+    }
+
+    return [...counter.values()]
+      .sort((a, b) => {
+        if (b.count !== a.count) return b.count - a.count;
+        return a.handle.localeCompare(b.handle, "ja");
+      })
+      .slice(0, 16);
+  }, [allMatched]);
+
+  const xUserSearchUrl = useMemo(
+    () => (normalized ? toXGlobalUserSearchUrl(query.trim()) : ""),
+    [normalized, query]
   );
 
   return (
@@ -353,6 +432,40 @@ export function CreatorCrossSearch() {
           会場をGoogleマップで開く
         </a>
       </div>
+      {normalized ? (
+        <div className={styles.creatorSearchXPanel}>
+          <div className={styles.creatorSearchXHeader}>
+            <span className={styles.creatorSearchXTitle}>Xアカウント候補</span>
+            <a
+              href={xUserSearchUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.creatorSearchXOpen}
+            >
+              「{query.trim()}」をXで検索
+            </a>
+          </div>
+          {xHandleCandidates.length > 0 ? (
+            <div className={styles.creatorSearchXList}>
+              {xHandleCandidates.map((item) => (
+                <a
+                  key={item.handle}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.creatorSearchXChip}
+                >
+                  @{item.handle}
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p className={styles.creatorSearchXEmpty}>
+              該当候補が少ないため、右側のX検索リンクで広く探してください。
+            </p>
+          )}
+        </div>
+      ) : null}
       {!normalized ? (
         <p className={styles.mapFinePrint}>
           参加者数が多いため、未入力時は先頭のみ表示しています。キーワード入力で全件から検索できます。
