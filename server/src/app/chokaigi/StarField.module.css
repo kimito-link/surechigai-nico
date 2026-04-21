@@ -1,0 +1,56 @@
+.starField {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  animation: twinkle linear infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: var(--star-opacity, 0.4); transform: scale(1); }
+  50% { opacity: 0.05; transform: scale(0.7); }
+}
+
+.shootingStar {
+  position: absolute;
+  width: 140px;
+  height: 1.5px;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(180,220,255,0.9) 60%, #fff 100%);
+  border-radius: 9999px;
+  transform: rotate(-35deg);
+  transform-origin: left center;
+  animation: shoot 1.5s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes shoot {
+  0%   { opacity: 0;   transform: rotate(-35deg) translateX(0); }
+  10%  { opacity: 1; }
+  80%  { opacity: 0.8; }
+  100% { opacity: 0;   transform: rotate(-35deg) translateX(260px); }
+}
+
+.galaxyFog {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 30%, rgba(0,66,123,0.22) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 45% at 80% 70%, rgba(221,101,0,0.10) 0%, transparent 65%),
+    radial-gradient(ellipse 90% 60% at 50% 50%, rgba(10,20,60,0.15) 0%, transparent 100%);
+  animation: fogPulse 18s ease-in-out infinite alternate;
+}
+
+@keyframes fogPulse {
+  0%   { opacity: 0.7; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.7; }
+}

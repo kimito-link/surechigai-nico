@@ -51,10 +51,12 @@ import { VenueMapInteractive } from "./VenueMapInteractive";
 import { CharacterTip } from "./CharacterTip";
 import { VenueLiveMap } from "./VenueLiveMap";
 import { CreatorCrossSearch } from "./CreatorCrossSearch";
+import { StarField } from "./StarField";
 
 export default function ChokaigiPage() {
   return (
     <main className={styles.shell}>
+      <StarField />
       <article>
         <header className={styles.hero}>
           <div className={styles.heroBand}>
@@ -94,6 +96,10 @@ export default function ChokaigiPage() {
             </div>
           </div>
         </header>
+
+        <div className={styles.topSearchArea}>
+          <CreatorCrossSearch />
+        </div>
 
         <YukkuriDialogue />
 
@@ -147,7 +153,6 @@ export default function ChokaigiPage() {
           <h3 className={styles.mapSubheading}>ホールをタップして詳細を見る</h3>
           <VenueMapInteractive />
           <VenueLiveMap />
-          <CreatorCrossSearch />
 
           <ol className={styles.mapHowToList}>
             {MAP_QUICK_STEPS.map((line, i) => (

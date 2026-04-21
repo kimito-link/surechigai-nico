@@ -1,13 +1,8 @@
 .pageRoot {
   min-height: 100vh;
   font-family: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic UI", sans-serif;
-  color: #2c2117;
-  background:
-    radial-gradient(ellipse 120% 80% at 50% -15%, rgba(37, 93, 155, 0.14), transparent 55%),
-    radial-gradient(ellipse 90% 60% at 100% 30%, rgba(201, 142, 43, 0.12), transparent 48%),
-    radial-gradient(ellipse 85% 55% at 6% 96%, rgba(36, 28, 58, 0.07), transparent 52%),
-    radial-gradient(ellipse 70% 48% at 98% 4%, rgba(255, 210, 228, 0.22), transparent 46%),
-    linear-gradient(180deg, #fdfaf5 0%, #f7f1e7 38%, #efe6d8 72%, #e8dac4 100%);
+  color: #e8eaf0;
+  background: #060c1a;
 }
 
 .pageRoot::before {
@@ -15,7 +10,7 @@
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Ccircle cx='3' cy='3' r='1.2' fill='%23255d9b' opacity='0.055'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Ccircle cx='3' cy='3' r='1.2' fill='%234facfe' opacity='0.04'/%3E%3C/svg%3E");
   opacity: 0.85;
   z-index: 0;
 }
@@ -37,13 +32,13 @@
   padding: clamp(1.65rem, 4.5vw, 2.85rem);
   border-radius: 1.35rem;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.55) 0%, transparent 45%),
-    linear-gradient(145deg, rgba(255, 251, 245, 0.98), rgba(232, 218, 196, 0.62));
-  border: 1px solid rgba(88, 62, 28, 0.11);
+    linear-gradient(135deg, rgba(79, 172, 254, 0.08) 0%, transparent 45%),
+    linear-gradient(145deg, rgba(6, 18, 42, 0.95), rgba(10, 22, 55, 0.85));
+  border: 1px solid rgba(79, 172, 254, 0.18);
   box-shadow:
-    0 4px 0 rgba(255, 255, 255, 0.45) inset,
-    0 24px 56px rgba(45, 36, 28, 0.1),
-    0 8px 24px rgba(37, 93, 155, 0.06);
+    0 4px 0 rgba(79, 172, 254, 0.08) inset,
+    0 24px 56px rgba(0, 0, 0, 0.45),
+    0 8px 24px rgba(79, 172, 254, 0.1);
 }
 
 .hero::after {
@@ -54,7 +49,7 @@
   width: min(55vw, 28rem);
   height: min(55vw, 28rem);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(37, 93, 155, 0.12), transparent 68%);
+  background: radial-gradient(circle, rgba(79, 172, 254, 0.12), transparent 68%);
   pointer-events: none;
 }
 
@@ -146,7 +141,7 @@
   line-height: 1.22;
   font-weight: 800;
   letter-spacing: -0.02em;
-  background: linear-gradient(115deg, #1a3d5c 0%, #255d9b 38%, #2c2117 88%);
+  background: linear-gradient(115deg, #4facfe 0%, #8dd8ff 38%, #DD6500 88%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -156,8 +151,16 @@
   margin: 0;
   font-size: clamp(0.95rem, 2.4vw, 1.08rem);
   line-height: 1.78;
-  color: #4a4038;
+  color: #a8b8cc;
   white-space: pre-line;
+}
+
+.topSearchArea {
+  margin-top: clamp(0.95rem, 2.8vw, 1.4rem);
+}
+
+.topSearchArea .creatorSearchWrap {
+  margin-top: 0;
 }
 
 .badge {
@@ -169,11 +172,11 @@
   font-size: clamp(0.74rem, 1.8vw, 0.82rem);
   font-weight: 800;
   letter-spacing: 0.06em;
-  color: #5a3d16;
-  background: linear-gradient(135deg, rgba(255, 236, 200, 0.95), rgba(201, 142, 43, 0.22));
-  border: 1px solid rgba(201, 142, 43, 0.35);
+  color: #fbbf24;
+  background: linear-gradient(135deg, rgba(221, 101, 0, 0.18), rgba(251, 191, 36, 0.1));
+  border: 1px solid rgba(221, 101, 0, 0.45);
   border-radius: 999px;
-  box-shadow: 0 2px 10px rgba(201, 142, 43, 0.12);
+  box-shadow: 0 2px 10px rgba(221, 101, 0, 0.2);
 }
 
 .badge::before {
@@ -181,7 +184,7 @@
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 50%;
-  background: linear-gradient(180deg, #fbbf24, #d97706);
+  background: linear-gradient(180deg, #fbbf24, #DD6500);
   box-shadow: 0 0 10px rgba(251, 191, 36, 0.7);
 }
 
@@ -192,11 +195,11 @@
 .shell article .section {
   padding: clamp(1rem, 3.5vw, 2.1rem);
   border-radius: 1.2rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 252, 246, 0.88));
-  border: 1px solid rgba(88, 62, 28, 0.1);
+  background: linear-gradient(180deg, rgba(10, 22, 55, 0.85), rgba(6, 18, 42, 0.92));
+  border: 1px solid rgba(79, 172, 254, 0.12);
   box-shadow:
-    0 2px 0 rgba(255, 255, 255, 0.65) inset,
-    0 18px 48px rgba(45, 36, 28, 0.07);
+    0 2px 0 rgba(79, 172, 254, 0.06) inset,
+    0 18px 48px rgba(0, 0, 0, 0.35);
   overflow-x: hidden;
   /* Grid 子のデフォルト min-width:auto による横はみ出しを防ぐ */
   min-width: 0;
@@ -206,27 +209,30 @@
   margin-top: clamp(1.35rem, 3.5vw, 2rem);
 }
 
-/* ゆっくり掛け合いだけ：外周の「白いカード」を弱めてページ背景に馴染ませる */
+/* ゆっくり掛け合いだけ：外周の「ダークカード」を弱めてページ背景に馴染ませる */
 .shell article .section.yukkuriSection {
   background: linear-gradient(
     180deg,
-    rgba(253, 249, 242, 0.35) 0%,
-    rgba(248, 241, 228, 0.42) 100%
+    rgba(6, 18, 42, 0.45) 0%,
+    rgba(10, 22, 55, 0.55) 100%
   );
-  border: 1px solid rgba(88, 62, 28, 0.07);
-  box-shadow: 0 8px 28px rgba(45, 36, 28, 0.04);
+  border: 1px solid rgba(79, 172, 254, 0.06);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
 }
 
 .section h2 {
   margin: 0 0 1.25rem;
   padding: 0.5rem 0 0.6rem 1rem;
-  border-left: 5px solid #c98e2b;
-  border-bottom: 1px solid rgba(88, 62, 28, 0.12);
-  background: linear-gradient(95deg, rgba(37, 93, 155, 0.08), transparent 60%);
+  border-left: 5px solid #DD6500;
+  border-bottom: 1px solid rgba(79, 172, 254, 0.15);
+  background: linear-gradient(95deg, rgba(79, 172, 254, 0.1), transparent 60%);
   border-radius: 0 0.5rem 0 0;
   font-size: clamp(1.2rem, 3vw, 1.5rem);
   font-weight: 800;
-  color: #2c2117;
+  background: linear-gradient(115deg, #4facfe 0%, #DD6500 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   letter-spacing: -0.01em;
 }
 
@@ -234,7 +240,7 @@
   margin: 0 0 1.5rem;
   font-size: clamp(0.9rem, 2.4vw, 1rem);
   line-height: 1.7;
-  color: #5c5046;
+  color: #8898aa;
 }
 
 .sectionLead a {
@@ -247,7 +253,7 @@
   padding-left: 1.25rem;
   font-size: clamp(0.88rem, 2.2vw, 0.95rem);
   line-height: 1.7;
-  color: #4f4338;
+  color: #a0b0c4;
 }
 
 .tipList li {
@@ -263,7 +269,7 @@
   padding-left: 1.35rem;
   font-size: clamp(0.86rem, 2.1vw, 0.94rem);
   line-height: 1.65;
-  color: #4f4338;
+  color: #a0b0c4;
 }
 
 .mapHowToList li {
@@ -284,9 +290,9 @@
 .mapJapanSvgWrap {
   border-radius: 0.75rem;
   overflow: hidden;
-  border: 1px solid rgba(88, 62, 28, 0.12);
-  background: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 6px 20px rgba(45, 36, 28, 0.06);
+  border: 1px solid rgba(79, 172, 254, 0.14);
+  background: rgba(6, 18, 42, 0.75);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
 .mapJapanSvg {
@@ -300,15 +306,15 @@
   margin: 0.65rem 0 0;
   padding: 0.55rem 0.65rem 0.65rem;
   border-radius: 0.6rem;
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(88, 62, 28, 0.1);
+  background: rgba(10, 22, 55, 0.65);
+  border: 1px solid rgba(79, 172, 254, 0.12);
 }
 
 .mapJapanPrefHeading {
   margin: 0 0 0.4rem;
   font-size: clamp(0.72rem, 1.9vw, 0.8rem);
   font-weight: 700;
-  color: #5c5046;
+  color: #8898aa;
 }
 
 .mapJapanPrefList {
@@ -320,7 +326,7 @@
   list-style: none;
   font-size: clamp(0.68rem, 1.85vw, 0.78rem);
   line-height: 1.35;
-  color: #6d5d52;
+  color: #7888a0;
 }
 
 @media (max-width: 520px) {
@@ -339,7 +345,7 @@
   margin: 0.55rem 0 0;
   font-size: clamp(0.8rem, 2vw, 0.88rem);
   line-height: 1.55;
-  color: #5c5046;
+  color: #8898aa;
 }
 
 .mapJapanMapLink {
@@ -360,7 +366,7 @@
   border-left: 3px solid rgba(201, 142, 43, 0.9);
   font-size: clamp(1.02rem, 2.5vw, 1.15rem);
   font-weight: 800;
-  color: #3a2f24;
+  color: #c8d4e4;
   letter-spacing: -0.01em;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
@@ -373,7 +379,7 @@
   margin: 0 0 0.5rem;
   font-size: clamp(0.8rem, 2vw, 0.88rem);
   line-height: 1.55;
-  color: #6b5d52;
+  color: #7888a0;
 }
 
 .mapDialogueHint {
@@ -382,9 +388,9 @@
   border-radius: 0.55rem;
   font-size: clamp(0.78rem, 1.95vw, 0.86rem);
   line-height: 1.55;
-  color: #4a4038;
-  background: rgba(255, 248, 235, 0.85);
-  border: 1px solid rgba(201, 142, 43, 0.22);
+  color: #a8b8cc;
+  background: rgba(20, 40, 80, 0.65);
+  border: 1px solid rgba(221, 101, 0, 0.25);
 }
 
 .mapDialogueHintLink {
@@ -402,8 +408,8 @@
   margin: 1rem 0 1.35rem;
   padding: 0.85rem 0.95rem 1rem;
   border-radius: 0.85rem;
-  border: 1px solid rgba(37, 93, 155, 0.18);
-  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(79, 172, 254, 0.18);
+  background: rgba(8, 20, 50, 0.72);
 }
 
 .venueLiveHead {
@@ -564,7 +570,7 @@
   gap: 0.75rem;
   flex-wrap: wrap;
   font-size: clamp(0.76rem, 1.9vw, 0.84rem);
-  color: #5c5046;
+  color: #8898aa;
 }
 
 .venueLiveList {
@@ -597,12 +603,12 @@
 .venueLiveListName {
   font-size: clamp(0.78rem, 1.9vw, 0.85rem);
   font-weight: 700;
-  color: #3a2f24;
+  color: #c8d4e4;
 }
 
 .venueLiveListArea {
   font-size: clamp(0.74rem, 1.8vw, 0.8rem);
-  color: #6b5d52;
+  color: #7888a0;
 }
 
 .venueLiveListTime {
@@ -615,7 +621,7 @@
 .venueLiveEmpty {
   margin: 0.6rem 0 0;
   font-size: clamp(0.8rem, 2vw, 0.88rem);
-  color: #6b5d52;
+  color: #7888a0;
 }
 
 @media (max-width: 520px) {
@@ -681,12 +687,12 @@
   padding: 0.6rem 1.2rem;
   font-size: clamp(0.9rem, 2vw, 0.98rem);
   font-weight: 700;
-  color: #1a4a73;
+  color: #4facfe;
   text-decoration: none;
   border-radius: 0.75rem;
-  background: rgba(255, 255, 255, 0.65);
-  border: 1px solid rgba(37, 93, 155, 0.35);
-  box-shadow: 0 2px 12px rgba(37, 93, 155, 0.1);
+  background: rgba(10, 22, 55, 0.75);
+  border: 1px solid rgba(79, 172, 254, 0.35);
+  box-shadow: 0 2px 12px rgba(79, 172, 254, 0.1);
   transition:
     background 0.2s ease,
     transform 0.2s ease;
@@ -706,9 +712,9 @@
   margin-top: 0.2rem;
   padding: 0.5rem 0.65rem;
   border-radius: 0.6rem;
-  border: 1px solid rgba(37, 93, 155, 0.2);
-  background: rgba(37, 93, 155, 0.08);
-  color: #4b3f34;
+  border: 1px solid rgba(79, 172, 254, 0.2);
+  background: rgba(79, 172, 254, 0.08);
+  color: #a8b8cc;
   font-weight: 600;
 }
 
@@ -731,7 +737,7 @@
     padding: 0;
     border: 0;
     background: transparent;
-    color: #6b5d52;
+    color: #7888a0;
     font-weight: 500;
   }
 
@@ -747,9 +753,9 @@
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
-  border: 1px solid rgba(88, 62, 28, 0.14);
-  background: rgba(255, 255, 255, 0.65);
-  box-shadow: 0 8px 28px rgba(45, 36, 28, 0.06);
+  border: 1px solid rgba(79, 172, 254, 0.14);
+  background: rgba(8, 20, 50, 0.75);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
 }
 
 .venueMapSvg {
@@ -764,19 +770,19 @@
 .detailMapBlock {
   display: block;
   margin: 2rem 0 0;
-  border: 2px solid rgba(102, 126, 234, 0.25);
+  border: 2px solid rgba(79, 172, 254, 0.2);
   border-radius: 14px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(8, 20, 50, 0.72);
 }
 
 .detailMapSummary {
   padding: 1rem 1.25rem;
-  background: linear-gradient(90deg, rgba(102, 126, 234, 0.12), rgba(118, 75, 162, 0.12));
+  background: linear-gradient(90deg, rgba(79, 172, 254, 0.1), rgba(221, 101, 0, 0.08));
   cursor: pointer;
   font-size: clamp(0.9rem, 2.5vw, 1.05rem);
   font-weight: 700;
-  color: #4a4540;
+  color: #a8b8cc;
   transition: all 0.2s;
   list-style: none;
 }
@@ -796,7 +802,7 @@ details[open] .detailMapSummary::before {
 }
 
 .detailMapSummary:hover {
-  background: linear-gradient(90deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+  background: linear-gradient(90deg, rgba(79, 172, 254, 0.14), rgba(221, 101, 0, 0.12));
 }
 
 .detailMapContent {
@@ -807,7 +813,7 @@ details[open] .detailMapSummary::before {
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
-  background: #f7f1e7;
+  background: rgba(6, 18, 42, 0.85);
   border-radius: 8px;
   padding: 0.5rem;
 }
@@ -845,11 +851,11 @@ details[open] .detailMapSummary::before {
   padding: 0.85rem 1rem;
   min-height: 2.75rem;
   border-radius: 0.75rem;
-  border: 1px solid rgba(88, 62, 28, 0.12);
-  background: rgba(255, 251, 245, 0.6);
+  border: 1px solid rgba(79, 172, 254, 0.15);
+  background: rgba(10, 22, 55, 0.72);
   cursor: pointer;
   font-size: 0.95rem;
-  color: #3a2f24;
+  color: #c8d4e4;
   font-weight: 700;
   gap: 0.6rem;
   user-select: none;
@@ -868,7 +874,7 @@ details[open] .detailMapSummary::before {
 .mapSvgToggleChevron {
   flex-shrink: 0;
   font-size: 0.85rem;
-  color: #6b5d52;
+  color: #7888a0;
   transition: transform 0.2s ease;
 }
 
@@ -908,8 +914,8 @@ details[open] .detailMapSummary::before {
   margin: 0.95rem 0 1.3rem;
   padding: 0.8rem 0.9rem 0.95rem;
   border-radius: 0.85rem;
-  border: 1px solid rgba(37, 93, 155, 0.18);
-  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(79, 172, 254, 0.18);
+  background: rgba(8, 20, 50, 0.72);
 }
 
 .creatorSearchControls {
@@ -924,9 +930,9 @@ details[open] .detailMapSummary::before {
   min-height: 2.5rem;
   padding: 0.55rem 0.72rem;
   border-radius: 0.65rem;
-  border: 1px solid rgba(88, 62, 28, 0.2);
-  background: rgba(255, 255, 255, 0.9);
-  color: #2c2117;
+  border: 1px solid rgba(79, 172, 254, 0.22);
+  background: rgba(6, 18, 42, 0.9);
+  color: #e8eaf0;
   font-size: 0.9rem;
   line-height: 1.3;
 }
@@ -967,7 +973,7 @@ details[open] .detailMapSummary::before {
   flex-wrap: wrap;
   margin-bottom: 0.6rem;
   font-size: clamp(0.78rem, 1.95vw, 0.86rem);
-  color: #5d5046;
+  color: #8898aa;
 }
 
 .creatorSearchMapLink {
@@ -992,8 +998,8 @@ details[open] .detailMapSummary::before {
 
 .creatorSearchItem {
   border-radius: 0.65rem;
-  border: 1px solid rgba(88, 62, 28, 0.12);
-  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(79, 172, 254, 0.12);
+  background: rgba(10, 22, 55, 0.82);
   padding: 0.55rem 0.7rem 0.62rem;
 }
 
@@ -1027,7 +1033,7 @@ details[open] .detailMapSummary::before {
   margin: 0.35rem 0 0;
   font-size: clamp(0.86rem, 2.1vw, 0.94rem);
   line-height: 1.5;
-  color: #2f251c;
+  color: #d0dcec;
   font-weight: 700;
 }
 
@@ -1035,7 +1041,7 @@ details[open] .detailMapSummary::before {
   margin: 0.2rem 0 0;
   font-size: clamp(0.78rem, 1.9vw, 0.85rem);
   line-height: 1.55;
-  color: #5f5248;
+  color: #8898aa;
 }
 
 .creatorSearchAccounts {
@@ -1051,7 +1057,7 @@ details[open] .detailMapSummary::before {
   min-height: 1.8rem;
   padding: 0.22rem 0.55rem;
   border-radius: 999px;
-  border: 1px solid rgba(88, 62, 28, 0.18);
+  border: 1px solid rgba(79, 172, 254, 0.18);
   text-decoration: none;
   font-size: clamp(0.72rem, 1.8vw, 0.79rem);
   font-weight: 700;
@@ -1062,7 +1068,7 @@ details[open] .detailMapSummary::before {
 .creatorSearchAccountLink:hover,
 .creatorSearchAccountLink:focus-visible {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(45, 36, 28, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
 }
 
 .creatorSearchAccountOfficial {
@@ -1078,9 +1084,9 @@ details[open] .detailMapSummary::before {
 }
 
 .creatorSearchAccountSearch {
-  color: #5c5046;
-  background: rgba(255, 255, 255, 0.88);
-  border-color: rgba(88, 62, 28, 0.22);
+  color: #8898aa;
+  background: rgba(8, 20, 50, 0.88);
+  border-color: rgba(79, 172, 254, 0.18);
 }
 
 .creatorSearchLinks {
@@ -1107,7 +1113,7 @@ details[open] .detailMapSummary::before {
   margin: 0.3rem 0 0;
   font-size: clamp(0.8rem, 2vw, 0.88rem);
   line-height: 1.6;
-  color: #6b5d52;
+  color: #7888a0;
 }
 
 @media (max-width: 520px) {
@@ -1127,7 +1133,7 @@ details[open] .detailMapSummary::before {
   margin: 0.25rem 0 0.8rem;
   font-size: clamp(0.8rem, 2vw, 0.88rem);
   line-height: 1.55;
-  color: #5c5046;
+  color: #8898aa;
 }
 
 .hallGroupHeading {
@@ -1135,7 +1141,7 @@ details[open] .detailMapSummary::before {
   padding-left: 0.35rem;
   font-size: clamp(0.92rem, 2.2vw, 1rem);
   font-weight: 700;
-  color: #3a2f24;
+  color: #c8d4e4;
   letter-spacing: 0.01em;
 }
 
@@ -1166,9 +1172,9 @@ details[open] .detailMapSummary::before {
   overflow: hidden;
   min-width: 0;
   border-radius: 0.75rem;
-  border: 1px solid rgba(88, 62, 28, 0.12);
-  background: #fff;
-  box-shadow: 0 3px 10px rgba(45, 36, 28, 0.05);
+  border: 1px solid rgba(79, 172, 254, 0.13);
+  background: rgba(8, 20, 50, 0.88);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
   padding: 0.75rem 0.9rem 0.85rem 1.15rem;
 }
 
@@ -1208,13 +1214,13 @@ details[open] .detailMapSummary::before {
 .hallCardLabel {
   font-size: clamp(0.98rem, 2.4vw, 1.05rem);
   font-weight: 800;
-  color: #2c2117;
+  color: #e8eaf0;
 }
 
 .hallCardSummary {
   font-size: clamp(0.76rem, 2vw, 0.82rem);
   font-weight: 500;
-  color: #6b5d52;
+  color: #7888a0;
 }
 
 .hallCardList {
@@ -1234,8 +1240,8 @@ details[open] .detailMapSummary::before {
   padding: 0.48rem 0;
   font-size: clamp(0.84rem, 2.1vw, 0.88rem);
   line-height: 1.45;
-  color: #3a2f24;
-  border-bottom: 1px solid rgba(88, 62, 28, 0.07);
+  color: #c8d4e4;
+  border-bottom: 1px solid rgba(79, 172, 254, 0.06);
 }
 
 .hallCardItem:last-child {
@@ -1292,14 +1298,14 @@ details[open] .detailMapSummary::before {
 }
 
 .hallCardSub {
-  color: #6b5d52;
+  color: #7888a0;
   font-size: 0.78rem;
   font-weight: 400;
 }
 
 .hallCardDetails {
   margin-top: 0.55rem;
-  border-top: 1px dashed rgba(88, 62, 28, 0.2);
+  border-top: 1px dashed rgba(79, 172, 254, 0.12);
   padding-top: 0.5rem;
 }
 
@@ -1343,7 +1349,7 @@ details[open] .detailMapSummary::before {
   padding-left: 1.1rem;
   font-size: 0.82rem;
   line-height: 1.65;
-  color: #4f4338;
+  color: #a0b0c4;
 }
 
 .hallCardFullList li {
@@ -1356,14 +1362,14 @@ details[open] .detailMapSummary::before {
   margin: 0.55rem 0 0;
   font-size: 0.78rem;
   line-height: 1.4;
-  color: #6b5d52;
+  color: #7888a0;
 }
 
 .mapPdfDetails {
   margin-top: 0.75rem;
   border-radius: 0.75rem;
-  border: 1px solid rgba(88, 62, 28, 0.12);
-  background: rgba(255, 251, 245, 0.6);
+  border: 1px solid rgba(79, 172, 254, 0.12);
+  background: rgba(8, 20, 50, 0.72);
   overflow: hidden;
 }
 
@@ -1372,7 +1378,7 @@ details[open] .detailMapSummary::before {
   padding: 0.65rem 1rem;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #4f4338;
+  color: #a0b0c4;
   list-style: none;
 }
 
@@ -1381,15 +1387,15 @@ details[open] .detailMapSummary::before {
 }
 
 .mapPdfDetails[open] .mapPdfSummary {
-  border-bottom: 1px solid rgba(88, 62, 28, 0.12);
+  border-bottom: 1px solid rgba(79, 172, 254, 0.1);
 }
 
 .mapEmbedWrap {
   width: 100%;
   overflow: hidden;
-  border: 1px solid rgba(88, 62, 28, 0.14);
-  background: rgba(255, 255, 255, 0.65);
-  box-shadow: 0 8px 28px rgba(45, 36, 28, 0.06);
+  border: 1px solid rgba(79, 172, 254, 0.14);
+  background: rgba(8, 20, 50, 0.75);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
 }
 
 .mapFrame {
@@ -1408,7 +1414,7 @@ details[open] .detailMapSummary::before {
 .mapActions {
   margin: 0.85rem 0 0;
   font-size: clamp(0.86rem, 2.1vw, 0.93rem);
-  color: #5c5046;
+  color: #8898aa;
 }
 
 .mapActionLink {
@@ -1427,10 +1433,10 @@ details[open] .detailMapSummary::before {
   border-radius: 1rem;
   font-size: clamp(0.92rem, 2.2vw, 1rem);
   line-height: 1.78;
-  color: #2d2820;
-  background: linear-gradient(145deg, rgba(15, 94, 79, 0.11), rgba(15, 94, 79, 0.05));
-  border: 1px solid rgba(15, 94, 79, 0.22);
-  box-shadow: 0 10px 32px rgba(15, 94, 79, 0.08);
+  color: #a8b8cc;
+  background: linear-gradient(145deg, rgba(79, 172, 254, 0.1), rgba(79, 172, 254, 0.04));
+  border: 1px solid rgba(79, 172, 254, 0.18);
+  box-shadow: 0 10px 32px rgba(79, 172, 254, 0.06);
 }
 
 .aspirationPara {
@@ -1464,16 +1470,16 @@ details[open] .detailMapSummary::before {
 .card {
   padding: 1.15rem 1.1rem 1.35rem;
   border-radius: 1.1rem;
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 235, 0.88));
-  border: 1px solid rgba(88, 62, 28, 0.11);
+  background: linear-gradient(165deg, rgba(12, 28, 65, 0.9), rgba(6, 18, 42, 0.95));
+  border: 1px solid rgba(79, 172, 254, 0.15);
   min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   box-shadow:
-    0 2px 0 rgba(255, 255, 255, 0.8) inset,
-    0 14px 36px rgba(45, 36, 28, 0.09);
+    0 2px 0 rgba(79, 172, 254, 0.07) inset,
+    0 14px 36px rgba(0, 0, 0, 0.4);
   transition:
     transform 0.25s ease,
     box-shadow 0.25s ease;
@@ -1482,8 +1488,8 @@ details[open] .detailMapSummary::before {
 .card:hover {
   transform: translateY(-4px);
   box-shadow:
-    0 2px 0 rgba(255, 255, 255, 0.85) inset,
-    0 22px 48px rgba(37, 93, 155, 0.12);
+    0 2px 0 rgba(79, 172, 254, 0.1) inset,
+    0 22px 48px rgba(79, 172, 254, 0.18);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1503,10 +1509,10 @@ details[open] .detailMapSummary::before {
   line-height: 0;
   border-radius: 0.9rem;
   overflow: hidden;
-  background: linear-gradient(180deg, #fff, rgba(250, 246, 238, 0.95));
+  background: linear-gradient(180deg, rgba(12, 28, 65, 0.8), rgba(6, 18, 42, 0.9));
   box-shadow:
-    0 8px 28px rgba(45, 36, 28, 0.1),
-    0 0 0 1px rgba(88, 62, 28, 0.06);
+    0 8px 28px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(79, 172, 254, 0.1);
   max-width: min(200px, 100%);
 }
 
@@ -1525,7 +1531,7 @@ details[open] .detailMapSummary::before {
 .cardTitle {
   margin: 0 0 0.35rem;
   font-size: 1.08rem;
-  color: #2c2117;
+  color: #e8eaf0;
 }
 
 .cardTitle a {
@@ -1549,7 +1555,7 @@ details[open] .detailMapSummary::before {
   margin: 0;
   font-size: 0.92rem;
   line-height: 1.65;
-  color: #4f4338;
+  color: #a0b0c4;
   text-align: left;
   width: 100%;
 }
@@ -1560,20 +1566,20 @@ details[open] .detailMapSummary::before {
   border-radius: 0.95rem;
   font-size: clamp(0.88rem, 2vw, 0.95rem);
   line-height: 1.72;
-  color: #3a3228;
-  background: linear-gradient(135deg, rgba(37, 93, 155, 0.1), rgba(37, 93, 155, 0.05));
-  border: 1px solid rgba(37, 93, 155, 0.2);
-  box-shadow: 0 8px 24px rgba(37, 93, 155, 0.08);
+  color: #a8b8cc;
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.12), rgba(79, 172, 254, 0.05));
+  border: 1px solid rgba(79, 172, 254, 0.22);
+  box-shadow: 0 8px 24px rgba(79, 172, 254, 0.08);
 }
 
 .footer {
   margin-top: clamp(2.5rem, 6vw, 3.75rem);
   padding: clamp(1.35rem, 3vw, 1.85rem) clamp(0.75rem, 2vw, 1rem);
   border-radius: 1rem 1rem 0 0;
-  border-top: 1px solid rgba(88, 62, 28, 0.12);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent);
+  border-top: 1px solid rgba(79, 172, 254, 0.12);
+  background: linear-gradient(180deg, rgba(6, 18, 42, 0.5), transparent);
   font-size: clamp(0.8rem, 1.9vw, 0.86rem);
-  color: #6b5d52;
+  color: #6888a8;
 }
 
 .footerNav {
@@ -1601,8 +1607,8 @@ details[open] .detailMapSummary::before {
   margin-bottom: 1.15rem;
   padding: 0.85rem 0.75rem;
   border-radius: 0.85rem;
-  background: rgba(255, 255, 255, 0.45);
-  border: 1px solid rgba(88, 62, 28, 0.08);
+  background: rgba(10, 22, 55, 0.45);
+  border: 1px solid rgba(79, 172, 254, 0.1);
 }
 
 .footerKimitoLink {
@@ -1722,7 +1728,7 @@ details[open] .detailMapSummary::before {
   background-repeat: no-repeat;
   background-position: bottom center;
   background-size: contain;
-  filter: drop-shadow(0 3px 10px rgba(40, 32, 24, 0.12));
+  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.45));
 }
 
 .yukkuriNameBadge {
@@ -1732,8 +1738,8 @@ details[open] .detailMapSummary::before {
   line-height: 1.35;
   padding: 0.22rem 0.65rem;
   border-radius: 999px;
-  border: 1px solid rgba(88, 62, 28, 0.12);
-  background: rgba(244, 236, 224, 0.55);
+  border: 1px solid rgba(79, 172, 254, 0.2);
+  background: rgba(8, 20, 50, 0.72);
   text-align: center;
   max-width: 100%;
   box-shadow: none;
@@ -1761,37 +1767,34 @@ details[open] .detailMapSummary::before {
   position: relative;
   padding: 0.85rem 1rem 0.95rem;
   border-radius: 1rem;
-  box-shadow: 0 2px 12px rgba(40, 32, 24, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
 .yukkuriRow[data-speaker="rink"] .yukkuriBubble {
   background: linear-gradient(
     165deg,
-    #e8eef6 0%,
-    #dce8f4 38%,
-    #cfdff0 100%
+    rgba(10, 30, 70, 0.92) 0%,
+    rgba(8, 22, 55, 0.95) 100%
   );
-  border: 1px solid rgba(37, 93, 155, 0.22);
+  border: 1px solid rgba(79, 172, 254, 0.28);
 }
 
 .yukkuriRow[data-speaker="konta"] .yukkuriBubble {
   background: linear-gradient(
     165deg,
-    #f5ebe3 0%,
-    #f0dfd2 40%,
-    #ebd0c4 100%
+    rgba(40, 18, 8, 0.92) 0%,
+    rgba(50, 22, 8, 0.95) 100%
   );
-  border: 1px solid rgba(211, 84, 0, 0.24);
+  border: 1px solid rgba(221, 101, 0, 0.32);
 }
 
 .yukkuriRow[data-speaker="tanunee"] .yukkuriBubble {
   background: linear-gradient(
     165deg,
-    #efe6ef 0%,
-    #e8dce8 42%,
-    #dfd0e2 100%
+    rgba(30, 12, 45, 0.92) 0%,
+    rgba(40, 18, 55, 0.95) 100%
   );
-  border: 1px solid rgba(107, 76, 122, 0.24);
+  border: 1px solid rgba(150, 100, 200, 0.28);
 }
 
 @media (min-width: 600px) {
@@ -1821,27 +1824,27 @@ details[open] .detailMapSummary::before {
   }
 
   .yukkuriRow[data-speaker="rink"]:not(.yukkuriRowReverse) .yukkuriBubble::after {
-    border-right-color: #dce8f4;
+    border-right-color: rgba(8, 22, 55, 0.95);
   }
 
   .yukkuriRow[data-speaker="rink"].yukkuriRowReverse .yukkuriBubble::after {
-    border-left-color: #dce8f4;
+    border-left-color: rgba(8, 22, 55, 0.95);
   }
 
   .yukkuriRow[data-speaker="konta"]:not(.yukkuriRowReverse) .yukkuriBubble::after {
-    border-right-color: #f0dfd2;
+    border-right-color: rgba(50, 22, 8, 0.95);
   }
 
   .yukkuriRow[data-speaker="konta"].yukkuriRowReverse .yukkuriBubble::after {
-    border-left-color: #f0dfd2;
+    border-left-color: rgba(50, 22, 8, 0.95);
   }
 
   .yukkuriRow[data-speaker="tanunee"]:not(.yukkuriRowReverse) .yukkuriBubble::after {
-    border-right-color: #e8dce8;
+    border-right-color: rgba(40, 18, 55, 0.95);
   }
 
   .yukkuriRow[data-speaker="tanunee"].yukkuriRowReverse .yukkuriBubble::after {
-    border-left-color: #e8dce8;
+    border-left-color: rgba(40, 18, 55, 0.95);
   }
 }
 
@@ -1849,7 +1852,7 @@ details[open] .detailMapSummary::before {
   margin: 0;
   font-size: clamp(0.88rem, 2.2vw, 0.95rem);
   line-height: 1.72;
-  color: #2f2820;
+  color: #c8d4e4;
 }
 
 /* ---------- 没入・スクロール演出・AR お試し ---------- */
@@ -1875,11 +1878,11 @@ details[open] .detailMapSummary::before {
 .experienceRevealCard {
   padding: 1rem 1.05rem 1.15rem;
   border-radius: 1rem;
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.95), rgba(247, 241, 232, 0.92));
-  border: 1px solid rgba(88, 62, 28, 0.1);
+  background: linear-gradient(165deg, rgba(12, 28, 65, 0.92), rgba(6, 18, 42, 0.96));
+  border: 1px solid rgba(79, 172, 254, 0.13);
   box-shadow:
-    0 4px 0 rgba(88, 62, 28, 0.04),
-    0 18px 40px rgba(40, 32, 24, 0.08);
+    0 4px 0 rgba(79, 172, 254, 0.05),
+    0 18px 40px rgba(0, 0, 0, 0.4);
   transform: translate3d(0, 18px, 0) scale(0.97);
   opacity: 0;
   transition:
@@ -1901,15 +1904,15 @@ details[open] .detailMapSummary::before {
   transform: translate3d(0, 0, 0) scale(1);
   opacity: 1;
   box-shadow:
-    0 2px 0 rgba(88, 62, 28, 0.06),
-    0 22px 48px rgba(40, 32, 24, 0.12);
+    0 2px 0 rgba(79, 172, 254, 0.05),
+    0 22px 48px rgba(0, 0, 0, 0.45);
 }
 
 .experienceRevealCardTitle {
   margin: 0 0 0.45rem;
   font-size: clamp(0.95rem, 2.2vw, 1.05rem);
   font-weight: 800;
-  color: #2a231c;
+  color: #d0dcec;
   letter-spacing: -0.02em;
 }
 
@@ -1917,7 +1920,7 @@ details[open] .detailMapSummary::before {
   margin: 0;
   font-size: clamp(0.82rem, 2vw, 0.9rem);
   line-height: 1.65;
-  color: #4f453c;
+  color: #a0b0c4;
 }
 
 .arExperiencePanel {
@@ -1925,9 +1928,9 @@ details[open] .detailMapSummary::before {
   padding: clamp(1rem, 3vw, 1.35rem);
   max-width: 42rem;
   border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(37, 93, 155, 0.15);
-  box-shadow: 0 12px 36px rgba(37, 93, 155, 0.07);
+  background: rgba(8, 20, 50, 0.82);
+  border: 1px solid rgba(79, 172, 254, 0.15);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
 }
 
 .arExperienceTitle {
@@ -1942,7 +1945,7 @@ details[open] .detailMapSummary::before {
   margin: 0 0 0.85rem;
   font-size: clamp(0.86rem, 2vw, 0.94rem);
   line-height: 1.65;
-  color: #4a4038;
+  color: #a8b8cc;
 }
 
 .arWebxrStatus {
@@ -1991,9 +1994,9 @@ details[open] .detailMapSummary::before {
 }
 
 .arCameraBtnSecondary {
-  color: #1a4a73;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(37, 93, 155, 0.35);
+  color: #4facfe;
+  background: rgba(10, 22, 55, 0.9);
+  border: 1px solid rgba(79, 172, 254, 0.35);
 }
 
 .arCameraBtn:focus-visible,
@@ -2043,7 +2046,7 @@ details[open] .detailMapSummary::before {
   margin: 0.85rem 0 0;
   font-size: clamp(0.72rem, 1.85vw, 0.82rem);
   line-height: 1.55;
-  color: #6d5d52;
+  color: #7888a0;
 }
 
 /* ========================================
@@ -2065,9 +2068,9 @@ details[open] .detailMapSummary::before {
   max-width: min(100%, 28rem);
   border-radius: 1rem;
   overflow: hidden;
-  border: 1px solid rgba(88, 62, 28, 0.1);
-  background: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 8px 28px rgba(45, 36, 28, 0.08);
+  border: 1px solid rgba(79, 172, 254, 0.12);
+  background: rgba(6, 18, 42, 0.75);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
 }
 
 .scatterSvg {
@@ -2140,7 +2143,7 @@ details[open] .detailMapSummary::before {
   margin: 0 0 0.75rem;
   font-size: clamp(0.95rem, 2.5vw, 1.15rem);
   line-height: 1.6;
-  color: #3a2f24;
+  color: #c8d4e4;
 }
 
 .scatterMessage strong {
@@ -2152,7 +2155,7 @@ details[open] .detailMapSummary::before {
   margin: 0;
   font-size: clamp(1.1rem, 3vw, 1.35rem);
   font-weight: 700;
-  color: #5c5248;
+  color: #8898aa;
 }
 
 .scatterHighlight {
@@ -2227,7 +2230,7 @@ details[open] .detailMapSummary::before {
   background-repeat: no-repeat;
   background-position: bottom center;
   background-size: contain;
-  filter: drop-shadow(0 3px 8px rgba(40, 32, 24, 0.25));
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.5));
   pointer-events: none;
 }
 
@@ -2241,8 +2244,8 @@ details[open] .detailMapSummary::before {
   font-size: clamp(0.65rem, 1.4vw, 0.8rem);
   font-weight: 700;
   white-space: nowrap;
-  color: #0f172a;
-  background: #fef9c3;
+  color: #c8d4e4;
+  background: rgba(10, 30, 70, 0.92);
   border-radius: 0.5rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
   opacity: 0;
@@ -2257,7 +2260,7 @@ details[open] .detailMapSummary::before {
   left: 50%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: #fef9c3;
+  border-top-color: rgba(10, 30, 70, 0.92);
 }
 
 @keyframes venueMiniBubblePop {
@@ -2346,7 +2349,7 @@ details[open] .detailMapSummary::before {
   font-size: clamp(0.78rem, 1.85vw, 0.95rem);
   font-weight: 500;
   line-height: 1.65;
-  color: #5c5248;
+  color: #8898aa;
   text-align: center;
 }
 
@@ -2359,7 +2362,7 @@ details[open] .detailMapSummary::before {
   margin: 0;
   font-size: clamp(0.88rem, 2vw, 1.02rem);
   font-weight: 600;
-  color: #5c5248;
+  color: #8898aa;
   text-align: center;
 }
 
@@ -2387,10 +2390,10 @@ details[open] .detailMapSummary::before {
   gap: 1rem;
   align-items: center;
   padding: 1rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(247, 241, 231, 0.95));
+  background: linear-gradient(135deg, rgba(12, 28, 65, 0.88), rgba(6, 18, 42, 0.94));
   border-radius: 1rem;
-  border: 1px solid rgba(88, 62, 28, 0.08);
-  box-shadow: 0 4px 16px rgba(40, 32, 24, 0.06);
+  border: 1px solid rgba(79, 172, 254, 0.13);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
 .usageStepReverse {
@@ -2457,15 +2460,16 @@ details[open] .detailMapSummary::before {
   background-repeat: no-repeat;
   background-position: bottom center;
   background-size: contain;
-  filter: drop-shadow(0 2px 6px rgba(40, 32, 24, 0.2));
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
 }
 
 .usageBubble {
   position: relative;
   padding: 0.75rem 1rem;
-  background: #fff;
+  background: rgba(16, 35, 80, 0.9);
+  border: 1px solid rgba(79, 172, 254, 0.18);
   border-radius: 0.75rem;
-  box-shadow: 0 2px 8px rgba(40, 32, 24, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   max-width: 100%;
 }
 
@@ -2475,7 +2479,7 @@ details[open] .detailMapSummary::before {
   top: 1.5rem;
   left: -6px;
   border: 6px solid transparent;
-  border-right-color: #fff;
+  border-right-color: rgba(16, 35, 80, 0.9);
 }
 
 .usageName {
@@ -2490,7 +2494,7 @@ details[open] .detailMapSummary::before {
   margin: 0;
   font-size: clamp(0.85rem, 2vw, 1rem);
   font-weight: 500;
-  color: #3a2f24;
+  color: #c8d4e4;
   line-height: 1.5;
 }
 
