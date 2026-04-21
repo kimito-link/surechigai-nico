@@ -3,6 +3,8 @@ import type { RowDataPacket } from "mysql2";
 import { authenticateRequest } from "@/lib/auth";
 import pool from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 const VENUE = {
   name: "幕張メッセ（ニコニコ超会議）",
   lat: 35.64831,

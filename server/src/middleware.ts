@@ -1,4 +1,28 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import type { NextRequest } from "next/server";
+
+/**
+ * path-to-regexp の解釈やデプロイ差に依存せず、UUID / optional 認証の API だけ常に通す
+ * （Clerk protect はセッション必須になり、fetch が落ちる）
+ */
+function isUnprotectedApiPath(pathname: string): boolean {
+  if (pathname === "/api/locations" || pathname.startsWith("/api/locations/")) {
+    return true;
+  }
+  if (
+    pathname === "/api/chokaigi/live-map" ||
+    pathname.startsWith("/api/chokaigi/live-map/")
+  ) {
+    return true;
+  }
+  if (
+    pathname === "/api/auth/register-direct" ||
+    pathname.startsWith("/api/auth/register-direct/")
+  ) {
+    return true;
+  }
+  return false;
+}
 
 const isPublicRoute = createRouteMatcher([
   "/",
@@ -10,15 +34,21 @@ const isPublicRoute = createRouteMatcher([
   "/api/yukkuri-explain",
   "/api/og(.*)",
   "/api/health/db",
-  /** ルート内で optional 認証（未ログインは publicMode）。Clerk 付き fetch が 401 になる端末向け。 */
-  "/api/chokaigi/live-map",
+  /**
+   * Bearer uuid: は各 API 内の requireAuth / authenticateRequest で検証する。
+   * Clerk の protect() を通すとセッション無しで 401/リダイレクトになり失敗するため public。
+   */
+  "/api/locations(.*)",
+  /** optional 認証（未ログインは publicMode）。パターン末尾 (.*) は Clerk 推奨。 */
+  "/api/chokaigi/live-map(.*)",
   "/yukkuri(.*)",
 ]);
 
-export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) {
-    await auth.protect();
+export default clerkMiddleware(async (auth, req: NextRequest) => {
+  if (isUnprotectedApiPath(req.nextUrl.pathname) || isPublicRoute(req)) {
+    return;
   }
+  await auth.protect();
 });
 
 export const config = {

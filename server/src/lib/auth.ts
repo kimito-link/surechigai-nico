@@ -20,13 +20,18 @@ export async function authenticateRequest(
   const uuid = authHeader.slice("Bearer uuid:".length);
   if (!uuid) return null;
 
-  const [rows] = await pool.execute<RowDataPacket[]>(
-    "SELECT id, uuid FROM users WHERE uuid = ? AND is_deleted = FALSE",
-    [uuid]
-  );
+  try {
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      "SELECT id, uuid FROM users WHERE uuid = ? AND is_deleted = FALSE",
+      [uuid]
+    );
 
-  if (rows.length === 0) return null;
-  return { id: rows[0].id, uuid: rows[0].uuid };
+    if (rows.length === 0) return null;
+    return { id: rows[0].id, uuid: rows[0].uuid };
+  } catch (e) {
+    console.error("UUID 認可の DB 照会に失敗:", e);
+    return null;
+  }
 }
 
 /**
