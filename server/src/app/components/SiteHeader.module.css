@@ -19,12 +19,16 @@
 
 .inner {
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
   max-width: 72rem;
   margin: 0 auto;
   padding: 0.5rem clamp(1rem, 4vw, 2rem);
   height: 56px;
+  box-sizing: border-box;
 }
 
 .logo {
@@ -34,18 +38,28 @@
 }
 
 .logoImg {
+  display: block;
   height: clamp(28px, 6vw, 40px);
+  max-height: 40px;
   width: auto;
+  max-width: min(200px, 45vw);
   object-fit: contain;
 }
 
 .desktopNav {
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 1.5rem;
+  min-width: 0;
+}
+
+/* flex の gap が効かない場合でもリンクが一続きにならない */
+.navLink:not(:first-child) {
+  margin-inline-start: 1.5rem;
 }
 
 .navLink {
+  flex-shrink: 0;
   font-size: 0.9rem;
   font-weight: 600;
   color: #3a2f24;
@@ -53,6 +67,7 @@
   padding: 0.5rem 0;
   position: relative;
   transition: color 0.2s;
+  white-space: nowrap;
 }
 
 .navLink::after {
@@ -129,6 +144,8 @@
 
 .mobileNavOpen {
   transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .mobileNavLink {
@@ -265,13 +282,13 @@
   color: #3a2f24;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .desktopNav {
-    display: none;
+    display: none !important;
   }
 
   .authArea {
-    display: none;
+    display: none !important;
   }
 
   .hamburger {
@@ -280,6 +297,12 @@
 
   .mobileNav {
     display: block;
+  }
+
+  /* 閉じているときはドロワーを操作・表示しない（画面外でも保険） */
+  .mobileNav:not(.mobileNavOpen) {
+    visibility: hidden;
+    pointer-events: none;
   }
 
   .mobileNavOpen ~ .overlay,

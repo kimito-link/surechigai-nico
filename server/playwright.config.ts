@@ -4,7 +4,7 @@ const PORT = process.env.PLAYWRIGHT_PORT ?? "3002";
 const baseURL = `http://127.0.0.1:${PORT}`;
 
 /**
- * E2E: `npm run test:e2e`（初回は `npx playwright install chromium`）
+ * E2E: `npm run test:e2e`（初回は `npx playwright install` — mobile-iphone は WebKit も必要）
  * 既に `next dev` が動いていれば reuseExistingServer で流用します。
  *
  * デスクトップのみ: `npm run test:e2e:desktop`（`--project=desktop-chrome`）

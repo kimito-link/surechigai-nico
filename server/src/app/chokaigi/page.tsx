@@ -123,7 +123,7 @@ export default function ChokaigiPage() {
           <p className={styles.sectionLead}>{VENUE_SECTION_INTRO}</p>
           <CharacterTip
             character="konta"
-            message="幕張メッセはめちゃくちゃ広いからね！事前に回るルートを考えておくと効率的だよ。"
+            message="幕張は迷路みたいに広いからね！回るルートをざっくり決めておくと、迷子にもなりにくいよ。"
           />
           <ul className={styles.tipList}>
             {VENUE_SECTION_POINTS.map((line) => (

@@ -10,6 +10,7 @@
     "test": "node --test tests/*.test.mjs",
     "test:e2e": "playwright test",
     "test:e2e:desktop": "playwright test --project=desktop-chrome",
+    "test:e2e:layout": "playwright test e2e/chokaigi-layout.spec.ts",
     "test:e2e:smoke": "playwright test e2e/chokaigi-smoke.spec.ts",
     "test:e2e:flow": "playwright test e2e/chokaigi-flow.spec.ts",
     "test:e2e:monkey": "playwright test e2e/chokaigi-monkey.spec.ts",
