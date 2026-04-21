@@ -51,5 +51,14 @@ export function mapDbErrorToUserMessage(error: unknown): string {
     return "登録の重複が発生しました。ページを再読み込みしてください。";
   }
 
-  return "サーバーエラー";
+  if (
+    code === "ER_CANT_CREATE_GEOMETRY_OBJECT" ||
+    code === "1416" ||
+    msg.includes("geometry") ||
+    msg.includes("srid")
+  ) {
+    return "位置の保存用カラム（空間データ）の書き込みに失敗しました。本番 MySQL 8.0+ で init-db.sql の locations テーブル（point, SRID 4326）が作られているか確認してください。";
+  }
+
+  return "サーバーエラーが発生しました";
 }

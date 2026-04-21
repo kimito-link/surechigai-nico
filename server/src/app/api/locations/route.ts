@@ -1,8 +1,13 @@
 import { NextRequest } from "next/server";
 import pool from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
+import { mapDbErrorToUserMessage } from "@/lib/mapDbError";
 import { reverseGeocodeToMunicipality } from "@/lib/geocoding";
 import type { RowDataPacket } from "mysql2";
+
+export const runtime = "nodejs";
+
+const MUNICIPALITY_MAX = 50;
 
 // 500mグリッドに丸める
 function toGrid(lat: number, lng: number) {
@@ -54,19 +59,27 @@ export async function POST(req: NextRequest) {
     const { latGrid, lngGrid } = toGrid(lat, lng);
 
     // 市区町村を逆ジオコーディングで取得(失敗してもエラーにはしない)
-    const municipality = await reverseGeocodeToMunicipality(lat, lng).catch(() => null);
+    const rawMunicipality = await reverseGeocodeToMunicipality(lat, lng).catch(
+      () => null
+    );
+    const municipality =
+      rawMunicipality != null && String(rawMunicipality).trim() !== ""
+        ? String(rawMunicipality).trim().slice(0, MUNICIPALITY_MAX)
+        : null;
 
+    // WKT: POINT(経度 緯度) + ST_GeomFromText（ST_SRID(POINT) より本番の MySQL / MariaDB で安定）
+    const pointWkt = `POINT(${Number(lng)} ${Number(lat)})`;
     await pool.execute(
       `INSERT INTO locations (user_id, point, lat_grid, lng_grid, municipality)
-       VALUES (?, ST_SRID(POINT(?, ?), 4326), ?, ?, ?)`,
-      [authResult.id, lng, lat, latGrid, lngGrid, municipality]
+       VALUES (?, ST_GeomFromText(?, 4326), ?, ?, ?)`,
+      [authResult.id, pointWkt, latGrid, lngGrid, municipality]
     );
 
     return Response.json({ ok: true });
   } catch (error) {
     console.error("位置情報保存エラー:", error);
     return Response.json(
-      { error: "サーバーエラーが発生しました" },
+      { error: mapDbErrorToUserMessage(error) },
       { status: 500 }
     );
   }
