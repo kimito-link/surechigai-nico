@@ -9,27 +9,49 @@ interface StatsData {
   streak: number;
 }
 
-export default function Stats() {
+type StatsProps = {
+  authUuid?: string | null;
+  /** false の間は API を叩かない（register-direct 完了前の古い UUID 防止） */
+  statsReady?: boolean;
+};
+
+export default function Stats({
+  authUuid,
+  statsReady = true,
+}: StatsProps) {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!statsReady) {
+      setIsLoading(true);
+      return;
+    }
+
+    let cancelled = false;
+
     const fetchStats = async () => {
+      setIsLoading(true);
       try {
-        const uuid = getUuidToken();
+        const uuid =
+          authUuid !== undefined ? authUuid : getUuidToken();
         if (!uuid) {
-          setStats({ encounterCount: 0, streak: 0 });
-          setIsLoading(false);
+          if (!cancelled) {
+            setStats({ encounterCount: 0, streak: 0 });
+            setIsLoading(false);
+          }
           return;
         }
 
         const [encountersRes, userRes] = await Promise.all([
           fetch("/api/encounters?limit=1000", {
+            credentials: "include",
             headers: {
               Authorization: `Bearer uuid:${uuid}`,
             },
           }),
           fetch("/api/users/me", {
+            credentials: "include",
             headers: {
               Authorization: `Bearer uuid:${uuid}`,
             },
@@ -42,19 +64,24 @@ export default function Stats() {
         const encounterCount = encountersData.encounters?.length || 0;
         const streak = userData.user?.streak_count || 0;
 
-        setStats({
-          encounterCount,
-          streak,
-        });
+        if (!cancelled) {
+          setStats({
+            encounterCount,
+            streak,
+          });
+        }
       } catch {
-        setStats({ encounterCount: 0, streak: 0 });
+        if (!cancelled) setStats({ encounterCount: 0, streak: 0 });
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
     fetchStats();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [authUuid, statsReady]);
 
   if (isLoading) {
     return (

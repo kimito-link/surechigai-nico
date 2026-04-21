@@ -92,11 +92,45 @@ function buildMapImageUrl(venue: { lat: number; lng: number }) {
   return `https://staticmap.openstreetmap.de/staticmap.php?center=${center}&zoom=${MAP_ZOOM}&size=${MAP_WIDTH}x${MAP_HEIGHT}&maptype=mapnik`;
 }
 
-export default function LocationButton() {
+async function readFetchErrorMessage(
+  res: Response,
+  fallback: string
+): Promise<string> {
+  try {
+    const data = (await res.json()) as { error?: unknown };
+    if (typeof data?.error === "string" && data.error.trim() !== "") {
+      return data.error;
+    }
+  } catch {
+    /* 本文が JSON でない場合（Clerk の HTML など） */
+  }
+  if (res.status === 401 || res.status === 403) {
+    return "認証に失敗しました。ページを再読み込みするか、一度ログアウトして入り直してください。";
+  }
+  return fallback;
+}
+
+type LocationButtonProps = {
+  /** 親で解決済みの UUID（localStorage と同期）。未設定時は従来どおり getUuidToken を参照 */
+  authUuid?: string | null;
+  authSyncing?: boolean;
+  authSyncError?: string | null;
+};
+
+export default function LocationButton({
+  authUuid: authUuidProp,
+  authSyncing = false,
+  authSyncError = null,
+}: LocationButtonProps) {
   const [isSending, setIsSending] = useState(false);
   const [isRefreshingMap, setIsRefreshingMap] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [mapPayload, setMapPayload] = useState<LiveMapPayload | null>(null);
+
+  const resolveUuid = useCallback(() => {
+    if (authUuidProp !== undefined) return authUuidProp;
+    return getUuidToken();
+  }, [authUuidProp]);
 
   const fetchLiveMap = useCallback(async (manual = false) => {
     if (manual) {
@@ -104,16 +138,21 @@ export default function LocationButton() {
     }
 
     try {
-      const uuid = getUuidToken();
+      const uuid = resolveUuid();
       const headers: Record<string, string> = {};
       if (uuid) {
         headers["Authorization"] = `Bearer uuid:${uuid}`;
       }
 
-      const res = await fetch("/api/chokaigi/live-map", { headers });
+      const res = await fetch("/api/chokaigi/live-map", {
+        credentials: "include",
+        headers,
+      });
 
       if (!res.ok) {
-        throw new Error("ライブマップの取得に失敗しました");
+        throw new Error(
+          await readFetchErrorMessage(res, "ライブマップの取得に失敗しました")
+        );
       }
 
       const data = (await res.json()) as LiveMapPayload;
@@ -130,13 +169,28 @@ export default function LocationButton() {
         setIsRefreshingMap(false);
       }
     }
-  }, []);
+  }, [resolveUuid]);
 
   const handleLocationSubmit = async () => {
     setIsSending(true);
     setMessage(null);
 
     try {
+      const uuid = resolveUuid();
+      if (!uuid) {
+        if (authSyncing) {
+          throw new Error(
+            "アカウント情報を同期しています。数秒待ってから再度お試しください"
+          );
+        }
+        if (authSyncError) {
+          throw new Error(authSyncError);
+        }
+        throw new Error(
+          "認証トークンが見つかりません。ページを再読み込みしてください"
+        );
+      }
+
       const position = await new Promise<GeolocationCoordinates>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(
           (pos) => resolve(pos.coords),
@@ -145,13 +199,9 @@ export default function LocationButton() {
         );
       });
 
-      const uuid = getUuidToken();
-      if (!uuid) {
-        throw new Error("認証トークンが見つかりません");
-      }
-
       const res = await fetch("/api/locations", {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer uuid:${uuid}`,
@@ -163,7 +213,9 @@ export default function LocationButton() {
       });
 
       if (!res.ok) {
-        throw new Error("位置情報の送信に失敗しました");
+        throw new Error(
+          await readFetchErrorMessage(res, "位置情報の送信に失敗しました")
+        );
       }
 
       setMessage({ type: "success", text: "位置情報を送信しました（500mグリッドで共有）" });
@@ -208,10 +260,14 @@ export default function LocationButton() {
         会場内での正確なマッチングのために位置情報を送信してください
       </p>
 
+      {authSyncing && (
+        <p className={styles.cardDescription}>アカウントをサーバーと同期しています…</p>
+      )}
+
       <div className={styles.mapActionRow}>
         <button
           onClick={handleLocationSubmit}
-          disabled={isSending}
+          disabled={isSending || authSyncing || !resolveUuid()}
           className={styles.button}
         >
           {isSending ? "送信中..." : "現在地を送信"}
