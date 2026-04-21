@@ -1,7 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const PORT = process.env.PLAYWRIGHT_PORT ?? "3002";
-const baseURL = `http://127.0.0.1:${PORT}`;
+/** localhost に統一（Next dev の既定ホストと一致し、allowedDevOrigins 不要で /_next を取りにいける） */
+const baseURL = `http://localhost:${PORT}`;
 
 /**
  * E2E: `npm run test:e2e`（初回は `npx playwright install` — mobile-iphone は WebKit も必要）
