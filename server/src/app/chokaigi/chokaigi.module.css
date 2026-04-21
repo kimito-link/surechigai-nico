@@ -155,6 +155,31 @@
   white-space: pre-line;
 }
 
+.heroSearchCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.95rem;
+  min-height: 2.5rem;
+  padding: 0.45rem 1rem;
+  border-radius: 0.72rem;
+  text-decoration: none;
+  font-size: clamp(0.82rem, 2vw, 0.9rem);
+  font-weight: 800;
+  color: #001231;
+  background: linear-gradient(145deg, #8dd8ff 0%, #4facfe 55%, #3a96eb 100%);
+  border: 1px solid rgba(141, 216, 255, 0.52);
+  box-shadow: 0 6px 18px rgba(79, 172, 254, 0.28);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.heroSearchCta:hover,
+.heroSearchCta:focus-visible {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow: 0 9px 22px rgba(79, 172, 254, 0.35);
+}
+
 .topSearchArea {
   margin-top: clamp(0.95rem, 2.8vw, 1.4rem);
 }

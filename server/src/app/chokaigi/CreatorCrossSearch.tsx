@@ -155,10 +155,10 @@ export function CreatorCrossSearch() {
   return (
     <section className={styles.creatorSearchWrap} aria-labelledby="creator-cross-search-heading">
       <h3 id="creator-cross-search-heading" className={styles.mapSubheading}>
-        クリエイタークロス参加ブース検索
+        参加者・関係者検索（クリエイタークロス）
       </h3>
       <p className={styles.mapFinePrint}>
-        参加者名・ブース名・コード（例: りんく / A14 / VOCALOID）で検索できます。結果から該当ホールのカードへジャンプできます。各行のXリンクから、公式・関係者アカウント検索やプロフィールへ移動できます。
+        参加者名・団体名・ブースコード（例: りんく / A14 / VOCALOID）ですぐ検索できます。結果から該当ホールのカードへジャンプでき、各行のXリンクから公式・関係者アカウント検索やプロフィールへ移動できます。
       </p>
 
       <div className={styles.creatorSearchControls}>

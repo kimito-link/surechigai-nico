@@ -93,6 +93,12 @@ export default function ChokaigiPage() {
               <span className={styles.badge}>ニコニコ超会議 · 企画予告</span>
               <h1>{HERO_HEADING}</h1>
               <p>{HERO_LEAD}</p>
+              <a
+                href="#creator-cross-search-heading"
+                className={styles.heroSearchCta}
+              >
+                参加者を検索する
+              </a>
             </div>
           </div>
         </header>
