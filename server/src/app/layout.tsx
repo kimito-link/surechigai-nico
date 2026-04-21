@@ -1,8 +1,17 @@
 import "./globals.css";
+import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { jaJP } from "@clerk/localizations";
 import { SiteHeader } from "./components/SiteHeader";
 import { SiteFooterCta } from "./components/SiteFooterCta";
+
+export const metadata: Metadata = {
+  icons: {
+    icon: [{ url: "/chokaigi/logos/kimito-link-logo.png", type: "image/png" }],
+    shortcut: ["/chokaigi/logos/kimito-link-logo.png"],
+    apple: ["/chokaigi/logos/kimito-link-logo.png"],
+  },
+};
 
 export default function RootLayout({
   children,
