@@ -1,4 +1,4 @@
-import pool from "@/lib/db";
+import pool, { getDatabaseConnectionHints } from "@/lib/db";
 import { mapDbErrorToUserMessage } from "@/lib/mapDbError";
 import type { RowDataPacket } from "mysql2";
 
@@ -19,6 +19,7 @@ export async function GET() {
       ok: true,
       message: "MySQL 接続に成功しました",
       userCount,
+      hints: getDatabaseConnectionHints(),
       note:
         userCount === 0
           ? "users は空です。/app にログインすると register-direct が1件 INSERT します"
@@ -26,7 +27,13 @@ export async function GET() {
     });
   } catch (error) {
     return Response.json(
-      { ok: false, error: mapDbErrorToUserMessage(error) },
+      {
+        ok: false,
+        error: mapDbErrorToUserMessage(error),
+        hints: getDatabaseConnectionHints(),
+        help:
+          "Vercel に MYSQL_PUBLIC_URL（mysql:// 開始）を追加するか、DATABASE_URL の用途が Postgres 専用なら、MySQL 用に別名（例: MYSQL_PUBLIC_URL）で Railway から Public 接続を貼り付けてください。",
+      },
       { status: 503 }
     );
   }

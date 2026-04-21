@@ -23,16 +23,32 @@ const parseMysqlUrl = (value?: string) => {
 const isVercel = process.env.VERCEL === "1";
 
 /**
- * Vercel: 外部から Railway に届かせるなら Public 用URLを最優先。
- * 手動で MYSQLHOST だけ入れるのは中身が内部ホストのことが多い。
+ * Vercel では Postgres 用の DATABASE_URL が別途入っていることが多い。
+ * 先頭の pick でそれを拾うと mysql ではないため、127.0.0.1 / 誤ホストに落ちて ECONNREFUSED になる。
+ */
+function pickFirstMysqlConnectionString(
+  ...candidates: Array<string | undefined>
+): string | undefined {
+  for (const c of candidates) {
+    if (!c || typeof c !== "string") continue;
+    const t = c.trim();
+    if (t.startsWith("mysql://") || t.startsWith("mysql2://")) {
+      return t;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Vercel: Public 用 → 本番 MySQL の DATABASE_URL → MYSQL_URL の順で、mysql スキームだけ採用。
  */
 const primaryMysqlUri = isVercel
-  ? pick(
+  ? pickFirstMysqlConnectionString(
       process.env.MYSQL_PUBLIC_URL,
       process.env.DATABASE_URL,
       process.env.MYSQL_URL
     )
-  : pick(
+  : pickFirstMysqlConnectionString(
       process.env.MYSQL_URL,
       process.env.DATABASE_URL,
       process.env.MYSQL_PUBLIC_URL
@@ -119,5 +135,26 @@ const pool = canUseUri
         ) || "surechigai",
       ...poolOptions,
     });
+
+/**
+ * デバッグ用（秘匿値は出さない）: /api/health/db などで利用
+ */
+export function getDatabaseConnectionHints() {
+  const dbUrl = process.env.DATABASE_URL;
+  const hasDatabaseUrl = Boolean(dbUrl && String(dbUrl).length > 0);
+  const databaseUrlIsMysql = Boolean(
+    dbUrl && /^mysql2?:\/\//i.test(String(dbUrl).trim())
+  );
+  return {
+    vercel: process.env.VERCEL === "1",
+    usingMysqlConnectionUri: canUseUri,
+    /** Postgres 等の別 DB 用 DATABASE_URL があると、従来の pick では MySQL を拾えず不具合の原因になった */
+    hasNonMysqlDatabaseUrl: hasDatabaseUrl && !databaseUrlIsMysql,
+    hasReadableMysqlPublicUrl: Boolean(
+      process.env.MYSQL_PUBLIC_URL &&
+        /^mysql2?:\/\//i.test(String(process.env.MYSQL_PUBLIC_URL).trim())
+    ),
+  };
+}
 
 export default pool;
