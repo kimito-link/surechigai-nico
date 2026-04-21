@@ -7,8 +7,11 @@ import { SiteFooterCta } from "./components/SiteFooterCta";
 
 export const metadata: Metadata = {
   icons: {
-    icon: [{ url: "/chokaigi/logos/kimito-link-logo.png", type: "image/png" }],
-    shortcut: ["/chokaigi/logos/kimito-link-logo.png"],
+    icon: [
+      { url: "/favicon-kimito-bright.svg?v=2", type: "image/svg+xml" },
+      { url: "/chokaigi/logos/kimito-link-logo.png", type: "image/png" },
+    ],
+    shortcut: ["/favicon-kimito-bright.svg?v=2"],
     apple: ["/chokaigi/logos/kimito-link-logo.png"],
   },
 };

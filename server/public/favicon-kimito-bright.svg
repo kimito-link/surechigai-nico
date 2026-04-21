@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="すれちがいライト favicon">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#f7f1e7" stroke="#255d9b" stroke-width="3"/>
+  <circle cx="32" cy="32" r="22" fill="#255d9b"/>
+  <path d="M22 16v32h6V34l14 14h8L34 32l16-16h-8L28 30V16z" fill="#ffffff"/>
+  <circle cx="48" cy="18" r="6" fill="#dd6500"/>
+  <circle cx="48" cy="18" r="2.5" fill="#ffd99f"/>
+</svg>
