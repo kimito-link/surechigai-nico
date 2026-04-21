@@ -105,15 +105,12 @@ export default function LocationButton() {
 
     try {
       const uuid = getUuidToken();
-      if (!uuid) {
-        throw new Error("認証トークンが見つかりません。再ログイン後にお試しください。");
+      const headers: Record<string, string> = {};
+      if (uuid) {
+        headers["Authorization"] = `Bearer uuid:${uuid}`;
       }
 
-      const res = await fetch("/api/chokaigi/live-map", {
-        headers: {
-          Authorization: `Bearer uuid:${uuid}`,
-        },
-      });
+      const res = await fetch("/api/chokaigi/live-map", { headers });
 
       if (!res.ok) {
         throw new Error("ライブマップの取得に失敗しました");
@@ -122,10 +119,12 @@ export default function LocationButton() {
       const data = (await res.json()) as LiveMapPayload;
       setMapPayload(data);
     } catch (error) {
-      setMessage({
-        type: "error",
-        text: error instanceof Error ? error.message : "ライブマップ取得エラー",
-      });
+      if (manual) {
+        setMessage({
+          type: "error",
+          text: error instanceof Error ? error.message : "ライブマップ取得エラー",
+        });
+      }
     } finally {
       if (manual) {
         setIsRefreshingMap(false);

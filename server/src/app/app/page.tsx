@@ -7,6 +7,7 @@ import ProfileCard from "./components/ProfileCard";
 import LocationButton from "./components/LocationButton";
 import Stats from "./components/Stats";
 import styles from "./app.module.css";
+import { getUuidToken, setUuidToken } from "@/lib/clientAuth";
 
 export default function AppPage() {
   const router = useRouter();
@@ -18,6 +19,32 @@ export default function AppPage() {
       router.push("/sign-in");
     }
   }, [isLoaded, isSignedIn, router]);
+
+  // UUIDがlocalStorageにない場合（新端末・キャッシュ消去後）は自動再登録
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !user?.id) return;
+    if (getUuidToken()) return;
+
+    const twitterAccount = user.externalAccounts?.find(
+      (a) =>
+        (a.provider as string) === "oauth_x" ||
+        (a.provider as string) === "oauth_twitter"
+    );
+    fetch("/api/auth/register-direct", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clerkId: user.id,
+        email: user.primaryEmailAddress?.emailAddress || null,
+        twitterHandle: twitterAccount?.username || null,
+        displayName: user.fullName || user.firstName || null,
+        avatarUrl: user.imageUrl || null,
+      }),
+    })
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => { if (data?.user?.uuid) setUuidToken(data.user.uuid); })
+      .catch(() => {});
+  }, [isLoaded, isSignedIn, user]);
 
   if (!isLoaded) {
     return (
