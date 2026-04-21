@@ -10,6 +10,8 @@ const isPublicRoute = createRouteMatcher([
   "/api/yukkuri-explain",
   "/api/og(.*)",
   "/api/health/db",
+  /** ルート内で optional 認証（未ログインは publicMode）。Clerk 付き fetch が 401 になる端末向け。 */
+  "/api/chokaigi/live-map",
   "/yukkuri(.*)",
 ]);
 

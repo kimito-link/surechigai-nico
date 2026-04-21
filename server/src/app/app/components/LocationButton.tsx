@@ -143,6 +143,8 @@ export default function LocationButton({
   const [isRefreshingMap, setIsRefreshingMap] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [mapPayload, setMapPayload] = useState<LiveMapPayload | null>(null);
+  const [mapApiError, setMapApiError] = useState<string | null>(null);
+  const [staticMapImageFailed, setStaticMapImageFailed] = useState(false);
 
   const resolveUuid = useCallback(() => {
     if (authUuidProp !== undefined) return authUuidProp;
@@ -174,12 +176,13 @@ export default function LocationButton({
 
       const data = (await res.json()) as LiveMapPayload;
       setMapPayload(data);
+      setMapApiError(null);
     } catch (error) {
+      const text =
+        error instanceof Error ? error.message : "ライブマップ取得エラー";
+      setMapApiError(text);
       if (manual) {
-        setMessage({
-          type: "error",
-          text: error instanceof Error ? error.message : "ライブマップ取得エラー",
-        });
+        setMessage({ type: "error", text });
       }
     } finally {
       if (manual) {
@@ -321,6 +324,12 @@ export default function LocationButton({
         </p>
       )}
 
+      {mapApiError && !message && (
+        <p className={styles.errorMessage} role="status">
+          ライブマップ: {mapApiError}
+        </p>
+      )}
+
       <div className={styles.liveMapWrap}>
         <div className={styles.liveMapHeaderRow}>
           <h4 className={styles.liveMapTitle}>超会議ライブマップ（β）</h4>
@@ -334,12 +343,20 @@ export default function LocationButton({
         </p>
 
         <div className={styles.liveMapFrame} aria-label="超会議会場のライブマップ">
-          <img
-            src={buildMapImageUrl(venue)}
-            alt="幕張メッセ周辺地図"
-            className={styles.liveMapImage}
-            loading="lazy"
-          />
+          {!staticMapImageFailed && (
+            <img
+              src={buildMapImageUrl(venue)}
+              alt="幕張メッセ周辺地図"
+              className={styles.liveMapImage}
+              loading="lazy"
+              onError={() => setStaticMapImageFailed(true)}
+            />
+          )}
+          {staticMapImageFailed && (
+            <p className={styles.liveMapImageFallback} role="img" aria-label="地図プレースホルダ">
+              地図タイルの読み込みに失敗しました（ネットワークや広告ブロッカーで外部画像が止まることがあります）。ピン表示は有効な場合があります。
+            </p>
+          )}
 
           <div className={styles.liveMapVenuePin}>
             <span className={styles.liveMapVenueDot} />
