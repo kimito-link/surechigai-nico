@@ -9,6 +9,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/webhooks(.*)",
   "/api/yukkuri-explain",
   "/api/og(.*)",
+  "/api/health/db",
   "/yukkuri(.*)",
 ]);
 
