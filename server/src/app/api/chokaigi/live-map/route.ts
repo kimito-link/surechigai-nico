@@ -119,10 +119,16 @@ export async function GET(req: NextRequest) {
         : "公開モード: 匿名の500mグリッド位置を表示しています",
     });
   } catch (error) {
+    // DBが未接続の場合も空の成功レスポンスを返してUIをエラーにしない
     console.error("会場ライブマップ取得エラー:", error);
-    return Response.json(
-      { error: "会場ライブマップの取得に失敗しました" },
-      { status: 500 }
-    );
+    return Response.json({
+      ok: true,
+      venue: VENUE,
+      radiusMeters: RADIUS_METERS,
+      users: [],
+      generatedAtMs: Date.now(),
+      publicMode: true,
+      note: "現在地送信済みユーザーのみ表示します。",
+    });
   }
 }

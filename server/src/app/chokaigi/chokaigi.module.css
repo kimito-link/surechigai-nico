@@ -903,6 +903,174 @@ details[open] .detailMapSummary::before {
   }
 }
 
+/* ---------- クリエイタークロス検索 ---------- */
+.creatorSearchWrap {
+  margin: 0.95rem 0 1.3rem;
+  padding: 0.8rem 0.9rem 0.95rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(37, 93, 155, 0.18);
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.creatorSearchControls {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.55rem;
+  margin: 0.6rem 0;
+}
+
+.creatorSearchInput {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.55rem 0.72rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(88, 62, 28, 0.2);
+  background: rgba(255, 255, 255, 0.9);
+  color: #2c2117;
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.creatorSearchInput:focus-visible {
+  outline: 2px solid rgba(37, 93, 155, 0.35);
+  outline-offset: 2px;
+}
+
+.creatorSearchClear {
+  min-height: 2.5rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(37, 93, 155, 0.32);
+  background: rgba(37, 93, 155, 0.08);
+  color: #1a4a73;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.creatorSearchClear:hover:not(:disabled) {
+  background: rgba(37, 93, 155, 0.14);
+  transform: translateY(-1px);
+}
+
+.creatorSearchClear:disabled {
+  opacity: 0.56;
+  cursor: not-allowed;
+}
+
+.creatorSearchMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+  font-size: clamp(0.78rem, 1.95vw, 0.86rem);
+  color: #5d5046;
+}
+
+.creatorSearchMapLink {
+  color: #1a5a8a;
+  font-weight: 700;
+  text-underline-offset: 2px;
+}
+
+.creatorSearchMapLink:hover,
+.creatorSearchMapLink:focus-visible {
+  text-decoration: underline;
+}
+
+.creatorSearchList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.58rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.creatorSearchItem {
+  border-radius: 0.65rem;
+  border: 1px solid rgba(88, 62, 28, 0.12);
+  background: rgba(255, 255, 255, 0.86);
+  padding: 0.55rem 0.7rem 0.62rem;
+}
+
+.creatorSearchItemTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.creatorSearchHall {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.16rem 0.46rem;
+  border-radius: 999px;
+  background: rgba(37, 93, 155, 0.12);
+  color: #1a4a73;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.creatorSearchCode {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #255d9b;
+  letter-spacing: 0.03em;
+}
+
+.creatorSearchName {
+  margin: 0.35rem 0 0;
+  font-size: clamp(0.86rem, 2.1vw, 0.94rem);
+  line-height: 1.5;
+  color: #2f251c;
+  font-weight: 700;
+}
+
+.creatorSearchSub {
+  margin: 0.2rem 0 0;
+  font-size: clamp(0.78rem, 1.9vw, 0.85rem);
+  line-height: 1.55;
+  color: #5f5248;
+}
+
+.creatorSearchLinks {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin-top: 0.42rem;
+}
+
+.creatorSearchLinks a {
+  color: #1a5a8a;
+  font-size: clamp(0.76rem, 1.85vw, 0.82rem);
+  font-weight: 700;
+  text-underline-offset: 2px;
+}
+
+.creatorSearchLinks a:hover,
+.creatorSearchLinks a:focus-visible {
+  text-decoration: underline;
+}
+
+.creatorSearchEmpty {
+  margin: 0.3rem 0 0;
+  font-size: clamp(0.8rem, 2vw, 0.88rem);
+  line-height: 1.6;
+  color: #6b5d52;
+}
+
+@media (max-width: 520px) {
+  .creatorSearchControls {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---------- ③ ホール別ガイド（モバイルの主役） ---------- */
 .hallListWrap {
   margin-top: 0.25rem;
@@ -957,6 +1125,17 @@ details[open] .detailMapSummary::before {
   background: #fff;
   box-shadow: 0 3px 10px rgba(45, 36, 28, 0.05);
   padding: 0.75rem 0.9rem 0.85rem 1.15rem;
+}
+
+.hallCardAnchorTarget {
+  scroll-margin-top: 6.5rem;
+}
+
+.hallCardAnchorTarget:target {
+  border-color: rgba(37, 93, 155, 0.58);
+  box-shadow:
+    0 0 0 3px rgba(37, 93, 155, 0.2),
+    0 8px 22px rgba(37, 93, 155, 0.16);
 }
 
 .hallCardBar {

@@ -1,0 +1,143 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import styles from "./chokaigi.module.css";
+import { VENUE_GOOGLE_MAPS_URL } from "./lp-content";
+import { MAIN_HALLS, SUB_HALLS } from "./venue-map-data";
+
+type CreatorEntry = {
+  id: string;
+  hallNo: string;
+  hallLabel: string;
+  code?: string;
+  name: string;
+  sub?: string;
+  mapAnchor: string;
+  searchText: string;
+};
+
+const CREATOR_SECTION_RE = /クリエイター|VOC@LOiD|ボカ|絵師|演奏|音声合成|初音ミク|M@STER/i;
+
+function createEntries(): CreatorEntry[] {
+  const halls = [...MAIN_HALLS, ...SUB_HALLS];
+  const entries: CreatorEntry[] = [];
+
+  for (const hall of halls) {
+    for (const section of hall.sections) {
+      const candidateText = `${section.name} ${section.sub ?? ""}`;
+      const isCreatorRelated =
+        section.area === "cc" || CREATOR_SECTION_RE.test(candidateText);
+      if (!isCreatorRelated) continue;
+
+      const hallNo = String(hall.no);
+      entries.push({
+        id: `${hallNo}-${section.code ?? "no-code"}-${section.name}`,
+        hallNo,
+        hallLabel: hall.label,
+        code: section.code,
+        name: section.name,
+        sub: section.sub,
+        mapAnchor: `#hall-card-${hallNo}`,
+        searchText: [
+          hallNo,
+          hall.label,
+          section.code ?? "",
+          section.name,
+          section.sub ?? "",
+        ]
+          .join(" ")
+          .toLowerCase(),
+      });
+    }
+  }
+
+  return entries.sort((a, b) => {
+    const hallDiff = Number(a.hallNo) - Number(b.hallNo);
+    if (hallDiff !== 0) return hallDiff;
+    return a.name.localeCompare(b.name, "ja");
+  });
+}
+
+const CREATOR_ENTRIES = createEntries();
+
+export function CreatorCrossSearch() {
+  const [query, setQuery] = useState("");
+  const normalized = query.trim().toLowerCase();
+
+  const filtered = useMemo(() => {
+    if (!normalized) return CREATOR_ENTRIES;
+    return CREATOR_ENTRIES.filter((entry) =>
+      entry.searchText.includes(normalized)
+    );
+  }, [normalized]);
+
+  return (
+    <section className={styles.creatorSearchWrap} aria-labelledby="creator-cross-search-heading">
+      <h3 id="creator-cross-search-heading" className={styles.mapSubheading}>
+        クリエイタークロス参加ブース検索
+      </h3>
+      <p className={styles.mapFinePrint}>
+        参加者名・ブース名・コード（例: りんく / A14 / VOCALOID）で検索できます。結果から該当ホールのカードへジャンプできます。
+      </p>
+
+      <div className={styles.creatorSearchControls}>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="検索ワードを入力（例: クリエイター / A14 / 絵師）"
+          className={styles.creatorSearchInput}
+          aria-label="クリエイタークロス参加ブース検索"
+        />
+        <button
+          type="button"
+          className={styles.creatorSearchClear}
+          onClick={() => setQuery("")}
+          disabled={!query}
+        >
+          クリア
+        </button>
+      </div>
+
+      <div className={styles.creatorSearchMeta}>
+        <span>{filtered.length}件ヒット</span>
+        <a
+          href={VENUE_GOOGLE_MAPS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.creatorSearchMapLink}
+        >
+          会場をGoogleマップで開く
+        </a>
+      </div>
+
+      {filtered.length > 0 ? (
+        <ul className={styles.creatorSearchList}>
+          {filtered.map((entry) => (
+            <li key={entry.id} className={styles.creatorSearchItem}>
+              <div className={styles.creatorSearchItemTop}>
+                <span className={styles.creatorSearchHall}>{entry.hallLabel}</span>
+                {entry.code ? (
+                  <span className={styles.creatorSearchCode}>{entry.code}</span>
+                ) : null}
+              </div>
+              <p className={styles.creatorSearchName}>{entry.name}</p>
+              {entry.sub ? (
+                <p className={styles.creatorSearchSub}>{entry.sub}</p>
+              ) : null}
+              <div className={styles.creatorSearchLinks}>
+                <a href={entry.mapAnchor}>このホールの詳細へ</a>
+                <a href="#map-heading">会場マップへ</a>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className={styles.creatorSearchEmpty}>
+          該当するブースが見つかりませんでした。別のキーワードで試してください。
+        </p>
+      )}
+    </section>
+  );
+}
+

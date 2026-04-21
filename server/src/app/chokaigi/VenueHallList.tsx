@@ -13,6 +13,7 @@ type HallCardProps = {
   hall: Hall;
   /** カード下部に表示する簡潔な特徴説明 */
   summary: string;
+  anchorId: string;
 };
 
 const AREA_LABEL: Record<string, string> = {
@@ -67,10 +68,10 @@ function eventSummary(): string {
   return HALL_SUMMARIES.event ?? "主要ステージ（目安）";
 }
 
-function HallCard({ hall, summary }: HallCardProps) {
+function HallCard({ hall, summary, anchorId }: HallCardProps) {
   const top = topSections(hall.sections, 6);
   return (
-    <article className={styles.hallCard}>
+    <article id={anchorId} className={`${styles.hallCard} ${styles.hallCardAnchorTarget}`}>
       <div
         className={styles.hallCardBar}
         style={{ backgroundColor: hall.headerColor }}
@@ -158,6 +159,7 @@ export function VenueHallList() {
               key={hall.no}
               hall={hall}
               summary={hallSummary(hall.no)}
+              anchorId={`hall-card-${hall.no}`}
             />
           ))}
       </div>
@@ -170,13 +172,17 @@ export function VenueHallList() {
             key={hall.no}
             hall={hall}
             summary={hallSummary(hall.no)}
+            anchorId={`hall-card-${hall.no}`}
           />
         ))}
       </div>
 
       {/* 幕張イベントホール */}
       <h3 className={styles.hallGroupHeading}>幕張イベントホール</h3>
-      <article className={styles.hallCard}>
+      <article
+        id="hall-card-event"
+        className={`${styles.hallCard} ${styles.hallCardAnchorTarget}`}
+      >
         <div
           className={styles.hallCardBar}
           style={{ backgroundColor: "#1976d2" }}
