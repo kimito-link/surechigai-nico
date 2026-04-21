@@ -87,18 +87,32 @@ function HallCard({ hall, summary }: HallCardProps) {
           const color = AREA_COLORS[s.area];
           return (
             <li key={`${hall.no}-${i}`} className={styles.hallCardItem}>
-              <span
-                className={styles.hallCardBadge}
-                style={{ backgroundColor: color.fill, borderColor: color.stroke, color: color.text ?? "#2c2117" }}
-              >
-                {s.featured ? "★ " : ""}
-                {AREA_LABEL[s.area]}
-              </span>
-              {s.code ? <span className={styles.hallCardCode}>{s.code}</span> : null}
-              <span className={styles.hallCardName}>
+              <div className={styles.hallCardItemTop}>
+                {s.featured ? (
+                  <span className={styles.hallCardStar} title="目立つエリア">
+                    ★
+                  </span>
+                ) : null}
+                <span
+                  className={styles.hallCardBadge}
+                  style={{
+                    backgroundColor: color.fill,
+                    borderColor: color.stroke,
+                    color: color.text ?? "#2c2117",
+                  }}
+                >
+                  {AREA_LABEL[s.area]}
+                </span>
+                {s.code ? (
+                  <span className={styles.hallCardCode}>{s.code}</span>
+                ) : null}
+              </div>
+              <div className={styles.hallCardName}>
                 {s.name}
-                {s.sub ? <span className={styles.hallCardSub}> · {s.sub}</span> : null}
-              </span>
+                {s.sub ? (
+                  <span className={styles.hallCardSub}> · {s.sub}</span>
+                ) : null}
+              </div>
             </li>
           );
         })}
@@ -179,18 +193,32 @@ export function VenueHallList() {
             const color = AREA_COLORS[s.area];
             return (
               <li key={`ev-${i}`} className={styles.hallCardItem}>
-                <span
-                  className={styles.hallCardBadge}
-                  style={{ backgroundColor: color.fill, borderColor: color.stroke, color: color.text ?? "#2c2117" }}
-                >
-                  {s.featured ? "★ " : ""}
-                  {AREA_LABEL[s.area]}
-                </span>
-                {s.code ? <span className={styles.hallCardCode}>{s.code}</span> : null}
-                <span className={styles.hallCardName}>
+                <div className={styles.hallCardItemTop}>
+                  {s.featured ? (
+                    <span className={styles.hallCardStar} title="目立つエリア">
+                      ★
+                    </span>
+                  ) : null}
+                  <span
+                    className={styles.hallCardBadge}
+                    style={{
+                      backgroundColor: color.fill,
+                      borderColor: color.stroke,
+                      color: color.text ?? "#2c2117",
+                    }}
+                  >
+                    {AREA_LABEL[s.area]}
+                  </span>
+                  {s.code ? (
+                    <span className={styles.hallCardCode}>{s.code}</span>
+                  ) : null}
+                </div>
+                <div className={styles.hallCardName}>
                   {s.name}
-                  {s.sub ? <span className={styles.hallCardSub}> · {s.sub}</span> : null}
-                </span>
+                  {s.sub ? (
+                    <span className={styles.hallCardSub}> · {s.sub}</span>
+                  ) : null}
+                </div>
               </li>
             );
           })}
