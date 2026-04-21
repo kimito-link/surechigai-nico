@@ -52,7 +52,6 @@ async function handler(
 
     const forwardHeaders: Record<string, string> = {
       host: FAPI_HOSTNAME,
-      "clerk-proxy-url": PROXY_URL,
     };
     req.headers.forEach((value, key) => {
       const lower = key.toLowerCase();
