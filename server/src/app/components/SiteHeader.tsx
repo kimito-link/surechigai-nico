@@ -39,7 +39,7 @@ export function SiteHeader() {
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
   const dropRef = useRef<HTMLDivElement>(null);
-  const isChokaigiPath = pathname?.startsWith("/chokaigi");
+  const isChokaigiPath = pathname?.startsWith("/chokaigi") || pathname === "/";
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
