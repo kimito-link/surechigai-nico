@@ -40,18 +40,22 @@ function pickFirstMysqlConnectionString(
 }
 
 /**
- * Vercel: Public 用 → 本番 MySQL の DATABASE_URL → MYSQL_URL の順で、mysql スキームだけ採用。
+ * Vercel: Public 用を最優先。Railway のテンプレ名（RAILWAY_*）も走査。
  */
 const primaryMysqlUri = isVercel
   ? pickFirstMysqlConnectionString(
       process.env.MYSQL_PUBLIC_URL,
+      process.env.RAILWAY_MYSQL_URL,
+      process.env.RAILWAY_DATABASE_URL,
       process.env.DATABASE_URL,
       process.env.MYSQL_URL
     )
   : pickFirstMysqlConnectionString(
       process.env.MYSQL_URL,
       process.env.DATABASE_URL,
-      process.env.MYSQL_PUBLIC_URL
+      process.env.MYSQL_PUBLIC_URL,
+      process.env.RAILWAY_MYSQL_URL,
+      process.env.RAILWAY_DATABASE_URL
     );
 
 const mysqlUrlConfig = parseMysqlUrl(primaryMysqlUri);
@@ -136,6 +140,13 @@ const pool = canUseUri
       ...poolOptions,
     });
 
+function envMysqlKind(
+  v: string | undefined
+): "missing" | "mysql" | "other_scheme" {
+  if (v == null || String(v).trim() === "") return "missing";
+  return /^mysql2?:\/\//i.test(String(v).trim()) ? "mysql" : "other_scheme";
+}
+
 /**
  * デバッグ用（秘匿値は出さない）: /api/health/db などで利用
  */
@@ -145,15 +156,32 @@ export function getDatabaseConnectionHints() {
   const databaseUrlIsMysql = Boolean(
     dbUrl && /^mysql2?:\/\//i.test(String(dbUrl).trim())
   );
+  const vercel = process.env.VERCEL === "1";
   return {
-    vercel: process.env.VERCEL === "1",
+    vercel,
     usingMysqlConnectionUri: canUseUri,
-    /** Postgres 等の別 DB 用 DATABASE_URL があると、従来の pick では MySQL を拾えず不具合の原因になった */
     hasNonMysqlDatabaseUrl: hasDatabaseUrl && !databaseUrlIsMysql,
     hasReadableMysqlPublicUrl: Boolean(
       process.env.MYSQL_PUBLIC_URL &&
         /^mysql2?:\/\//i.test(String(process.env.MYSQL_PUBLIC_URL).trim())
     ),
+    /** どの名義の変数に mysql:// があるか（値は出さない） */
+    envMysql: {
+      MYSQL_PUBLIC_URL: envMysqlKind(process.env.MYSQL_PUBLIC_URL),
+      RAILWAY_MYSQL_URL: envMysqlKind(process.env.RAILWAY_MYSQL_URL),
+      RAILWAY_DATABASE_URL: envMysqlKind(process.env.RAILWAY_DATABASE_URL),
+      DATABASE_URL: envMysqlKind(process.env.DATABASE_URL),
+      MYSQL_URL: envMysqlKind(process.env.MYSQL_URL),
+    },
+    nextSteps:
+      vercel && !canUseUri
+        ? [
+            "1) Railway ダッシュボード → MySQL サービス →「Connect」または Variables → 外部(Public)用の接続。mysql:// で始まる1行をコピー。",
+            "2) Vercel → 該当プロジェクト → Settings → Environment Variables → Environment「Production」→ 名前 MYSQL_PUBLIC_URL、値にその1行を貼る。",
+            "3) Save 後、Deployments で Redeploy（環境変数の反映のため本番の再デプロイが必須）。",
+            "4) この URL を再確認: /api/health/db → ok true になれば接続成功。",
+          ]
+        : undefined,
   };
 }
 

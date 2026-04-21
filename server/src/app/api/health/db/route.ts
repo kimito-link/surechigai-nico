@@ -31,8 +31,6 @@ export async function GET() {
         ok: false,
         error: mapDbErrorToUserMessage(error),
         hints: getDatabaseConnectionHints(),
-        help:
-          "Vercel に MYSQL_PUBLIC_URL（mysql:// 開始）を追加するか、DATABASE_URL の用途が Postgres 専用なら、MySQL 用に別名（例: MYSQL_PUBLIC_URL）で Railway から Public 接続を貼り付けてください。",
       },
       { status: 503 }
     );
