@@ -58,6 +58,10 @@ export default function ChokaigiPage() {
     <main className={styles.shell}>
       <StarField />
       <article>
+        <div className={styles.topSearchArea}>
+          <CreatorCrossSearch />
+        </div>
+
         <header className={styles.hero}>
           <div className={styles.heroBand}>
             <div className={styles.heroBrandCol}>
@@ -93,19 +97,9 @@ export default function ChokaigiPage() {
               <span className={styles.badge}>ニコニコ超会議 · 企画予告</span>
               <h1>{HERO_HEADING}</h1>
               <p>{HERO_LEAD}</p>
-              <a
-                href="#creator-cross-search-heading"
-                className={styles.heroSearchCta}
-              >
-                参加者を検索する
-              </a>
             </div>
           </div>
         </header>
-
-        <div className={styles.topSearchArea}>
-          <CreatorCrossSearch />
-        </div>
 
         <YukkuriDialogue />
 
