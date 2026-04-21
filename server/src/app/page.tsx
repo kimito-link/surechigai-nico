@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import {
   GUIDES,
   HOME_HERO_BADGE,
@@ -12,6 +13,7 @@ import {
   USAGE_SECTION_HEADING_ID,
 } from "./chokaigi/lp-content";
 import { HomeVenueWander } from "./HomeVenueWander";
+import { CreatorCrossSearch } from "./chokaigi/CreatorCrossSearch";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -101,6 +103,14 @@ export default function Home() {
         </div>
         <HomeVenueWander />
       </header>
+
+      <section className={styles.section}>
+        <div className={styles.sectionInner}>
+          <Suspense fallback={null}>
+            <CreatorCrossSearch />
+          </Suspense>
+        </div>
+      </section>
 
       <section className={styles.section} aria-labelledby="home-usage-heading">
         <div className={styles.sectionInner}>
