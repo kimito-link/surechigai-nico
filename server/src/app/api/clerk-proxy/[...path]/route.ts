@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import https from "node:https";
+import type { IncomingHttpHeaders } from "node:http";
 
-// Clerk の実際のバックエンド（Cloudflare 上にある）
-const FAPI_ORIGIN = "https://frontend-api.clerk.services";
-// Clerk に渡す Host ヘッダー（どのインスタンスか識別）
-const FAPI_HOST = "clerk.surechigai-nico.link";
+export const runtime = "nodejs";
+
+// fetch() は host ヘッダーを禁止しているため node:https を使用
+const FAPI_HOSTNAME = "frontend-api.clerk.services";
+const FAPI_HOST_OVERRIDE = "clerk.surechigai-nico.link";
 
 const HOP_BY_HOP = new Set([
   "connection",
@@ -15,46 +18,82 @@ const HOP_BY_HOP = new Set([
   "trailer",
 ]);
 
+function httpsRequest(
+  options: https.RequestOptions,
+  body?: Buffer
+): Promise<{ status: number; headers: IncomingHttpHeaders; body: Buffer }> {
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      const chunks: Buffer[] = [];
+      res.on("data", (chunk: Buffer) => chunks.push(chunk));
+      res.on("end", () =>
+        resolve({
+          status: res.statusCode ?? 500,
+          headers: res.headers,
+          body: Buffer.concat(chunks),
+        })
+      );
+      res.on("error", reject);
+    });
+    req.on("error", reject);
+    if (body && body.length > 0) req.write(body);
+    req.end();
+  });
+}
+
 async function handler(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const { path } = await params;
-  const pathStr = (path ?? []).join("/");
-  const search = req.nextUrl.search;
-  const targetUrl = `${FAPI_ORIGIN}/${pathStr}${search}`;
+  try {
+    const { path } = await params;
+    const pathStr = (path ?? []).join("/");
+    const search = req.nextUrl.search;
 
-  const forwardHeaders = new Headers();
-  req.headers.forEach((value, key) => {
-    if (key.toLowerCase() !== "host" && !HOP_BY_HOP.has(key.toLowerCase())) {
-      forwardHeaders.set(key, value);
-    }
-  });
-  forwardHeaders.set("host", FAPI_HOST);
+    const forwardHeaders: Record<string, string> = {
+      host: FAPI_HOST_OVERRIDE,
+    };
+    req.headers.forEach((value, key) => {
+      const lower = key.toLowerCase();
+      if (lower !== "host" && !HOP_BY_HOP.has(lower)) {
+        forwardHeaders[lower] = value;
+      }
+    });
 
-  const body =
-    req.method === "GET" || req.method === "HEAD"
-      ? undefined
-      : await req.arrayBuffer();
+    const reqBody =
+      req.method === "GET" || req.method === "HEAD"
+        ? undefined
+        : Buffer.from(await req.arrayBuffer());
 
-  const clerkRes = await fetch(targetUrl, {
-    method: req.method,
-    headers: forwardHeaders,
-    body,
-  });
+    const clerkRes = await httpsRequest(
+      {
+        hostname: FAPI_HOSTNAME,
+        port: 443,
+        path: `/${pathStr}${search}`,
+        method: req.method,
+        headers: forwardHeaders,
+      },
+      reqBody
+    );
 
-  const resHeaders = new Headers();
-  clerkRes.headers.forEach((value, key) => {
-    if (!HOP_BY_HOP.has(key.toLowerCase())) {
-      resHeaders.set(key, value);
-    }
-  });
+    const resHeaders = new Headers();
+    Object.entries(clerkRes.headers).forEach(([key, value]) => {
+      if (!HOP_BY_HOP.has(key.toLowerCase()) && value) {
+        resHeaders.set(key, Array.isArray(value) ? value.join(", ") : value);
+      }
+    });
 
-  return new NextResponse(clerkRes.body, {
-    status: clerkRes.status,
-    statusText: clerkRes.statusText,
-    headers: resHeaders,
-  });
+    return new NextResponse(clerkRes.body, {
+      status: clerkRes.status,
+      headers: resHeaders,
+    });
+  } catch (err) {
+    console.error("[clerk-proxy] error:", err);
+    return NextResponse.json(
+      { error: "proxy error", detail: String(err) },
+      { status: 502 }
+    );
+  }
 }
 
 export const GET = handler;
