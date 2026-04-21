@@ -128,10 +128,11 @@
 }
 
 .clerkFooter {
-  margin-top: 0.5rem !important;
+  display: none !important;
 }
 
 .clerkFooterAction {
+  display: none !important;
   font-size: clamp(0.85rem, 2.5vw, 0.95rem) !important;
 }
 
