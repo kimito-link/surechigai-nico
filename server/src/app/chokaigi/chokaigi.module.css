@@ -155,6 +155,18 @@
   white-space: pre-line;
 }
 
+.unofficialBar {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  font-size: 0.78rem;
+  text-align: center;
+  color: #5a4030;
+  background: rgba(221, 101, 0, 0.08);
+  border-bottom: 1px solid rgba(221, 101, 0, 0.22);
+  position: relative;
+  z-index: 2;
+}
+
 .topSearchArea {
   margin-bottom: clamp(0.95rem, 2.8vw, 1.4rem);
 }

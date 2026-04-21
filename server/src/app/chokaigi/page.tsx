@@ -62,6 +62,10 @@ export default function ChokaigiPage() {
           <CreatorCrossSearch />
         </div>
 
+        <div className={styles.unofficialBar} role="note">
+          このページは有志による非公式アプリ企画です。ニコニコ超会議の公式サイトではありません。
+        </div>
+
         <header className={styles.hero}>
           <div className={styles.heroBand}>
             <div className={styles.heroBrandCol}>
@@ -94,7 +98,7 @@ export default function ChokaigiPage() {
               </div>
             </div>
             <div className={styles.heroCopy}>
-              <span className={styles.badge}>ニコニコ超会議 · 企画予告</span>
+              <span className={styles.badge}>非公式アプリ企画 · ニコニコ超会議2026</span>
               <h1>{HERO_HEADING}</h1>
               <p>{HERO_LEAD}</p>
             </div>
