@@ -83,6 +83,79 @@
 .stickyXSubmit:hover:not(:disabled) { background: #b35500; }
 .stickyXSubmit:disabled { opacity: 0.5; cursor: default; }
 
+/* モード切替タブ */
+.stickyXTabs {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.2rem;
+  padding: 0 0.3rem 0 0;
+  border-right: 1px solid rgba(221, 101, 0, 0.18);
+  margin-right: 0.5rem;
+}
+
+.stickyXTab {
+  height: 2rem;
+  padding: 0 0.65rem;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #8a7060;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.stickyXTab:hover { background: rgba(221, 101, 0, 0.07); color: #b35500; }
+
+.stickyXTabActive {
+  background: rgba(221, 101, 0, 0.12);
+  color: #b35500;
+  border-color: rgba(221, 101, 0, 0.35);
+}
+
+/* 登録モード */
+.stickyXRegister {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.stickyXRegisterText {
+  font-size: 0.78rem;
+  color: #3a2f24;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.stickyXRegisterBtn {
+  flex-shrink: 0;
+  height: 2rem;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  background: #1a5898;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.stickyXRegisterBtn:hover { background: #144a80; }
+
+@media (max-width: 640px) {
+  .stickyXRegisterText { display: none; }
+}
+
 /* 結果パネル */
 .stickyXOverlay {
   position: fixed;

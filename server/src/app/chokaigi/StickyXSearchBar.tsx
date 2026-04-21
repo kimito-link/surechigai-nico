@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import styles from "./chokaigi.module.css";
 
 type Dialogue = { rink: string; konta: string; tanunee: string };
+type Mode = "introduce" | "register";
 
 const CHARS: Array<{ key: keyof Dialogue; label: string; speaker: "rink" | "konta" | "tanunee" }> = [
   { key: "rink",    label: "りんく", speaker: "rink" },
@@ -12,12 +14,18 @@ const CHARS: Array<{ key: keyof Dialogue; label: string; speaker: "rink" | "kont
 ];
 
 export function StickyXSearchBar() {
+  const [mode, setMode]         = useState<Mode>("introduce");
   const [handle, setHandle]     = useState("");
   const [dialogue, setDialogue] = useState<Dialogue | null>(null);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
 
   const dismiss = () => { setDialogue(null); setError(""); };
+
+  const switchMode = (next: Mode) => {
+    setMode(next);
+    dismiss();
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -44,38 +52,66 @@ export function StickyXSearchBar() {
 
   return (
     <>
-      <div className={styles.stickyXBar} role="search" aria-label="Xアカウント ゆっくり紹介">
-        <form className={styles.stickyXForm} onSubmit={handleSubmit}>
-          <span className={styles.stickyXLabel} aria-hidden="true">🎙️ あなたのX</span>
-          <span className={styles.stickyXAt} aria-hidden="true">@</span>
-          <input
-            type="text"
-            className={styles.stickyXInput}
-            value={handle}
-            onChange={(e) => setHandle(e.target.value)}
-            placeholder="XのID を入力"
-            aria-label="XアカウントのID"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-          />
+      <div className={styles.stickyXBar} role="region" aria-label="参加・紹介バー">
+        {/* モード切替タブ */}
+        <div className={styles.stickyXTabs}>
           <button
-            type="submit"
-            className={styles.stickyXSubmit}
-            disabled={loading || !handle.trim()}
+            type="button"
+            className={`${styles.stickyXTab} ${mode === "introduce" ? styles.stickyXTabActive : ""}`}
+            onClick={() => switchMode("introduce")}
           >
-            {loading ? "解説中…" : "紹介して！"}
+            🎙️ 紹介
           </button>
-        </form>
+          <button
+            type="button"
+            className={`${styles.stickyXTab} ${mode === "register" ? styles.stickyXTabActive : ""}`}
+            onClick={() => switchMode("register")}
+          >
+            ✨ 登録
+          </button>
+        </div>
+
+        {/* 紹介モード */}
+        {mode === "introduce" && (
+          <form className={styles.stickyXForm} onSubmit={handleSubmit}>
+            <span className={styles.stickyXAt} aria-hidden="true">@</span>
+            <input
+              type="text"
+              className={styles.stickyXInput}
+              value={handle}
+              onChange={(e) => setHandle(e.target.value)}
+              placeholder="あなたのX ID"
+              aria-label="XアカウントのID"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+            />
+            <button
+              type="submit"
+              className={styles.stickyXSubmit}
+              disabled={loading || !handle.trim()}
+            >
+              {loading ? "…" : "紹介して！"}
+            </button>
+          </form>
+        )}
+
+        {/* 登録モード */}
+        {mode === "register" && (
+          <div className={styles.stickyXRegister}>
+            <span className={styles.stickyXRegisterText}>
+              会場ですれ違って、クリエイターとつながろう！
+            </span>
+            <Link href="/sign-in" className={styles.stickyXRegisterBtn}>
+              Xでログイン・参加登録
+            </Link>
+          </div>
+        )}
       </div>
 
       {(dialogue || error) && (
         <>
-          <div
-            className={styles.stickyXOverlay}
-            onClick={dismiss}
-            aria-hidden="true"
-          />
+          <div className={styles.stickyXOverlay} onClick={dismiss} aria-hidden="true" />
           <div className={styles.stickyXPanel} role="region" aria-label="ゆっくり紹介結果">
             <button
               type="button"
@@ -85,9 +121,7 @@ export function StickyXSearchBar() {
             >
               ✕
             </button>
-            {error && (
-              <p className={styles.stickyXPanelError} role="alert">{error}</p>
-            )}
+            {error && <p className={styles.stickyXPanelError} role="alert">{error}</p>}
             {dialogue && (
               <div className={styles.yukkuriCreatorTalkDialogue}>
                 {CHARS.map(({ key, label, speaker }) => (
