@@ -24,7 +24,7 @@ export function mapDbErrorToUserMessage(error: unknown): string {
     code === "ETIMEDOUT" ||
     code === "ECONNRESET"
   ) {
-    return "データベースに接続できません。ホストは Railway の Public Network 用（例: *.rlwy.net）を Vercel に設定し、ファイアウォールを確認してください。";
+    return "データベースに接続できません。Vercel には Railway の「Public Network」の接続情報を入れてください（推奨: 変数 MYSQL_PUBLIC_URL にコピー。内部用 MYSQLHOST だけでは Vercel から届きません）。Railway の MySQL で Public TCP Proxy が有効かも確認してください。";
   }
 
   if (code === "ER_BAD_DB_ERROR" || e?.errno === 1049) {
