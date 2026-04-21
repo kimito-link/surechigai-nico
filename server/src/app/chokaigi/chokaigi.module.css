@@ -1727,14 +1727,14 @@ details[open] .detailMapSummary::before {
 .venueWanderMiniMap {
   position: relative;
   width: 100%;
-  max-width: min(100%, 28rem);
+  max-width: 100%;
   margin-inline: auto;
-  border-radius: 1rem;
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  background: linear-gradient(165deg, #0a0f1a 0%, #030810 100%);
+  border-radius: 0.85rem;
+  border: 1.5px solid rgba(0, 119, 182, 0.35);
+  background: #daf5fc;
   box-shadow:
-    0 8px 28px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(56, 189, 248, 0.12);
+    0 6px 24px rgba(0, 119, 182, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
   overflow: hidden;
   line-height: 0;
 }
@@ -1819,49 +1819,49 @@ details[open] .detailMapSummary::before {
 .venueWanderMiniBubble2 { animation-delay: 2s; }
 .venueWanderMiniBubble3 { animation-delay: 4s; }
 
-/* 軌道アニメーション（viewBox 0 0 100 88 に合わせた%位置） */
+/* 軌道アニメーション（viewBox 0 0 300 190 に合わせた%位置） */
 @keyframes venueMiniLoop1 {
-  /* 2F 帯〜連絡〜下層レーン */
-  0% { left: 10%; top: 28%; }
-  25% { left: 50%; top: 28%; }
-  50% { left: 52%; top: 50%; }
-  75% { left: 26%; top: 53%; }
-  100% { left: 10%; top: 28%; }
+  /* 2F メッセモール左側 ↔ H9 エリア */
+  0%   { left: 10%; top: 30%; }
+  25%  { left: 35%; top: 30%; }
+  50%  { left: 35%; top: 47%; }
+  75%  { left: 15%; top: 47%; }
+  100% { left: 10%; top: 30%; }
 }
 
 @keyframes venueMiniLoop2 {
-  /* 中央〜東レーン〜下層 */
-  0% { left: 50%; top: 28%; }
-  25% { left: 78%; top: 30%; }
-  50% { left: 80%; top: 52%; }
-  75% { left: 48%; top: 54%; }
-  100% { left: 50%; top: 28%; }
+  /* 2F メッセモール右側 ↔ H10〜H11 エリア */
+  0%   { left: 53%; top: 30%; }
+  25%  { left: 73%; top: 30%; }
+  50%  { left: 73%; top: 47%; }
+  75%  { left: 50%; top: 47%; }
+  100% { left: 53%; top: 30%; }
 }
 
 @keyframes venueMiniLoop3 {
-  /* H11〜幕張イベントホール周辺 */
-  0% { left: 88%; top: 72%; }
-  25% { left: 78%; top: 58%; }
-  50% { left: 92%; top: 50%; }
-  75% { left: 84%; top: 66%; }
-  100% { left: 88%; top: 72%; }
+  /* 幕張イベントホール〜国際会議場 周辺 */
+  0%   { left: 84%; top: 47%; }
+  25%  { left: 82%; top: 30%; }
+  50%  { left: 89%; top: 30%; }
+  75%  { left: 86%; top: 44%; }
+  100% { left: 84%; top: 47%; }
 }
 
 .venueWanderMiniTrack1 {
   animation-name: venueMiniLoop1;
-  animation-duration: 14s;
+  animation-duration: 18s;
 }
 
 .venueWanderMiniTrack2 {
   animation-name: venueMiniLoop2;
-  animation-duration: 11s;
-  animation-delay: -3s;
+  animation-duration: 14s;
+  animation-delay: -4s;
 }
 
 .venueWanderMiniTrack3 {
   animation-name: venueMiniLoop3;
-  animation-duration: 16s;
-  animation-delay: -5s;
+  animation-duration: 20s;
+  animation-delay: -7s;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1870,9 +1870,9 @@ details[open] .detailMapSummary::before {
   .venueWanderMiniTrack3 {
     animation: none;
   }
-  .venueWanderMiniTrack1 { left: 50%; top: 28%; }
-  .venueWanderMiniTrack2 { left: 50%; top: 42%; }
-  .venueWanderMiniTrack3 { left: 88%; top: 72%; }
+  .venueWanderMiniTrack1 { left: 35%; top: 30%; }
+  .venueWanderMiniTrack2 { left: 60%; top: 30%; }
+  .venueWanderMiniTrack3 { left: 84%; top: 47%; }
   .venueWanderMiniBubble {
     animation: none;
     opacity: 1;
