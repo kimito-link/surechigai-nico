@@ -1038,6 +1038,51 @@ details[open] .detailMapSummary::before {
   color: #5f5248;
 }
 
+.creatorSearchAccounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+  margin-top: 0.42rem;
+}
+
+.creatorSearchAccountLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.8rem;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(88, 62, 28, 0.18);
+  text-decoration: none;
+  font-size: clamp(0.72rem, 1.8vw, 0.79rem);
+  font-weight: 700;
+  line-height: 1.25;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.creatorSearchAccountLink:hover,
+.creatorSearchAccountLink:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(45, 36, 28, 0.12);
+}
+
+.creatorSearchAccountOfficial {
+  color: #1a4a73;
+  background: rgba(37, 93, 155, 0.12);
+  border-color: rgba(37, 93, 155, 0.33);
+}
+
+.creatorSearchAccountRelated {
+  color: #67462a;
+  background: rgba(201, 142, 43, 0.14);
+  border-color: rgba(201, 142, 43, 0.36);
+}
+
+.creatorSearchAccountSearch {
+  color: #5c5046;
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(88, 62, 28, 0.22);
+}
+
 .creatorSearchLinks {
   display: flex;
   align-items: center;

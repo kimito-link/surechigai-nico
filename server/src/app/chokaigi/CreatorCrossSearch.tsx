@@ -13,10 +13,82 @@ type CreatorEntry = {
   name: string;
   sub?: string;
   mapAnchor: string;
+  accountLinks: AccountLink[];
   searchText: string;
 };
 
+type AccountLink = {
+  label: string;
+  href: string;
+  kind: "official" | "related" | "search";
+};
+
 const CREATOR_SECTION_RE = /クリエイター|VOC@LOiD|ボカ|絵師|演奏|音声合成|初音ミク|M@STER/i;
+
+/**
+ * ここに直接アカウントを入れると、検索リンクより優先して表示される。
+ * key はブースコード優先。コードが無い場合は「HALL番号:名称」で登録できる。
+ */
+const X_ACCOUNT_REGISTRY: Record<string, Array<{ label: string; handle: string; kind?: "official" | "related" }>> = {
+  A17: [{ label: "クリプトン公式", handle: "cfm_miku", kind: "official" }],
+  "3:A9": [{ label: "ボカロ名刺交換（検索）", handle: "the_voca" }],
+};
+
+function normalizeHandle(handle: string) {
+  return handle.trim().replace(/^@+/, "");
+}
+
+function toXProfileUrl(handle: string) {
+  return `https://x.com/${normalizeHandle(handle)}`;
+}
+
+function toXUserSearchUrl(keyword: string) {
+  const q = encodeURIComponent(`${keyword} 超会議`);
+  return `https://x.com/search?q=${q}&src=typed_query&f=user`;
+}
+
+function splitKeywords(text?: string) {
+  if (!text) return [];
+  return text
+    .split(/[\/／・×x,，|｜\s]+/)
+    .map((v) => v.trim())
+    .filter((v) => v.length >= 2 && !/^\d+$/.test(v));
+}
+
+function dedupeLinks(links: AccountLink[]) {
+  const seen = new Set<string>();
+  const result: AccountLink[] = [];
+  for (const link of links) {
+    if (seen.has(link.href)) continue;
+    seen.add(link.href);
+    result.push(link);
+  }
+  return result;
+}
+
+function buildAccountLinks(
+  hallNo: string,
+  code: string | undefined,
+  name: string,
+  sub: string | undefined
+): AccountLink[] {
+  const direct = code ? X_ACCOUNT_REGISTRY[code] : undefined;
+  const byName = X_ACCOUNT_REGISTRY[`${hallNo}:${name}`];
+  const registered: AccountLink[] = [...(direct ?? []), ...(byName ?? [])].map((item) => ({
+    label: item.label,
+    href: toXProfileUrl(item.handle),
+    kind: item.kind ?? "official",
+  }));
+
+  const keywords = [name, ...splitKeywords(sub)].slice(0, 6);
+  const keywordLinks: AccountLink[] = keywords.map((keyword, idx) => ({
+    label: idx === 0 ? `${keyword} をX検索` : `関係者: ${keyword}`,
+    href: toXUserSearchUrl(keyword),
+    kind: idx === 0 ? "search" : "related",
+  }));
+
+  return dedupeLinks([...registered, ...keywordLinks]);
+}
 
 function createEntries(): CreatorEntry[] {
   const halls = [...MAIN_HALLS, ...SUB_HALLS];
@@ -30,6 +102,13 @@ function createEntries(): CreatorEntry[] {
       if (!isCreatorRelated) continue;
 
       const hallNo = String(hall.no);
+      const accountLinks = buildAccountLinks(
+        hallNo,
+        section.code,
+        section.name,
+        section.sub
+      );
+
       entries.push({
         id: `${hallNo}-${section.code ?? "no-code"}-${section.name}`,
         hallNo,
@@ -38,12 +117,14 @@ function createEntries(): CreatorEntry[] {
         name: section.name,
         sub: section.sub,
         mapAnchor: `#hall-card-${hallNo}`,
+        accountLinks,
         searchText: [
           hallNo,
           hall.label,
           section.code ?? "",
           section.name,
           section.sub ?? "",
+          ...accountLinks.map((link) => link.label),
         ]
           .join(" ")
           .toLowerCase(),
@@ -77,7 +158,7 @@ export function CreatorCrossSearch() {
         クリエイタークロス参加ブース検索
       </h3>
       <p className={styles.mapFinePrint}>
-        参加者名・ブース名・コード（例: りんく / A14 / VOCALOID）で検索できます。結果から該当ホールのカードへジャンプできます。
+        参加者名・ブース名・コード（例: りんく / A14 / VOCALOID）で検索できます。結果から該当ホールのカードへジャンプできます。各行のXリンクから、公式・関係者アカウント検索やプロフィールへ移動できます。
       </p>
 
       <div className={styles.creatorSearchControls}>
@@ -125,6 +206,25 @@ export function CreatorCrossSearch() {
               {entry.sub ? (
                 <p className={styles.creatorSearchSub}>{entry.sub}</p>
               ) : null}
+              <div className={styles.creatorSearchAccounts}>
+                {entry.accountLinks.map((link, i) => (
+                  <a
+                    key={`${entry.id}-${i}-${link.href}`}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${styles.creatorSearchAccountLink} ${
+                      link.kind === "official"
+                        ? styles.creatorSearchAccountOfficial
+                        : link.kind === "related"
+                          ? styles.creatorSearchAccountRelated
+                          : styles.creatorSearchAccountSearch
+                    }`}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
               <div className={styles.creatorSearchLinks}>
                 <a href={entry.mapAnchor}>このホールの詳細へ</a>
                 <a href="#map-heading">会場マップへ</a>
@@ -140,4 +240,3 @@ export function CreatorCrossSearch() {
     </section>
   );
 }
-
