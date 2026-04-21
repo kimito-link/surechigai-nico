@@ -325,36 +325,53 @@ const CREATOR_ENTRIES = [...createMapEntries(), ...createOfficialEntries()].sort
   }
 );
 
+const HALL_OPTIONS: Array<{ hallNo: string; label: string }> = Array.from(
+  new Map(
+    CREATOR_ENTRIES
+      .filter((e) => e.hallNo)
+      .map((e) => [e.hallNo, { hallNo: e.hallNo, label: e.hallLabel }])
+  ).values()
+).sort((a, b) => hallSortValue(a.hallNo) - hallSortValue(b.hallNo));
+
 export function CreatorCrossSearch() {
   const searchParams = useSearchParams();
   const creatorParam = searchParams.get("creator")?.trim() ?? "";
   const [query, setQuery] = useState(creatorParam);
+  const [hallFilter, setHallFilter] = useState("");
 
   useEffect(() => {
     setQuery((prev) => (prev === creatorParam ? prev : creatorParam));
+    if (creatorParam) {
+      const id = "creator-cross-search-heading";
+      const el = document.getElementById(id);
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+      }
+    }
   }, [creatorParam]);
 
   const normalized = query.trim().toLowerCase();
   const normalizedWithoutAt = normalized.replace(/^@+/, "");
 
   const { filtered, totalHits, isTruncated, allMatched } = useMemo(() => {
-    const allMatched = normalized
-      ? CREATOR_ENTRIES.filter((entry) =>
-          entry.searchText.includes(normalized)
-        )
+    let pool = normalized
+      ? CREATOR_ENTRIES.filter((entry) => entry.searchText.includes(normalized))
       : CREATOR_ENTRIES;
 
-    const visible = normalized
-      ? allMatched
-      : allMatched.slice(0, DEFAULT_VISIBLE_COUNT);
+    if (hallFilter) {
+      pool = pool.filter((entry) => entry.hallNo === hallFilter);
+    }
+
+    const isFiltered = normalized || hallFilter;
+    const visible = isFiltered ? pool : pool.slice(0, DEFAULT_VISIBLE_COUNT);
 
     return {
       filtered: visible,
-      totalHits: allMatched.length,
-      isTruncated: !normalized && allMatched.length > visible.length,
-      allMatched,
+      totalHits: pool.length,
+      isTruncated: !isFiltered && pool.length > visible.length,
+      allMatched: pool,
     };
-  }, [normalized]);
+  }, [normalized, hallFilter]);
 
   const featuredMatches = useMemo(
     () =>
@@ -494,6 +511,26 @@ export function CreatorCrossSearch() {
           クリア
         </button>
       </div>
+      <div className={styles.creatorSearchHallFilter} role="group" aria-label="ホールで絞り込む">
+        <button
+          type="button"
+          className={`${styles.creatorSearchHallChip} ${!hallFilter ? styles.creatorSearchHallChipActive : ""}`}
+          onClick={() => setHallFilter("")}
+        >
+          全て
+        </button>
+        {HALL_OPTIONS.map((opt) => (
+          <button
+            key={opt.hallNo}
+            type="button"
+            className={`${styles.creatorSearchHallChip} ${hallFilter === opt.hallNo ? styles.creatorSearchHallChipActive : ""}`}
+            onClick={() => setHallFilter((prev) => (prev === opt.hallNo ? "" : opt.hallNo))}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
       {suggestions.length > 0 ? (
         <ul className={styles.creatorSearchSuggestList} aria-label="検索サジェスト">
           {suggestions.map((s) => (

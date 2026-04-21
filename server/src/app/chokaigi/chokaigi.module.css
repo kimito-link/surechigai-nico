@@ -930,6 +930,47 @@ details[open] .detailMapSummary::before {
   margin: 0.6rem 0;
 }
 
+.creatorSearchHallFilter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+  margin: 0 0 0.65rem;
+}
+
+.creatorSearchHallChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.2rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1.5px solid rgba(26, 88, 152, 0.3);
+  background: rgba(255, 255, 255, 0.9);
+  color: #1a5898;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.creatorSearchHallChip:hover {
+  background: rgba(26, 88, 152, 0.08);
+  border-color: rgba(26, 88, 152, 0.5);
+}
+
+.creatorSearchHallChipActive {
+  background: #1a5898;
+  color: #fff;
+  border-color: #1a5898;
+}
+
+.creatorSearchHallChipActive:hover {
+  background: #144a80;
+  border-color: #144a80;
+  color: #fff;
+}
+
 .creatorSearchInput {
   width: 100%;
   min-height: 2.5rem;
@@ -1068,8 +1109,8 @@ details[open] .detailMapSummary::before {
 .creatorSearchXChip {
   display: inline-flex;
   align-items: center;
-  min-height: 1.8rem;
-  padding: 0.2rem 0.58rem;
+  min-height: 2.75rem;
+  padding: 0.3rem 0.75rem;
   border-radius: 999px;
   text-decoration: none;
   font-size: clamp(0.73rem, 1.8vw, 0.8rem);
