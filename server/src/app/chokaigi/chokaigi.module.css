@@ -398,6 +398,236 @@
   text-decoration: underline;
 }
 
+.venueLiveWrap {
+  margin: 1rem 0 1.35rem;
+  padding: 0.85rem 0.95rem 1rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(37, 93, 155, 0.18);
+  background: rgba(255, 255, 255, 0.52);
+}
+
+.venueLiveHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.venueLiveHead .mapSubheading {
+  margin-top: 0;
+  margin-bottom: 0.3rem;
+}
+
+.venueLiveRefreshBtn {
+  flex-shrink: 0;
+  min-height: 2.2rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(37, 93, 155, 0.35);
+  background: rgba(37, 93, 155, 0.08);
+  color: #1a4a73;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.venueLiveRefreshBtn:hover:not(:disabled) {
+  background: rgba(37, 93, 155, 0.14);
+  transform: translateY(-1px);
+}
+
+.venueLiveRefreshBtn:disabled {
+  opacity: 0.68;
+  cursor: not-allowed;
+}
+
+.venueLiveHint,
+.venueLiveError {
+  margin: 0.45rem 0 0.65rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.55rem;
+  font-size: clamp(0.78rem, 1.95vw, 0.86rem);
+  line-height: 1.5;
+}
+
+.venueLiveHint {
+  background: rgba(37, 93, 155, 0.09);
+  border: 1px solid rgba(37, 93, 155, 0.18);
+  color: #3e4f61;
+}
+
+.venueLiveHint a {
+  color: #1a5a8a;
+  font-weight: 700;
+  text-underline-offset: 2px;
+}
+
+.venueLiveError {
+  background: rgba(183, 28, 28, 0.08);
+  border: 1px solid rgba(183, 28, 28, 0.2);
+  color: #8d2222;
+}
+
+.venueLiveMapFrame {
+  position: relative;
+  width: 100%;
+  margin-top: 0.35rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(37, 93, 155, 0.22);
+  background: #dcebf8;
+  aspect-ratio: 640 / 420;
+}
+
+.venueLiveMapImage {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.venueLiveVenuePin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  pointer-events: none;
+}
+
+.venueLiveVenueDot {
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  background: #c62828;
+  box-shadow: 0 0 0 2px rgba(198, 40, 40, 0.3);
+}
+
+.venueLiveVenueLabel {
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(44, 33, 23, 0.86);
+}
+
+.venueLivePin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.venueLivePinDot {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  background: #255d9b;
+  box-shadow: 0 0 0 2px rgba(37, 93, 155, 0.25);
+}
+
+.venueLivePinMe .venueLivePinDot {
+  width: 13px;
+  height: 13px;
+  background: #dd6500;
+  box-shadow: 0 0 0 2px rgba(221, 101, 0, 0.35);
+}
+
+.venueLivePinLabel {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 5px);
+  transform: translateX(-50%);
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(44, 33, 23, 0.85);
+  white-space: nowrap;
+}
+
+.venueLiveSummaryRow {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: clamp(0.76rem, 1.9vw, 0.84rem);
+  color: #5c5046;
+}
+
+.venueLiveList {
+  margin: 0.55rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.38rem;
+}
+
+.venueLiveListItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(37, 93, 155, 0.12);
+  background: rgba(37, 93, 155, 0.05);
+}
+
+.venueLiveListName,
+.venueLiveListArea {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.venueLiveListName {
+  font-size: clamp(0.78rem, 1.9vw, 0.85rem);
+  font-weight: 700;
+  color: #3a2f24;
+}
+
+.venueLiveListArea {
+  font-size: clamp(0.74rem, 1.8vw, 0.8rem);
+  color: #6b5d52;
+}
+
+.venueLiveListTime {
+  white-space: nowrap;
+  font-size: clamp(0.74rem, 1.8vw, 0.8rem);
+  font-weight: 700;
+  color: #255d9b;
+}
+
+.venueLiveEmpty {
+  margin: 0.6rem 0 0;
+  font-size: clamp(0.8rem, 2vw, 0.88rem);
+  color: #6b5d52;
+}
+
+@media (max-width: 520px) {
+  .venueLiveListItem {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .venueLiveListArea {
+    grid-column: 1 / -1;
+  }
+}
+
 .mapPdfCtaRow {
   display: flex;
   flex-wrap: wrap;
@@ -1718,23 +1948,29 @@ details[open] .detailMapSummary::before {
 .venueWanderMini {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
+  align-items: stretch;
+  gap: 0.6rem;
   margin: 1.5rem 0;
   width: 100%;
 }
 
+.venueWanderMiniScrollHint {
+  display: none;
+}
+
+/* 縦スクロールマップコンテナ */
+.venueWanderMiniOuter {
+  width: 100%;
+}
+
+/* マップ本体（SVG が縦に伸びる） */
 .venueWanderMiniMap {
   position: relative;
   width: 100%;
-  max-width: 100%;
-  margin-inline: auto;
+  background: #daf5fc;
   border-radius: 0.85rem;
   border: 1.5px solid rgba(0, 119, 182, 0.35);
-  background: #daf5fc;
-  box-shadow:
-    0 6px 24px rgba(0, 119, 182, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  box-shadow: 0 6px 24px rgba(0, 119, 182, 0.14);
   overflow: hidden;
   line-height: 0;
 }

@@ -13,7 +13,6 @@ export default function RootLayout({
     <html lang="ja">
       <body>
         <ClerkProvider
-          proxyUrl={process.env.NEXT_PUBLIC_CLERK_PROXY_URL}
           localization={jaJP}
           appearance={{
             variables: {

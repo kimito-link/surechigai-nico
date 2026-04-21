@@ -227,6 +227,205 @@
   text-align: center;
 }
 
+.mapActionRow {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mapRefreshButton {
+  width: 100%;
+  min-height: 40px;
+  padding: 10px 14px;
+  border: 1px solid rgba(37, 93, 155, 0.35);
+  border-radius: 8px;
+  background: rgba(37, 93, 155, 0.06);
+  color: #1a4a73;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.mapRefreshButton:hover:not(:disabled) {
+  background: rgba(37, 93, 155, 0.12);
+  transform: translateY(-1px);
+}
+
+.mapRefreshButton:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.liveMapWrap {
+  margin-top: 16px;
+  border-top: 1px solid rgba(37, 93, 155, 0.12);
+  padding-top: 14px;
+}
+
+.liveMapHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.liveMapTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.liveMapMeta {
+  font-size: 12px;
+  color: #5b6774;
+  font-weight: 600;
+}
+
+.liveMapNote {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: #6a5b4c;
+  line-height: 1.5;
+}
+
+.liveMapFrame {
+  position: relative;
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(37, 93, 155, 0.22);
+  aspect-ratio: 640 / 420;
+  background: #dcebf8;
+}
+
+.liveMapImage {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.liveMapVenuePin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.liveMapVenueDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  background: #c62828;
+  box-shadow: 0 0 0 2px rgba(198, 40, 40, 0.3);
+}
+
+.liveMapVenueLabel {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(44, 33, 23, 0.85);
+}
+
+.liveMapPin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.liveMapPinDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  background: #255d9b;
+  box-shadow: 0 0 0 2px rgba(37, 93, 155, 0.3);
+}
+
+.liveMapPinMe .liveMapPinDot {
+  width: 14px;
+  height: 14px;
+  background: #dd6500;
+  box-shadow: 0 0 0 2px rgba(221, 101, 0, 0.36);
+}
+
+.liveMapPinLabel {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #fff;
+  background: rgba(44, 33, 23, 0.86);
+}
+
+.liveMapList {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.liveMapListItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(37, 93, 155, 0.05);
+  border: 1px solid rgba(37, 93, 155, 0.12);
+}
+
+.liveMapListName {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2c2117;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.liveMapListArea {
+  font-size: 12px;
+  color: #5c5046;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.liveMapListTime {
+  font-size: 12px;
+  color: #255d9b;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.liveMapEmpty {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #6a5b4c;
+}
+
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -292,6 +491,14 @@
 
   .content {
     grid-template-columns: 1fr;
+  }
+
+  .liveMapListItem {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .liveMapListArea {
+    grid-column: 1 / -1;
   }
 
   .title {

@@ -49,6 +49,7 @@ import { VenueTour3D } from "./VenueTour3D";
 import { YukkuriDialogue } from "./YukkuriDialogue";
 import { VenueMapInteractive } from "./VenueMapInteractive";
 import { CharacterTip } from "./CharacterTip";
+import { VenueLiveMap } from "./VenueLiveMap";
 
 export default function ChokaigiPage() {
   return (
@@ -144,6 +145,7 @@ export default function ChokaigiPage() {
           {/* インタラクティブマップ */}
           <h3 className={styles.mapSubheading}>ホールをタップして詳細を見る</h3>
           <VenueMapInteractive />
+          <VenueLiveMap />
 
           <ol className={styles.mapHowToList}>
             {MAP_QUICK_STEPS.map((line, i) => (

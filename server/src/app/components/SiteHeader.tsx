@@ -56,7 +56,7 @@ export function SiteHeader() {
         <div className={styles.authArea}>
           {isSignedIn ? (
             <button
-              onClick={() => signOut()}
+              onClick={() => signOut({ redirectUrl: "/logged-out" })}
               className={styles.userButton}
             >
               {user?.imageUrl ? (
@@ -110,7 +110,7 @@ export function SiteHeader() {
           {isSignedIn ? (
             <button
               onClick={() => {
-                signOut();
+                signOut({ redirectUrl: "/logged-out" });
                 closeMenu();
               }}
               className={styles.mobileSignOutButton}

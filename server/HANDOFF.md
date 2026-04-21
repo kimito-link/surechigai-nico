@@ -5,6 +5,7 @@
 - Next.js 15 アプリ: `surechigai-lite-handoff/server`（Vercel の Root Directory は `server`）
 - 主要 URL: `/`（トップ LP）、`/chokaigi`（ニコニコ超会議向け LP）
 - 本番ドメイン例: `surechigai-nico.link`（`NEXT_PUBLIC_SITE_ORIGIN` は www なし・末尾スラッシュなし）
+- Clerk 認証は Frontend API 直結構成（`NEXT_PUBLIC_CLERK_PROXY_URL` / `api/clerk-proxy` は不使用）
 
 ## すでに入っているもの
 
@@ -28,6 +29,7 @@
 
 - 立ち絵画像: `public/chokaigi/yukkuri/*.png`（未配置だと画像 404、レイアウトは動く）
 - dev で `Cannot find module './xxx.js'` → `server` で `.next` 削除 → `npm run dev` または `npm run dev:clean`
+- Cloudflare DNS で Clerk カスタムドメインを使う場合、Clerk 用 CNAME は `DNS only`（灰色雲）にする
 
 ## 新チャットで最初に書くとよい一文（例）
 
