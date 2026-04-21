@@ -6,6 +6,7 @@ import styles from "./chokaigi.module.css";
 import { VENUE_GOOGLE_MAPS_URL } from "./lp-content";
 import { MAIN_HALLS, SUB_HALLS } from "./venue-map-data";
 import { OFFICIAL_CREATORCROSS_ENTRIES } from "./creatorcross-official-data";
+import { YukkuriCreatorTalk } from "./YukkuriCreatorTalk";
 
 type CreatorEntry = {
   id: string;
@@ -14,6 +15,7 @@ type CreatorEntry = {
   code?: string;
   name: string;
   sub?: string;
+  intro?: string;
   mapAnchor: string;
   accountLinks: AccountLink[];
   detailUrl?: string;
@@ -299,6 +301,7 @@ function createOfficialEntries(): CreatorEntry[] {
       sub: sub || undefined,
       mapAnchor: hallNo ? `#hall-card-${hallNo}` : "#map-heading",
       accountLinks,
+      intro: item.intro || undefined,
       detailUrl: item.detailUrl,
       searchText: [
         hallNo,
@@ -644,6 +647,15 @@ export function CreatorCrossSearch() {
                   </a>
                 ))}
               </div>
+              <YukkuriCreatorTalk
+                creator={{
+                  name: entry.name,
+                  booth: entry.code,
+                  hallLabel: entry.hallLabel,
+                  sub: entry.sub,
+                  intro: entry.intro,
+                }}
+              />
               <div className={styles.creatorSearchLinks}>
                 {entry.detailUrl ? (
                   <a href={entry.detailUrl} target="_blank" rel="noopener noreferrer">

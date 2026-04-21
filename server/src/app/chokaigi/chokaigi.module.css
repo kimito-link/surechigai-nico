@@ -1266,6 +1266,99 @@ details[open] .detailMapSummary::before {
   color: #8a7060;
 }
 
+/* ===== ゆっくりクリエイター解説 ===== */
+.yukkuriCreatorTalk {
+  margin: 0.5rem 0 0.2rem;
+}
+
+.yukkuriCreatorTalkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 2.2rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid rgba(221, 101, 0, 0.45);
+  background: rgba(221, 101, 0, 0.07);
+  color: #b35500;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.yukkuriCreatorTalkBtn:hover:not(:disabled) {
+  background: rgba(221, 101, 0, 0.14);
+  border-color: rgba(221, 101, 0, 0.7);
+}
+
+.yukkuriCreatorTalkBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.yukkuriCreatorTalkError {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  color: #c0392b;
+}
+
+.yukkuriCreatorTalkDialogue {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.yukkuriCreatorRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.yukkuriCreatorLabel {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(26, 88, 152, 0.1);
+  color: #1a5898;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.yukkuriCreatorRow[data-speaker="konta"] .yukkuriCreatorLabel {
+  background: rgba(221, 101, 0, 0.1);
+  color: #b35500;
+}
+
+.yukkuriCreatorRow[data-speaker="tanunee"] .yukkuriCreatorLabel {
+  background: rgba(130, 80, 200, 0.1);
+  color: #6b3fa0;
+}
+
+.yukkuriCreatorBubble {
+  flex: 1;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: #2c2117;
+  background: #f0f5ff;
+  border: 1px solid rgba(26, 88, 152, 0.2);
+  border-radius: 0.55rem;
+  padding: 0.35rem 0.6rem;
+}
+
+.yukkuriCreatorRow[data-speaker="konta"] .yukkuriCreatorBubble {
+  background: #fff5eb;
+  border-color: rgba(221, 101, 0, 0.2);
+}
+
+.yukkuriCreatorRow[data-speaker="tanunee"] .yukkuriCreatorBubble {
+  background: #f5eeff;
+  border-color: rgba(130, 80, 200, 0.2);
+}
+
 @media (max-width: 520px) {
   .creatorSearchControls {
     grid-template-columns: 1fr;
