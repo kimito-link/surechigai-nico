@@ -19,21 +19,26 @@ export default function OnboardingPage() {
     const register = async () => {
       try {
         const twitterAccount = user.externalAccounts?.find(
-          (a) => (a.provider as string) === "oauth_x" || (a.provider as string) === "oauth_twitter"
+          (a) =>
+            (a.provider as string) === "oauth_x" ||
+            (a.provider as string) === "oauth_twitter"
         );
-        const res = await fetch("/api/auth/register-direct", {
+        await fetch("/api/auth/register-direct", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             clerkId: user.id,
             email: user.primaryEmailAddress?.emailAddress || null,
             twitterHandle: twitterAccount?.username || null,
+            displayName: user.fullName || user.firstName || null,
+            avatarUrl: user.imageUrl || null,
           }),
+        }).then(async (res) => {
+          if (res.ok) {
+            const data = await res.json();
+            setUuidToken(data.user.uuid);
+          }
         });
-        if (res.ok) {
-          const data = await res.json();
-          setUuidToken(data.user.uuid);
-        }
       } catch (e) {
         console.warn("DB registration skipped:", e);
       }
@@ -44,8 +49,18 @@ export default function OnboardingPage() {
   }, [isLoaded, isSignedIn, user, router]);
 
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
-      <p>読み込み中...</p>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        background: "#FFF9F2",
+        fontSize: "1.1rem",
+        color: "#5c5248",
+      }}
+    >
+      <p>登録中...</p>
     </div>
   );
 }

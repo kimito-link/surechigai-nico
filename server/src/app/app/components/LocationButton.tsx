@@ -33,8 +33,8 @@ export default function LocationButton() {
           Authorization: `Bearer uuid:${uuid}`,
         },
         body: JSON.stringify({
-          latitude: position.latitude,
-          longitude: position.longitude,
+          lat: position.latitude,
+          lng: position.longitude,
         }),
       });
 

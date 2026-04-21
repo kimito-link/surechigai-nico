@@ -5,6 +5,7 @@ const isPublicRoute = createRouteMatcher([
   "/chokaigi(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/logged-out",
   "/api/webhooks(.*)",
 ]);
 

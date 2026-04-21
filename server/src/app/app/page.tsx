@@ -55,7 +55,7 @@ export default function AppPage() {
           </div>
         </div>
         <button
-          onClick={() => signOut({ redirectUrl: "/" })}
+          onClick={() => signOut({ redirectUrl: "/logged-out" })}
           className={styles.signOutButton}
         >
           ログアウト
