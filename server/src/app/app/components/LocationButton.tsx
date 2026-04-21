@@ -92,6 +92,23 @@ function buildMapImageUrl(venue: { lat: number; lng: number }) {
   return `https://staticmap.openstreetmap.de/staticmap.php?center=${center}&zoom=${MAP_ZOOM}&size=${MAP_WIDTH}x${MAP_HEIGHT}&maptype=mapnik`;
 }
 
+/** 端末・ブラウザの測位（Geolocation API）失敗を人が直せる文言に */
+function messageForGeolocationFailure(error: unknown): string {
+  const e = error as { code?: number; message?: string };
+  const code = typeof e?.code === "number" ? e.code : undefined;
+  // 1 PERMISSION_DENIED / 2 POSITION_UNAVAILABLE / 3 TIMEOUT
+  if (code === 1) {
+    return "位置情報がオフです。アドレスバー左の鍵アイコン → サイトの設定で「位置」を許可するか、OSの設定でブラウザの位置を許可してください。";
+  }
+  if (code === 2) {
+    return "端末が位置を返せませんでした。GPSをオンにし、屋内は窓際・屋外を試すか、PCの場合はWi‑Fi位置推定が有効か確認してください。";
+  }
+  if (code === 3) {
+    return "位置取得が時間切れです。通信を確認し、もう一度「現在地を送信」を押してください。";
+  }
+  return "位置情報の取得に失敗しました。HTTPSで開いているか、別ブラウザでも試してください。";
+}
+
 async function readFetchErrorMessage(
   res: Response,
   fallback: string
@@ -174,6 +191,7 @@ export default function LocationButton({
   const handleLocationSubmit = async () => {
     setIsSending(true);
     setMessage(null);
+    let messageDismissMs = 4500;
 
     try {
       const uuid = resolveUuid();
@@ -191,11 +209,21 @@ export default function LocationButton({
         );
       }
 
+      if (typeof navigator === "undefined" || !navigator.geolocation) {
+        throw new Error(
+          "このブラウザでは位置情報を使えません。スマホのChrome/Safariで https:// から開いてください。"
+        );
+      }
+
       const position = await new Promise<GeolocationCoordinates>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(
           (pos) => resolve(pos.coords),
           reject,
-          { timeout: 10000 }
+          {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 25_000,
+          }
         );
       });
 
@@ -221,16 +249,22 @@ export default function LocationButton({
       setMessage({ type: "success", text: "位置情報を送信しました（500mグリッドで共有）" });
       await fetchLiveMap();
     } catch (error) {
-      const errorMsg =
-        error instanceof GeolocationPositionError
-          ? "位置情報の許可が必要です"
-          : error instanceof Error
-            ? error.message
-            : "位置情報送信エラー";
+      const isGeo =
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        typeof (error as GeolocationPositionError).code === "number" &&
+        [1, 2, 3].includes((error as GeolocationPositionError).code);
+      const errorMsg = isGeo
+        ? messageForGeolocationFailure(error)
+        : error instanceof Error
+          ? error.message
+          : "位置情報送信エラー";
       setMessage({ type: "error", text: errorMsg });
+      messageDismissMs = 9000;
     } finally {
       setIsSending(false);
-      setTimeout(() => setMessage(null), 3500);
+      setTimeout(() => setMessage(null), messageDismissMs);
     }
   };
 
