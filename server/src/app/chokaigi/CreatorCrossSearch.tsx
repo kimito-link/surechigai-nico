@@ -31,6 +31,13 @@ type XHandleCandidate = {
   count: number;
 };
 
+type SearchSuggestion = {
+  key: string;
+  value: string;
+  label: string;
+  kind: "name" | "booth" | "x";
+};
+
 type RegistryAccountItem = {
   label: string;
   kind?: "official" | "related" | "search";
@@ -41,6 +48,7 @@ type RegistryAccountItem = {
 
 const CREATOR_SECTION_RE = /クリエイター|VOC@LOiD|ボカ|絵師|演奏|音声合成|初音ミク|M@STER/i;
 const DEFAULT_VISIBLE_COUNT = 60;
+const SUGGESTION_LIMIT = 12;
 
 /**
  * ここに直接アカウントを入れると、検索リンクより優先して表示される。
@@ -319,6 +327,7 @@ const CREATOR_ENTRIES = [...createMapEntries(), ...createOfficialEntries()].sort
 export function CreatorCrossSearch() {
   const [query, setQuery] = useState("");
   const normalized = query.trim().toLowerCase();
+  const normalizedWithoutAt = normalized.replace(/^@+/, "");
 
   const { filtered, totalHits, isTruncated, allMatched } = useMemo(() => {
     const allMatched = normalized
@@ -389,6 +398,67 @@ export function CreatorCrossSearch() {
     [normalized, query]
   );
 
+  const suggestions = useMemo(() => {
+    if (!normalized) return [] as SearchSuggestion[];
+
+    const byKey = new Map<string, SearchSuggestion>();
+    const addSuggestion = (s: SearchSuggestion) => {
+      if (byKey.has(s.key)) return;
+      byKey.set(s.key, s);
+    };
+
+    for (const entry of CREATOR_ENTRIES) {
+      if (
+        entry.name.toLowerCase().includes(normalized) ||
+        entry.searchText.includes(normalized)
+      ) {
+        addSuggestion({
+          key: `name:${entry.name.toLowerCase()}`,
+          value: entry.name,
+          label: `参加者: ${entry.name}`,
+          kind: "name",
+        });
+      }
+
+      if (entry.code && entry.code.toLowerCase().includes(normalized)) {
+        addSuggestion({
+          key: `booth:${entry.code.toLowerCase()}`,
+          value: entry.code,
+          label: `ブース: ${entry.code}`,
+          kind: "booth",
+        });
+      }
+
+      for (const link of entry.accountLinks) {
+        const handle = extractXHandleFromUrl(link.href);
+        if (!handle) continue;
+        if (!handle.toLowerCase().includes(normalizedWithoutAt)) continue;
+        addSuggestion({
+          key: `x:${handle.toLowerCase()}`,
+          value: `@${handle}`,
+          label: `X: @${handle}`,
+          kind: "x",
+        });
+      }
+
+      if (byKey.size >= SUGGESTION_LIMIT * 3) break;
+    }
+
+    const kindRank: Record<SearchSuggestion["kind"], number> = {
+      x: 0,
+      name: 1,
+      booth: 2,
+    };
+
+    return [...byKey.values()]
+      .sort((a, b) => {
+        const k = kindRank[a.kind] - kindRank[b.kind];
+        if (k !== 0) return k;
+        return a.value.localeCompare(b.value, "ja");
+      })
+      .slice(0, SUGGESTION_LIMIT);
+  }, [normalized, normalizedWithoutAt]);
+
   return (
     <section className={styles.creatorSearchWrap} aria-labelledby="creator-cross-search-heading">
       <h3 id="creator-cross-search-heading" className={styles.mapSubheading}>
@@ -416,6 +486,21 @@ export function CreatorCrossSearch() {
           クリア
         </button>
       </div>
+      {suggestions.length > 0 ? (
+        <ul className={styles.creatorSearchSuggestList} aria-label="検索サジェスト">
+          {suggestions.map((s) => (
+            <li key={s.key}>
+              <button
+                type="button"
+                className={styles.creatorSearchSuggestBtn}
+                onClick={() => setQuery(s.value)}
+              >
+                {s.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       <div className={styles.creatorSearchMeta}>
         <span>
