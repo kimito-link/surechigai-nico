@@ -90,10 +90,21 @@ function buildMapImageUrl(venue: { lat: number; lng: number }) {
   return `https://staticmap.openstreetmap.de/staticmap.php?center=${center}&zoom=${MAP_ZOOM}&size=${MAP_WIDTH}x${MAP_HEIGHT}&maptype=mapnik`;
 }
 
+function buildOsmTileImageUrl(lat: number, lng: number, z: number = 14) {
+  const n = 2 ** z;
+  const x = Math.floor(((lng + 180) / 360) * n);
+  const latRad = (lat * Math.PI) / 180;
+  const y = Math.floor(
+    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n
+  );
+  return `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+}
+
 export function VenueLiveMap() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [payload, setPayload] = useState<LiveMapPayload | null>(null);
+  const [staticMapImageVariant, setStaticMapImageVariant] = useState<0 | 1 | 2>(0);
 
   const fetchLiveMap = useCallback(async (manual = false) => {
     if (manual) setIsRefreshing(true);
@@ -163,12 +174,26 @@ export function VenueLiveMap() {
       {error && <p className={styles.venueLiveError}>{error}</p>}
 
       <div className={styles.venueLiveMapFrame} aria-label="幕張メッセ周辺のライブマップ">
-        <img
-          src={buildMapImageUrl(venue)}
-          alt={`${venue.name}周辺の地図`}
-          className={styles.venueLiveMapImage}
-          loading="lazy"
-        />
+        {staticMapImageVariant < 2 && (
+          <img
+            src={
+              staticMapImageVariant === 0
+                ? buildMapImageUrl(venue)
+                : buildOsmTileImageUrl(venue.lat, venue.lng, 14)
+            }
+            alt={`${venue.name}周辺の地図`}
+            className={styles.venueLiveMapImage}
+            loading="lazy"
+            onError={() =>
+              setStaticMapImageVariant((v) => (v < 1 ? 1 : 2) as 0 | 1 | 2)
+            }
+          />
+        )}
+        {staticMapImageVariant === 2 && (
+          <p className={styles.venueLiveError} style={{ minHeight: "12rem" }}>
+            地図画像の取得に失敗しました。ピン表示は有効な場合があります。© OpenStreetMap
+          </p>
+        )}
 
         <div className={styles.venueLiveVenuePin}>
           <span className={styles.venueLiveVenueDot} />

@@ -1,14 +1,17 @@
 /**
  * API レスポンス用。接続情報や生 SQL は含めない。
+ * mysql2 は code に 'ER_NO_SUCH_TABLE' や errno（数値）のどちらかを返す。
  */
 export function mapDbErrorToUserMessage(error: unknown): string {
   const e = error as {
     code?: string;
     errno?: number;
+    sqlState?: string;
     sqlMessage?: string;
     message?: string;
   };
   const code = e?.code;
+  const errno = e?.errno;
   const msg = (e?.sqlMessage || e?.message || "").toLowerCase();
 
   if (
@@ -27,12 +30,20 @@ export function mapDbErrorToUserMessage(error: unknown): string {
     return "データベースに接続できません。Vercel には Railway の「Public Network」の接続情報を入れてください（推奨: 変数 MYSQL_PUBLIC_URL にコピー。内部用 MYSQLHOST だけでは Vercel から届きません）。Railway の MySQL で Public TCP Proxy が有効かも確認してください。";
   }
 
-  if (code === "ER_BAD_DB_ERROR" || e?.errno === 1049) {
+  if (code === "ER_BAD_DB_ERROR" || errno === 1049) {
     return "データベース名が存在しません。MYSQL_DATABASE / DB_NAME が Railway の DB 名と一致するか確認してください。";
   }
 
-  if (code === "ER_NO_SUCH_TABLE" || code === "42S02") {
-    return "テーブルが見つかりません。本番 DB に init-db.sql を適用したか確認してください。";
+  if (
+    code === "ER_NO_SUCH_TABLE" ||
+    code === "42S02" ||
+    errno === 1146
+  ) {
+    return "テーブルが見つかりません。Vercel を再デプロイして ensure を流すか、Railway 上で scripts/ensure-chokaigi-tables.sql を実行してください。";
+  }
+
+  if (code === "ER_BAD_FIELD_ERROR" || errno === 1054) {
+    return "DB の列定義とアプリが一致しません。本番に最新の init-db.sql / マイグレーションを当ててください。";
   }
 
   if (code === "PROTOCOL_CONNECTION_LOST" || code === "EPIPE") {

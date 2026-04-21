@@ -92,6 +92,24 @@ function buildMapImageUrl(venue: { lat: number; lng: number }) {
   return `https://staticmap.openstreetmap.de/staticmap.php?center=${center}&zoom=${MAP_ZOOM}&size=${MAP_WIDTH}x${MAP_HEIGHT}&maptype=mapnik`;
 }
 
+/** staticmap ホストがブロックされる端末向け: 1枚の OSM タイル（会場周辺の目安） */
+function buildOsmTileImageUrl(
+  lat: number,
+  lng: number,
+  z: number = 14
+) {
+  const n = 2 ** z;
+  const x = Math.floor(((lng + 180) / 360) * n);
+  const latRad = (lat * Math.PI) / 180;
+  const y = Math.floor(
+    ((1 -
+      Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) /
+      2) *
+      n
+  );
+  return `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+}
+
 /** 端末・ブラウザの測位（Geolocation API）失敗を人が直せる文言に */
 function messageForGeolocationFailure(error: unknown): string {
   const e = error as { code?: number; message?: string };
@@ -144,7 +162,10 @@ export default function LocationButton({
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [mapPayload, setMapPayload] = useState<LiveMapPayload | null>(null);
   const [mapApiError, setMapApiError] = useState<string | null>(null);
-  const [staticMapImageFailed, setStaticMapImageFailed] = useState(false);
+  /** 0: 静的地図(WMS) 1: OSMタイル1枚 2: 画像なし */
+  const [staticMapImageVariant, setStaticMapImageVariant] = useState<0 | 1 | 2>(
+    0
+  );
 
   const resolveUuid = useCallback(() => {
     if (authUuidProp !== undefined) return authUuidProp;
@@ -343,18 +364,24 @@ export default function LocationButton({
         </p>
 
         <div className={styles.liveMapFrame} aria-label="超会議会場のライブマップ">
-          {!staticMapImageFailed && (
+          {staticMapImageVariant < 2 && (
             <img
-              src={buildMapImageUrl(venue)}
+              src={
+                staticMapImageVariant === 0
+                  ? buildMapImageUrl(venue)
+                  : buildOsmTileImageUrl(venue.lat, venue.lng, 14)
+              }
               alt="幕張メッセ周辺地図"
               className={styles.liveMapImage}
               loading="lazy"
-              onError={() => setStaticMapImageFailed(true)}
+              onError={() =>
+                setStaticMapImageVariant((v) => (v < 1 ? 1 : 2) as 0 | 1 | 2)
+              }
             />
           )}
-          {staticMapImageFailed && (
+          {staticMapImageVariant === 2 && (
             <p className={styles.liveMapImageFallback} role="img" aria-label="地図プレースホルダ">
-              地図タイルの読み込みに失敗しました（ネットワークや広告ブロッカーで外部画像が止まることがあります）。ピン表示は有効な場合があります。
+              地図画像の取得に失敗しました（回線・広告ブロッカー等）。下の会場周辺の目安はピン表示をご利用ください。© OpenStreetMap
             </p>
           )}
 

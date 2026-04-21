@@ -24,7 +24,16 @@ export async function POST(req: NextRequest) {
   if (authResult instanceof Response) return authResult;
 
   try {
-    const { lat, lng } = await req.json();
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return Response.json(
+        { error: "JSON の形式が不正です" },
+        { status: 400 }
+      );
+    }
+    const { lat, lng } = body as { lat?: unknown; lng?: unknown };
 
     if (typeof lat !== "number" || typeof lng !== "number") {
       return Response.json(
@@ -78,6 +87,9 @@ export async function POST(req: NextRequest) {
     return Response.json({ ok: true });
   } catch (error) {
     console.error("位置情報保存エラー:", error);
+    if (error instanceof SyntaxError) {
+      return Response.json({ error: "JSON の形式が不正です" }, { status: 400 });
+    }
     return Response.json(
       { error: mapDbErrorToUserMessage(error) },
       { status: 500 }
