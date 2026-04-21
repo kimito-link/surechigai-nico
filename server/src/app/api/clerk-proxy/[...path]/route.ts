@@ -83,7 +83,7 @@ async function handler(
       }
     });
 
-    return new NextResponse(clerkRes.body, {
+    return new NextResponse(new Uint8Array(clerkRes.body), {
       status: clerkRes.status,
       headers: resHeaders,
     });
