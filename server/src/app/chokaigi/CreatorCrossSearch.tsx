@@ -7,6 +7,7 @@ import { VENUE_GOOGLE_MAPS_URL } from "./lp-content";
 import { MAIN_HALLS, SUB_HALLS } from "./venue-map-data";
 import { OFFICIAL_CREATORCROSS_ENTRIES } from "./creatorcross-official-data";
 import { YukkuriCreatorTalk } from "./YukkuriCreatorTalk";
+import { XHandleYukkuri } from "./XHandleYukkuri";
 
 type CreatorEntry = {
   id: string;
@@ -492,6 +493,7 @@ export function CreatorCrossSearch() {
       <h3 id="creator-cross-search-heading" className={styles.mapSubheading}>
         参加者・関係者検索（クリエイタークロス）
       </h3>
+      <XHandleYukkuri />
       <p className={styles.mapFinePrint}>
         参加者名・団体名・ブースコード（例: 君斗 / りんく / H2 う-20 / VOCALOID）ですぐ検索できます。公式一覧の出展者データを統合し、Xリンクや会場位置へ移動できます。
       </p>

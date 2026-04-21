@@ -1359,6 +1359,75 @@ details[open] .detailMapSummary::before {
   border-color: rgba(130, 80, 200, 0.2);
 }
 
+/* ===== X ハンドル → ゆっくり紹介 ===== */
+.xHandleYukkuri {
+  margin: 0.8rem 0 1rem;
+  padding: 0.9rem 1rem 1rem;
+  border-radius: 0.85rem;
+  border: 2px solid rgba(221, 101, 0, 0.3);
+  background: rgba(255, 248, 240, 0.95);
+}
+
+.xHandleYukkuriLead {
+  margin: 0 0 0.65rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #3a2f24;
+}
+
+.xHandleYukkuriForm {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.xHandleAt {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a5898;
+  flex-shrink: 0;
+}
+
+.xHandleInput {
+  flex: 1;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.65rem;
+  border: 1.5px solid rgba(26, 88, 152, 0.3);
+  background: #fff;
+  color: #1a1a1a;
+  font-size: 0.95rem;
+}
+
+.xHandleInput:focus-visible {
+  outline: 2px solid rgba(26, 88, 152, 0.45);
+  outline-offset: 1px;
+}
+
+.xHandleSubmit {
+  flex-shrink: 0;
+  min-height: 2.5rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(221, 101, 0, 0.5);
+  background: #DD6500;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.xHandleSubmit:hover:not(:disabled) {
+  background: #b35500;
+}
+
+.xHandleSubmit:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 @media (max-width: 520px) {
   .creatorSearchControls {
     grid-template-columns: 1fr;
