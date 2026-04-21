@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import pool from "@/lib/db";
+import { mapDbErrorToUserMessage } from "@/lib/mapDbError";
 import { v4 as uuidv4 } from "uuid";
 import type { RowDataPacket } from "mysql2";
 
@@ -108,6 +109,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("register-direct error:", error);
-    return Response.json({ error: "サーバーエラー" }, { status: 500 });
+    return Response.json(
+      { error: mapDbErrorToUserMessage(error) },
+      { status: 500 }
+    );
   }
 }

@@ -32,14 +32,20 @@ const isLocalhost =
   resolvedHost === "::1";
 
 /**
- * Vercel 等から Railway MySQL (tcp proxy: *.rlwy.net) へは TLS 必須のことが多い。
- * 手動: Vercel に DATABASE_SSL=1
+ * Railway 等のクラウド MySQL / Vercel 本番は TLS が必要なことが多い。
+ * 明示: DATABASE_SSL=1 または 0
+ * 自動: ホスト名に rlwy.net / railway、または Vercel 上で 127.0.0.1 以外
  */
+const explicitSslOff =
+  process.env.DATABASE_SSL === "0" || process.env.DATABASE_SSL === "false";
+const explicitSslOn =
+  process.env.DATABASE_SSL === "1" || process.env.DATABASE_SSL === "true";
+const hostSuggestsCloudTls =
+  resolvedHost.includes("rlwy.net") || resolvedHost.includes("railway");
 const useMysqlSsl =
-  process.env.DATABASE_SSL === "1" ||
-  process.env.DATABASE_SSL === "true" ||
-  (!isLocalhost &&
-    (resolvedHost.includes("rlwy.net") || resolvedHost.includes("railway")));
+  !isLocalhost &&
+  !explicitSslOff &&
+  (explicitSslOn || hostSuggestsCloudTls || process.env.VERCEL === "1");
 
 const pool = mysql.createPool({
   host: resolvedHost,
