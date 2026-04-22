@@ -60,6 +60,7 @@ import {
 } from "./special-thanks-links";
 import { RomiProfileCard } from "./RomiProfileCard";
 import { SpecialThanksProfileCard } from "./SpecialThanksProfileCard";
+import { XLogoIcon } from "./XLogoIcon";
 
 const SPECIAL_THANKS_HIGHLIGHT_PROFILES = SPECIAL_THANKS_PROFILES.filter(
   (profile) => profile.highlight
@@ -598,7 +599,10 @@ export default function ChokaigiPage() {
                         rel="noopener noreferrer"
                         className={styles.footerThanksLink}
                       >
-                        𝕏 {link.label}
+                        <XLogoIcon className={styles.footerThanksLinkIcon} />
+                        <span className={styles.footerThanksLinkLabel}>
+                          {link.label}
+                        </span>
                       </a>
                     </li>
                   ))}

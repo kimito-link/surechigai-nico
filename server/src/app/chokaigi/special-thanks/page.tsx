@@ -8,6 +8,7 @@ import {
 import { THIRD_PARTY_CREDITS } from "../third-party-credits";
 import { RomiProfileCard } from "../RomiProfileCard";
 import { SpecialThanksProfileCard } from "../SpecialThanksProfileCard";
+import { XLogoIcon } from "../XLogoIcon";
 
 export const metadata: Metadata = {
   title: "Special Thanks・クレジット | すれちがいライト",
@@ -121,7 +122,10 @@ export default function SpecialThanksPage() {
                       rel="noopener noreferrer"
                       className={styles.footerThanksLink}
                     >
-                      𝕏 {link.label}
+                      <XLogoIcon className={styles.footerThanksLinkIcon} />
+                      <span className={styles.footerThanksLinkLabel}>
+                        {link.label}
+                      </span>
                     </a>
                   </li>
                 ))}

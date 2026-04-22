@@ -1,6 +1,7 @@
 import YukkuriIntroLink from "@/app/components/YukkuriIntroLink";
 import { getYukkuriDialogue } from "@/app/components/yukkuri-service-dialogues";
 import { ROMI_PROFILE } from "./special-thanks-links";
+import { XLogoIcon } from "./XLogoIcon";
 import styles from "./RomiProfileCard.module.css";
 
 type Props = {
@@ -32,7 +33,8 @@ export function RomiProfileCard({
             rel="noopener noreferrer"
             className={styles.xBadge}
           >
-            𝕏 {handle.label}
+            <XLogoIcon className={styles.xBadgeIcon} />
+            <span className={styles.xBadgeLabel}>{handle.label}</span>
           </a>
         ))}
       </div>

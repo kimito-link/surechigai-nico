@@ -42,20 +42,50 @@
   margin-bottom: 22px;
 }
 
+/*
+ * 共通 X バッジ（Special Thanks プロフィールカードと揃えた黒ピル）。
+ * 公式 X ロゴ SVG + ラベルの 2 つを横並びにし、`𝕏` 記号依存の
+ * 可読性問題を解消している。
+ */
 .xBadge {
-  display: inline-block;
-  padding: 6px 14px;
-  background: #000;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  background: linear-gradient(180deg, #1a1a1a 0%, #000 100%);
   color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 0.85rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.01em;
   text-decoration: none;
-  transition: opacity 0.15s ease;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-.xBadge:hover {
-  opacity: 0.85;
+.xBadge:hover,
+.xBadge:focus-visible {
+  background: linear-gradient(180deg, #2a2a2a 0%, #111 100%);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  outline: none;
+}
+
+.xBadgeIcon {
+  width: 0.95em;
+  height: 0.95em;
+  flex: none;
+}
+
+.xBadgeLabel {
+  white-space: nowrap;
 }
 
 .sitesTitle {
