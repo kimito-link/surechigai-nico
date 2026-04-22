@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import styles from "./YukkuriHero.module.css";
 
 type Dialogue = { rink: string; konta: string; tanunee: string };
@@ -32,6 +33,7 @@ function buildTweetUrl(handle: string, d: Dialogue) {
 
 export function YukkuriHero() {
   const router = useRouter();
+  const { isLoaded, isSignedIn } = useUser();
   const [handle, setHandle]     = useState("");
   const [dialogue, setDialogue] = useState<Dialogue | null>(null);
   const [loading, setLoading]   = useState(false);
@@ -68,7 +70,7 @@ export function YukkuriHero() {
       </p>
 
       {/* キャラクター3人 */}
-      <div className={styles.chars}>
+      <div className={`${styles.chars}${dialogue ? ` ${styles.charsWithBubble}` : ""}`}>
         {CHARS.map(({ key, label, src, color }, i) => (
           <div key={key} className={styles.charCard} style={{ animationDelay: `${i * 0.18}s` }}>
             <div className={styles.charImgWrap}>
@@ -122,16 +124,30 @@ export function YukkuriHero() {
       </form>
 
       {/* 登録は入力欄と独立したCTA */}
-      <div className={styles.registerCta}>
-        <p className={styles.registerCtaText}>自分がすれ違い通信に参加する場合はこちら</p>
-        <button
-          type="button"
-          className={styles.btnRegister}
-          onClick={() => router.push("/sign-in")}
-        >
-          自分を登録する（Xでログイン）
-        </button>
-      </div>
+      {isLoaded && !isSignedIn && (
+        <div className={styles.registerCta}>
+          <p className={styles.registerCtaText}>自分がすれ違い通信に参加する場合はこちら</p>
+          <button
+            type="button"
+            className={styles.btnRegister}
+            onClick={() => router.push("/sign-in")}
+          >
+            自分を登録する（Xでログイン）
+          </button>
+        </div>
+      )}
+      {isLoaded && isSignedIn && (
+        <div className={styles.registerCta}>
+          <p className={styles.registerCtaText}>すれ違い通信に参加中</p>
+          <button
+            type="button"
+            className={styles.btnRegister}
+            onClick={() => router.push("/app")}
+          >
+            ダッシュボードへ
+          </button>
+        </div>
+      )}
 
       {/* エラー */}
       {error && <p className={styles.error} role="alert">{error}</p>}
@@ -147,13 +163,24 @@ export function YukkuriHero() {
           >
             Xでシェアする
           </a>
-          <button
-            type="button"
-            className={styles.btnRegister}
-            onClick={() => router.push("/sign-in")}
-          >
-            すれ違い通信に登録する
-          </button>
+          {isLoaded && !isSignedIn && (
+            <button
+              type="button"
+              className={styles.btnRegister}
+              onClick={() => router.push("/sign-in")}
+            >
+              すれ違い通信に登録する
+            </button>
+          )}
+          {isLoaded && isSignedIn && (
+            <button
+              type="button"
+              className={styles.btnRegister}
+              onClick={() => router.push("/app")}
+            >
+              ダッシュボードへ
+            </button>
+          )}
         </div>
       )}
     </section>
