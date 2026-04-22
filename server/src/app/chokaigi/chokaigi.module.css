@@ -3472,6 +3472,53 @@ details[open] .detailMapSummary::before {
 }
 
 /*
+ * 軌跡上を流れる実在 X アカウントのアバターを、幕張到着時に
+ * 一瞬だけ「ポップアップ」して顔が読めるようにするためのスケール演出。
+ *
+ * duration は animateMotion と同じ 8s。animation-delay は traveler ごとに
+ * インラインで `${i * 0.25}s` が当たるため、到着（40% 地点 = 3.2s）で
+ * ちょうどピークに重なる。
+ *
+ * transform-origin を center にしないと SVG ネスト <g> ではデフォルトが
+ * (0,0) になり、親 <g> の animateMotion が示す path 位置から外れて
+ * 拡大してしまう。必ず `transform-origin: center` を指定すること。
+ *
+ * なお CSS の transform と SVG `<animateMotion>` が生成する transform は
+ * 別々の要素（ネスト <g>）に掛けているため合成できる。
+ */
+.accountAvatarPop {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: accountAvatarPop 8s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes accountAvatarPop {
+  0%,
+  6% {
+    transform: scale(0.55);
+  }
+  12% {
+    transform: scale(1);
+  }
+  32% {
+    transform: scale(1);
+  }
+  38%,
+  42% {
+    /* 到着のピーク。顔が読める大きさ。 */
+    transform: scale(1.85);
+  }
+  48% {
+    transform: scale(1.35);
+  }
+  55%,
+  100% {
+    transform: scale(0.55);
+  }
+}
+
+/*
  * 呼吸アニメ（集まる → 散らばる → また集まる）
  * 1 ループ 8s のうち、前半 4s で inbound（全国→幕張）、
  * 後半 4s で outbound（幕張→全国）が描かれる。
@@ -3558,6 +3605,12 @@ details[open] .detailMapSummary::before {
   /* SMIL で動く軌跡上のアバターは、モーション非推奨環境では非表示 */
   .accountTravelers {
     display: none;
+  }
+
+  /* スケールポップ演出も止める（念のため） */
+  .accountAvatarPop {
+    animation: none;
+    transform: none;
   }
 }
 

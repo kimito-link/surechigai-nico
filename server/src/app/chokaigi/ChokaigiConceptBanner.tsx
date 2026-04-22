@@ -110,8 +110,13 @@ const CROWD_DOTS: { dx: number; dy: number; r: number; color: string; delay: num
   { dx: 46, dy: 28, r: 2.8, color: "#DD6500", delay: 1.65 },
 ];
 
-/** 軌跡上を流れるアバターの半径（SVG 座標単位） */
-const AVATAR_R = 11;
+/**
+ * 軌跡上を流れるアバターの半径（SVG 座標単位, 1024 viewBox）。
+ * ここを小さくすると誰のアカウントか視認できないため、
+ * 最低 18〜20 程度は確保する。到着時のみ CSS の `accountAvatarPop`
+ * で一瞬 1.8x までスケールアップして顔を読みやすくする。
+ */
+const AVATAR_R = 20;
 
 export function ChokaigiConceptBanner() {
   return (
@@ -209,30 +214,42 @@ export function ChokaigiConceptBanner() {
             const delay = i * 0.25;
             return (
               <g key={`traveler-${line.id}`} className={line.travelerClass}>
-                <image
-                  href={line.avatarSrc}
-                  x={-AVATAR_R + 1.2}
-                  y={-AVATAR_R + 1.2}
-                  width={(AVATAR_R - 1.2) * 2}
-                  height={(AVATAR_R - 1.2) * 2}
-                  clipPath="url(#avatarClip)"
-                  preserveAspectRatio="xMidYMid slice"
-                />
-                {/* 白枠（読みやすさ） */}
-                <circle
-                  r={AVATAR_R - 0.6}
-                  fill="none"
-                  stroke="#fff"
-                  strokeWidth="1.8"
-                />
-                {/* アカウント色の外リング */}
-                <circle
-                  r={AVATAR_R + 0.6}
-                  fill="none"
-                  stroke={line.ringColor}
-                  strokeWidth="1.6"
-                  opacity="0.85"
-                />
+                {/*
+                 * 内側のスケール用 <g>。親 <g> は animateMotion で移動だけを担当し、
+                 * このネスト <g> が CSS keyframes (accountAvatarPop) でスケール変化を
+                 * 行うことで「移動の transform」と「スケールの transform」が
+                 * 衝突せずに合成される。animation-delay は親の animateMotion begin と
+                 * 同一にして、到着タイミングとスケールピークを同期させる。
+                 */}
+                <g
+                  className={styles.accountAvatarPop}
+                  style={{ animationDelay: `${delay}s` }}
+                >
+                  <image
+                    href={line.avatarSrc}
+                    x={-AVATAR_R + 1.2}
+                    y={-AVATAR_R + 1.2}
+                    width={(AVATAR_R - 1.2) * 2}
+                    height={(AVATAR_R - 1.2) * 2}
+                    clipPath="url(#avatarClip)"
+                    preserveAspectRatio="xMidYMid slice"
+                  />
+                  {/* 白枠（読みやすさ） */}
+                  <circle
+                    r={AVATAR_R - 0.6}
+                    fill="none"
+                    stroke="#fff"
+                    strokeWidth="1.8"
+                  />
+                  {/* アカウント色の外リング */}
+                  <circle
+                    r={AVATAR_R + 0.6}
+                    fill="none"
+                    stroke={line.ringColor}
+                    strokeWidth="1.6"
+                    opacity="0.85"
+                  />
+                </g>
                 <animateMotion
                   dur="8s"
                   begin={`${delay}s`}
