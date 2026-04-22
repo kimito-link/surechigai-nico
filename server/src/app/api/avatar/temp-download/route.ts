@@ -1,35 +1,19 @@
 import { NextRequest } from "next/server";
-import { readFile } from "fs/promises";
-import path from "path";
+import { parseAvatarPayload } from "@/lib/avatarPayload";
 
 // temp-avatar-download.php の置き換え
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData();
-    const filename = formData.get("filename") as string;
+    const payload = await parseAvatarPayload(req);
 
-    if (!filename) {
-      return new Response("Missing filename", { status: 400 });
-    }
-
-    const nameMatch = filename.match(/^(svgA)([0-9]+)\.(png|svg)$/);
-    if (!nameMatch) {
-      return new Response("Invalid filename", { status: 400 });
-    }
-
-    const filePath = path.join(process.cwd(), "public", "svgavatars", "temp-avatars", filename);
-    const buffer = await readFile(filePath);
-    const ext = nameMatch[3];
-
-    const contentType = ext === "png" ? "image/png" : "image/svg+xml";
-
-    return new Response(buffer, {
+    return new Response(new Uint8Array(payload.buffer), {
       headers: {
-        "Content-Type": contentType,
-        "Content-Disposition": `attachment; filename="avatar.${ext}"`,
+        "Content-Type": payload.contentType,
+        "Content-Disposition": `attachment; filename="${payload.filename}"`,
       },
     });
   } catch (error) {
-    return new Response("File not found", { status: 404 });
+    console.error("一時アバターダウンロードエラー:", error);
+    return Response.json({ error: "ダウンロード用データがありません" }, { status: 400 });
   }
 }

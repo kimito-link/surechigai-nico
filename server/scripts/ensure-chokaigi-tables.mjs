@@ -159,5 +159,40 @@ for (const st of statements) {
     st.slice(0, 72).replace(/\s+/g, " ") + (st.length > 72 ? "…" : "")
   );
 }
+
+// users.avatar_url は本番コードで参照されるため、既存DBにも揃える
+{
+  const [rows] = await conn.query(
+    `
+      SELECT DATA_TYPE, COLUMN_TYPE
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME = 'users'
+        AND COLUMN_NAME = 'avatar_url'
+      LIMIT 1
+    `
+  );
+  const col = rows?.[0];
+  const dataType = String(col?.DATA_TYPE || "").toLowerCase();
+  const columnType = String(col?.COLUMN_TYPE || "").toLowerCase();
+  const isTextType =
+    dataType === "text" || dataType === "mediumtext" || dataType === "longtext";
+
+  if (!col) {
+    await conn.query(
+      "ALTER TABLE users ADD COLUMN avatar_url TEXT NULL COMMENT 'プロフィール画像URL' AFTER avatar_config"
+    );
+    console.log("[ensure-chokaigi] ok: added users.avatar_url");
+  } else if (!isTextType) {
+    await conn.query(
+      "ALTER TABLE users MODIFY COLUMN avatar_url TEXT NULL COMMENT 'プロフィール画像URL' AFTER avatar_config"
+    );
+    console.log(
+      `[ensure-chokaigi] ok: widened users.avatar_url (${columnType || "unknown"} -> TEXT)`
+    );
+  } else {
+    console.log("[ensure-chokaigi] ok: users.avatar_url already present");
+  }
+}
 await conn.end();
 console.log(`[ensure-chokaigi] 完了 (${statements.length} 文)`);

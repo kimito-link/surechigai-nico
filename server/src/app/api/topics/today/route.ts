@@ -18,6 +18,12 @@ export async function GET() {
     return Response.json({ topic: rows[0].topic });
   } catch (error) {
     console.error("お題取得エラー:", error);
-    return Response.json({ topic: null });
+    return Response.json(
+      {
+        topic: null,
+        error: "daily_topics の取得に失敗しました",
+      },
+      { status: 503 }
+    );
   }
 }

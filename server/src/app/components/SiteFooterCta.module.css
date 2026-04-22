@@ -6,16 +6,6 @@
   z-index: 999;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.95) 20%);
   padding: 1rem 0 calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
-  transform: translateY(100%);
-  opacity: 0;
-  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-  pointer-events: none;
-}
-
-.visible {
-  transform: translateY(0);
-  opacity: 1;
-  pointer-events: auto;
 }
 
 .inner {

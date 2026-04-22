@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
   twitter_handle VARCHAR(30) NULL COMMENT 'Twitter ハンドル',
   nickname VARCHAR(20) NOT NULL DEFAULT '匿名さん',
   avatar_config JSON NULL COMMENT 'DiceBear アバター設定',
+  avatar_url TEXT NULL COMMENT 'プロフィール画像URL',
   hitokoto VARCHAR(100) NULL COMMENT 'ひとこと（今の気分）',
   hitokoto_set_at DATETIME NULL COMMENT 'ひとこと設定日時',
   spotify_track_id VARCHAR(64) NULL COMMENT 'Spotify トラックID',

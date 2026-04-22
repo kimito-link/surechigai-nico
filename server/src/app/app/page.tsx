@@ -128,7 +128,9 @@ export default function AppPage() {
     return null;
   }
 
-  const xAccount = user?.externalAccounts?.[0];
+  const xAccount = user?.externalAccounts?.find(
+    (a) => (a.provider as string) === "oauth_x" || (a.provider as string) === "oauth_twitter"
+  );
   const displayName = user?.fullName || user?.firstName || "匿名さん";
   const twitterHandle = xAccount?.username ? `@${xAccount.username}` : "";
 

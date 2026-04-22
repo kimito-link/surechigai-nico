@@ -12,7 +12,7 @@ const NAV_LINKS = [
   { href: "/chokaigi#usage-heading", label: "つかいかた" },
 ] as const;
 
-const HIDDEN_PATHS = ["/sign-in", "/sign-up", "/onboarding", "/app"];
+const HIDDEN_PATHS: string[] = [];
 
 function XIcon({ size = 14 }: { size?: number }) {
   return (
@@ -40,6 +40,7 @@ export function SiteHeader() {
   const { signOut } = useClerk();
   const dropRef = useRef<HTMLDivElement>(null);
   const isChokaigiPath = pathname?.startsWith("/chokaigi") || pathname === "/";
+  const isAppPath = pathname?.startsWith("/app");
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -119,9 +120,9 @@ export function SiteHeader() {
             <div className={styles.userPillWrap} ref={dropRef}>
               <button
                 className={styles.userPill}
-                onClick={() => setUserDropOpen((v) => !v)}
+                onClick={() => !isAppPath ? router.push("/app") : setUserDropOpen((v) => !v)}
                 aria-expanded={userDropOpen}
-                aria-label="アカウントメニューを開く"
+                aria-label={isAppPath ? "アカウントメニューを開く" : "ダッシュボードに移動"}
               >
                 <span className={styles.onlineDot} aria-hidden="true" />
                 {user?.imageUrl ? (
@@ -242,15 +243,28 @@ export function SiteHeader() {
           )}
 
           {isLoaded && isSignedIn ? (
-            <button
-              onClick={() => {
-                signOut({ redirectUrl: "/logged-out" });
-                closeMenu();
-              }}
-              className={styles.mobileSignOutButton}
-            >
-              ログアウト
-            </button>
+            <div className={styles.mobileAuthButtons}>
+              {!isAppPath && (
+                <button
+                  onClick={() => {
+                    router.push("/app");
+                    closeMenu();
+                  }}
+                  className={styles.mobileDashboardButton}
+                >
+                  ダッシュボード
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  signOut({ redirectUrl: "/logged-out" });
+                  closeMenu();
+                }}
+                className={styles.mobileSignOutButton}
+              >
+                ログアウト
+              </button>
+            </div>
           ) : (
             <Link
               href="/sign-in"

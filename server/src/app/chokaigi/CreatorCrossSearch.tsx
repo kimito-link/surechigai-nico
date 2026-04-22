@@ -144,6 +144,27 @@ function dedupeLinks(links: AccountLink[]) {
   return result;
 }
 
+function accountKindLabel(kind: AccountLink["kind"]) {
+  switch (kind) {
+    case "official":
+      return "公式";
+    case "related":
+      return "関係者";
+    case "search":
+      return "検索";
+  }
+}
+
+function sortAccountLinks(links: AccountLink[]) {
+  const rank: Record<AccountLink["kind"], number> = {
+    official: 0,
+    related: 1,
+    search: 2,
+  };
+
+  return [...links].sort((a, b) => rank[a.kind] - rank[b.kind]);
+}
+
 function buildAccountLinks(
   hallNo: string,
   code: string | undefined,
@@ -164,7 +185,7 @@ function buildAccountLinks(
     kind: idx === 0 ? "search" : "related",
   }));
 
-  return dedupeLinks([...registered, ...keywordLinks]);
+  return sortAccountLinks(dedupeLinks([...registered, ...keywordLinks]));
 }
 
 function extractXHandleFromUrl(href: string) {
@@ -637,6 +658,7 @@ export function CreatorCrossSearch() {
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
+                    data-kind={link.kind}
                     className={`${styles.creatorSearchAccountLink} ${
                       link.kind === "official"
                         ? styles.creatorSearchAccountOfficial
@@ -645,7 +667,12 @@ export function CreatorCrossSearch() {
                           : styles.creatorSearchAccountSearch
                     }`}
                   >
-                    {link.label}
+                    <span className={styles.creatorSearchAccountKind}>
+                      {accountKindLabel(link.kind)}
+                    </span>
+                    <span className={styles.creatorSearchAccountText}>
+                      {link.label}
+                    </span>
                   </a>
                 ))}
               </div>

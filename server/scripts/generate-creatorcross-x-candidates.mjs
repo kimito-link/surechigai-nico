@@ -1,0 +1,363 @@
+#!/usr/bin/env node
+/**
+ * Generate X-account candidate map for CreatorCross entries that do not have
+ * official X links in the source snapshot.
+ *
+ * Usage:
+ *   node scripts/generate-creatorcross-x-candidates.mjs
+ */
+
+import fs from "node:fs/promises";
+import path from "node:path";
+
+const ROOT = process.cwd();
+const SOURCE_PATH = path.join(
+  ROOT,
+  "src",
+  "app",
+  "chokaigi",
+  "creatorcross-official-data.ts"
+);
+const OUTPUT_PATH = path.join(
+  ROOT,
+  "src",
+  "app",
+  "chokaigi",
+  "creatorcross-x-candidates.ts"
+);
+const PROGRESS_PATH = path.join(
+  ROOT,
+  "scripts",
+  ".creatorcross-x-candidates-progress.json"
+);
+
+const GENERIC_HANDLE_BLOCKLIST = new Set([
+  "chokaigi_pr",
+  "niconico_info",
+  "niconico",
+  "x",
+  "twitter",
+]);
+
+const URL_PATH_BLOCKLIST = new Set([
+  "home",
+  "search",
+  "explore",
+  "settings",
+  "messages",
+  "notifications",
+  "intent",
+  "share",
+  "hashtag",
+  "i",
+  "compose",
+  "login",
+  "signup",
+  "tos",
+  "privacy",
+  "about",
+]);
+
+function normalizeHandle(raw) {
+  return String(raw ?? "").trim().replace(/^@+/, "");
+}
+
+function isValidXHandle(handle) {
+  return /^[A-Za-z0-9_]{1,15}$/.test(handle);
+}
+
+function extractXHandleFromUrl(href) {
+  try {
+    const url = new URL(href);
+    const host = url.hostname.toLowerCase();
+    const isXHost =
+      host === "x.com" ||
+      host === "www.x.com" ||
+      host === "twitter.com" ||
+      host === "www.twitter.com";
+    if (!isXHost) return "";
+
+    const first = url.pathname.split("/").filter(Boolean)[0] ?? "";
+    const candidate = normalizeHandle(first);
+    if (!candidate) return "";
+    if (URL_PATH_BLOCKLIST.has(candidate.toLowerCase())) return "";
+    if (!isValidXHandle(candidate)) return "";
+    return candidate;
+  } catch {
+    return "";
+  }
+}
+
+function inferHandleFromOtherSns(link) {
+  const explicit = normalizeHandle(link?.handle);
+  if (isValidXHandle(explicit)) return explicit;
+
+  try {
+    const url = new URL(link?.href ?? "");
+    const host = url.hostname.toLowerCase();
+    const parts = url.pathname.split("/").filter(Boolean);
+    let candidate = "";
+
+    if (host.endsWith("instagram.com")) {
+      const p = (parts[0] ?? "").toLowerCase();
+      if (
+        p &&
+        !["p", "reel", "reels", "tv", "stories", "explore", "accounts", "about"].includes(p)
+      ) {
+        candidate = parts[0] ?? "";
+      }
+    } else if (host.endsWith("tiktok.com")) {
+      const p = parts[0] ?? "";
+      if (p.startsWith("@")) candidate = p.slice(1);
+    } else if (host.endsWith("youtube.com") || host === "youtu.be") {
+      const p = parts[0] ?? "";
+      if (p.startsWith("@")) candidate = p.slice(1);
+    }
+
+    candidate = normalizeHandle(candidate);
+    if (!isValidXHandle(candidate)) return "";
+    return candidate;
+  } catch {
+    return "";
+  }
+}
+
+function scoreHandle({
+  handle,
+  qNameCount,
+  qEventCount,
+  inferredHandles,
+  allLinks,
+}) {
+  let score = 0;
+  score += qNameCount * 2;
+  score += qEventCount * 3;
+
+  const lc = handle.toLowerCase();
+  if (inferredHandles.has(lc)) score += 12;
+
+  const inHref = allLinks.some((href) => href.toLowerCase().includes(lc));
+  if (inHref) score += 4;
+
+  if (GENERIC_HANDLE_BLOCKLIST.has(lc)) score -= 8;
+
+  return score;
+}
+
+function escapeTsString(text) {
+  return text.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+async function fetchDdgHandleCounts(keyword) {
+  const q = encodeURIComponent(keyword);
+  let lastError;
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      const res = await fetch(`https://duckduckgo.com/html/?q=${q}`, {
+        headers: {
+          "user-agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        },
+      });
+      const html = await res.text();
+
+      const urls = [...html.matchAll(/uddg=([^"&]+)/g)].map((m) =>
+        decodeURIComponent(m[1])
+      );
+      const counter = new Map();
+
+      for (const href of urls) {
+        const handle = extractXHandleFromUrl(href);
+        if (!handle) continue;
+        const key = handle.toLowerCase();
+        counter.set(key, (counter.get(key) ?? 0) + 1);
+      }
+
+      return counter;
+    } catch (error) {
+      lastError = error;
+      const wait = 500 * (attempt + 1);
+      await new Promise((resolve) => setTimeout(resolve, wait));
+    }
+  }
+
+  throw lastError;
+}
+
+async function loadOfficialEntries() {
+  const source = await fs.readFile(SOURCE_PATH, "utf8");
+  const matched = source.match(
+    /OFFICIAL_CREATORCROSS_ENTRIES[\s\S]*?=\s*(\[[\s\S]*\]);\s*$/
+  );
+  if (!matched) {
+    throw new Error("Failed to parse OFFICIAL_CREATORCROSS_ENTRIES");
+  }
+  return JSON.parse(matched[1]);
+}
+
+function buildOutputTs(candidates, stats) {
+  const rows = [];
+  rows.push("/**");
+  rows.push(" * Auto-generated by scripts/generate-creatorcross-x-candidates.mjs");
+  rows.push(` * Generated at: ${new Date().toISOString()}`);
+  rows.push(` * Source entries: ${stats.totalEntries}`);
+  rows.push(` * Missing official X: ${stats.missingOfficialX}`);
+  rows.push(` * Filled candidate entries: ${stats.filledEntries}`);
+  rows.push(` * Processed target entries: ${stats.processedTargetEntries}`);
+  rows.push(" */");
+  rows.push("");
+  rows.push("export const CREATORCROSS_X_CANDIDATES: Record<string, string[]> = {");
+
+  const sorted = [...candidates.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  for (const [id, handles] of sorted) {
+    const hs = handles.map((h) => `"${escapeTsString(h)}"`).join(", ");
+    rows.push(`  "${escapeTsString(id)}": [${hs}],`);
+  }
+  rows.push("};");
+  rows.push("");
+  return rows.join("\n");
+}
+
+function parseArgs(argv) {
+  const options = {
+    start: 0,
+    limit: Number.POSITIVE_INFINITY,
+    includeEventQuery: false,
+  };
+  for (const arg of argv) {
+    if (arg.startsWith("--start=")) {
+      options.start = Math.max(0, Number(arg.split("=")[1] ?? 0) || 0);
+    } else if (arg.startsWith("--limit=")) {
+      const n = Number(arg.split("=")[1] ?? 0);
+      if (Number.isFinite(n) && n > 0) options.limit = n;
+    } else if (arg === "--include-event-query") {
+      options.includeEventQuery = true;
+    }
+  }
+  return options;
+}
+
+async function loadProgressMap() {
+  try {
+    const raw = await fs.readFile(PROGRESS_PATH, "utf8");
+    const parsed = JSON.parse(raw);
+    const map = new Map();
+    for (const [id, handles] of Object.entries(parsed)) {
+      if (Array.isArray(handles)) {
+        map.set(id, handles.map((v) => String(v).toLowerCase()));
+      }
+    }
+    return map;
+  } catch {
+    return new Map();
+  }
+}
+
+async function saveProgressMap(candidates) {
+  const obj = Object.fromEntries(
+    [...candidates.entries()].map(([id, handles]) => [id, handles])
+  );
+  await fs.writeFile(PROGRESS_PATH, `${JSON.stringify(obj, null, 2)}\n`, "utf8");
+}
+
+async function main() {
+  const options = parseArgs(process.argv.slice(2));
+  const entries = await loadOfficialEntries();
+  const targets = entries.filter(
+    (entry) => !(entry.links ?? []).some((link) => extractXHandleFromUrl(link.href))
+  );
+  const slice = targets.slice(options.start, options.start + options.limit);
+  const candidates = await loadProgressMap();
+  let processed = 0;
+
+  for (const entry of slice) {
+    processed += 1;
+
+    const inferredHandles = new Set(
+      (entry.links ?? [])
+        .map((link) => inferHandleFromOtherSns(link))
+        .filter(Boolean)
+        .map((v) => v.toLowerCase())
+    );
+
+    let qName = new Map();
+    let qEvent = new Map();
+    try {
+      qName = await fetchDdgHandleCounts(`${entry.name} X`);
+      if (options.includeEventQuery) {
+        qEvent = await fetchDdgHandleCounts(`${entry.name} ニコニコ超会議`);
+      }
+    } catch (error) {
+      console.warn(`[warn] skipped ${entry.id} ${entry.name}: ${String(error)}`);
+      continue;
+    }
+
+    const allHandles = new Set([
+      ...qName.keys(),
+      ...qEvent.keys(),
+      ...inferredHandles,
+    ]);
+
+    const scored = [...allHandles]
+      .map((key) => ({
+        handle: key,
+        score: scoreHandle({
+          handle: key,
+          qNameCount: qName.get(key) ?? 0,
+          qEventCount: qEvent.get(key) ?? 0,
+          inferredHandles,
+          allLinks: (entry.links ?? []).map((l) => l.href ?? ""),
+        }),
+      }))
+      .filter((item) => item.score >= 10)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map((item) => item.handle);
+
+    if (scored.length > 0) {
+      candidates.set(entry.id, scored);
+    }
+
+    if (processed % 20 === 0) {
+      // Keep visibility when running in CI/terminal.
+      console.log(
+        `processed ${processed}/${slice.length} (range ${options.start}..${
+          options.start + slice.length - 1
+        })`
+      );
+      await saveProgressMap(candidates);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  await saveProgressMap(candidates);
+
+  const content = buildOutputTs(candidates, {
+    totalEntries: entries.length,
+    missingOfficialX: targets.length,
+    filledEntries: candidates.size,
+    processedTargetEntries: slice.length,
+  });
+  await fs.writeFile(OUTPUT_PATH, content, "utf8");
+
+  console.log(
+    JSON.stringify(
+      {
+        output: path.relative(ROOT, OUTPUT_PATH).replace(/\\/g, "/"),
+        progress: path.relative(ROOT, PROGRESS_PATH).replace(/\\/g, "/"),
+        totalEntries: entries.length,
+        missingOfficialX: targets.length,
+        processedRange: [options.start, options.start + slice.length - 1],
+        filledEntries: candidates.size,
+      },
+      null,
+      2
+    )
+  );
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

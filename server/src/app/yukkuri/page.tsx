@@ -46,7 +46,7 @@ export default async function YukkuriSharePage({ searchParams }: Props) {
 
   return (
     <div style={{
-      minHeight: "100vh",
+      minHeight: "60vh",
       background: "#060c1a",
       display: "flex",
       flexDirection: "column",

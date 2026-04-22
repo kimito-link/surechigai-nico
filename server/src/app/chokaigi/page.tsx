@@ -55,6 +55,73 @@ import { CreatorCrossSearch } from "./CreatorCrossSearch";
 import { StarField } from "./StarField";
 import { YukkuriHero } from "./YukkuriHero";
 
+const SPECIAL_THANKS_LINKS = [
+  {
+    label: "大木ハルミさん 公式サイト",
+    href: "https://ohalu.bitfan.id/",
+  },
+  {
+    label: "アフランカフェ 公式ホームページ",
+    href: "https://www.ahuranproject.com/",
+  },
+  {
+    label: "佐藤さんのXアカウント",
+    href: "https://x.com/yuka_designer",
+  },
+  {
+    label: "オオマユさんのXアカウント",
+    href: "https://x.com/oomayu12345",
+  },
+  {
+    label: "oto1to1 公式サイト",
+    href: "https://oto1to1.com/",
+  },
+  {
+    label: "OTO1to1のXアカウント",
+    href: "https://x.com/OTO1to1",
+  },
+  {
+    label: "あぶそりゅーと☆せぶん 公式X",
+    href: "https://x.com/abuso2525",
+  },
+  {
+    label: "しらせのXアカウント",
+    href: "https://x.com/shirase_0404",
+  },
+  {
+    label: "しらいっのXアカウント",
+    href: "https://x.com/ewbcwj_lv",
+  },
+  {
+    label: "しんせいねうのXアカウント",
+    href: "https://x.com/sinseinaru",
+  },
+  {
+    label: "ゆずち☆のXアカウント",
+    href: "https://x.com/yuzuchis_mammy",
+  },
+  {
+    label: "みぃですのXアカウント",
+    href: "https://x.com/bakusyokuM",
+  },
+  {
+    label: "まある20.0のXアカウント",
+    href: "https://x.com/m20210411",
+  },
+  {
+    label: "蒼凪(あおなぎ)しずくのXアカウント",
+    href: "https://x.com/flap_shizuku",
+  },
+  {
+    label: "星野ロミさん 公式X",
+    href: "https://x.com/romi_hoshino",
+  },
+  {
+    label: "星野ロミさん サブX",
+    href: "https://x.com/romi63hoshino",
+  },
+] as const;
+
 export default function ChokaigiPage() {
   return (
     <main className={styles.shell}>
@@ -308,6 +375,28 @@ export default function ChokaigiPage() {
             <span aria-hidden="true"> · </span>
             <a href="/chokaigi">この企画LP（/chokaigi）</a>
           </p>
+          <section className={styles.footerThanks} aria-labelledby="special-thanks-heading">
+            <h2 id="special-thanks-heading" className={styles.footerThanksHeading}>
+              Special Thanks
+            </h2>
+            <p className={styles.footerThanksIntro}>
+              プログラムの提供と公開に感謝します。星野ロミさん、ありがとうございます。
+            </p>
+            <ul className={styles.footerThanksList}>
+              {SPECIAL_THANKS_LINKS.map((link) => (
+                <li key={link.href} className={styles.footerThanksItem}>
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.footerThanksLink}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
           <div className={styles.footerBrand}>
             <Image
               src={LOGO_CREATOR_CROSS_HORIZONTAL_SRC}

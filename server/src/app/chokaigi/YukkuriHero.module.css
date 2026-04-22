@@ -21,6 +21,12 @@
   justify-content: center;
   gap: clamp(1rem, 4vw, 2.5rem);
   flex-wrap: wrap;
+  padding-top: 0;
+  transition: padding-top 0.25s ease;
+}
+
+.charsWithBubble {
+  padding-top: clamp(80px, 22vw, 120px);
 }
 
 .charCard {
@@ -68,13 +74,14 @@
   padding: 0.55rem 0.85rem;
   font-size: 0.78rem;
   line-height: 1.5;
-  white-space: nowrap;
-  max-width: 160px;
   white-space: normal;
+  width: clamp(90px, 28vw, 160px);
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
   text-align: left;
   animation: bubbleIn 0.25s ease;
   z-index: 10;
+  word-break: break-all;
+  overflow-wrap: break-word;
 }
 
 .charBubble::after {
@@ -236,6 +243,15 @@
 .shareBtn:hover { background: #333; transform: translateY(-1px); }
 
 @media (max-width: 480px) {
-  .charImgWrap { width: 76px; height: 76px; }
-  .charBubble  { font-size: 0.72rem; max-width: 120px; }
+  .charImgWrap { width: 72px; height: 72px; }
+  .charBubble  { font-size: 0.68rem; padding: 0.4rem 0.6rem; }
+  .btnYukkuri, .btnRegister { min-width: 0; width: 100%; }
+  .shareRow { flex-direction: column; align-items: stretch; }
+  .shareBtn { justify-content: center; }
+}
+
+@media (max-width: 360px) {
+  .chars { gap: 0.5rem; }
+  .charImgWrap { width: 60px; height: 60px; }
+  .charBubble { font-size: 0.62rem; padding: 0.3rem 0.5rem; width: clamp(70px, 30vw, 110px); }
 }

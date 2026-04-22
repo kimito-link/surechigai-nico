@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     }
 
     const [existing] = await pool.execute<RowDataPacket[]>(
-      "SELECT id, uuid, nickname, avatar_config FROM users WHERE clerk_id = ? AND is_deleted = FALSE",
+      "SELECT id, uuid, nickname, avatar_config, avatar_url FROM users WHERE clerk_id = ? AND is_deleted = FALSE",
       [clerkId]
     );
 
@@ -70,6 +70,10 @@ export async function POST(req: NextRequest) {
       const user = existing[0];
       // 既存ユーザー: Twitter情報を最新に更新
       const avatarConfig = normalizeAvatarConfigForDb(avatarUrl, user.avatar_config);
+      const nextAvatarUrl =
+        typeof avatarUrl === "string" && avatarUrl.trim() !== ""
+          ? avatarUrl.trim()
+          : (user.avatar_url as string | null);
       const nickname = clipNicknameForDb(
         displayName != null && String(displayName).trim() !== ""
           ? String(displayName)
@@ -80,8 +84,8 @@ export async function POST(req: NextRequest) {
         typeof twitterHandle === "string" ? twitterHandle : null
       );
       await pool.execute(
-        "UPDATE users SET nickname = ?, avatar_config = ?, twitter_handle = ?, clerk_email = ? WHERE id = ?",
-        [nickname, avatarConfig, tw, email || null, user.id]
+        "UPDATE users SET nickname = ?, avatar_config = ?, avatar_url = ?, twitter_handle = ?, clerk_email = ? WHERE id = ?",
+        [nickname, avatarConfig, nextAvatarUrl, tw, email || null, user.id]
       );
       return Response.json({
         user: { uuid: user.uuid, nickname },
@@ -93,13 +97,17 @@ export async function POST(req: NextRequest) {
     const newUuid = uuidv4();
     const nickname = clipNicknameForDb(displayName, "匿名さん");
     const avatarConfig = normalizeAvatarConfigForDb(avatarUrl, null);
+    const nextAvatarUrl =
+      typeof avatarUrl === "string" && avatarUrl.trim() !== ""
+        ? avatarUrl.trim()
+        : null;
     const tw = clipTwitterHandleForDb(
       typeof twitterHandle === "string" ? twitterHandle : null
     );
     await pool.execute(
-      `INSERT INTO users (uuid, clerk_id, clerk_email, twitter_handle, nickname, avatar_config)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [newUuid, clerkId, email || null, tw, nickname, avatarConfig]
+      `INSERT INTO users (uuid, clerk_id, clerk_email, twitter_handle, nickname, avatar_config, avatar_url)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [newUuid, clerkId, email || null, tw, nickname, avatarConfig, nextAvatarUrl]
     );
 
     return Response.json({

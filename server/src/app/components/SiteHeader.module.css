@@ -397,6 +397,30 @@
   padding: 1rem 1.5rem 0.5rem;
 }
 
+.mobileAuthButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.mobileDashboardButton {
+  display: block;
+  width: 100%;
+  padding: 0.8rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  background: #255d9b;
+  border: none;
+  border-radius: 2rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mobileDashboardButton:hover {
+  background: #1a4a7a;
+}
+
 .mobileSignOutButton {
   display: block;
   width: 100%;

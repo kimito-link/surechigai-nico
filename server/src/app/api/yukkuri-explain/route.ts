@@ -2,13 +2,44 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "edge";
 
+const CACHE_TTL = 3600; // 1時間キャッシュ
+
+async function getCached(handle: string): Promise<{ rink: string; konta: string; tanunee: string } | null> {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token || !handle) return null;
+  try {
+    const res = await fetch(`${url}/get/yukkuri:${encodeURIComponent(handle)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return null;
+    const data = await res.json() as { result?: string | null };
+    if (!data.result) return null;
+    return JSON.parse(data.result) as { rink: string; konta: string; tanunee: string };
+  } catch { return null; }
+}
+
+async function setCached(handle: string, dialogue: { rink: string; konta: string; tanunee: string }) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token || !handle) return;
+  try {
+    await fetch(`${url}/pipeline`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify([["SET", `yukkuri:${handle}`, JSON.stringify(dialogue), "EX", CACHE_TTL]]),
+    });
+  } catch { /* ignore */ }
+}
+
 const MODELS = [
+  "inclusionai/ling-2.6-flash:free",
   "google/gemma-4-31b-it:free",
-  "google/gemma-4-26b-a4b-it:free",
   "meta-llama/llama-3.3-70b-instruct:free",
-  "meta-llama/llama-3.2-3b-instruct:free",
+  "google/gemma-4-26b-a4b-it:free",
 ];
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+const MODEL_TIMEOUT_MS = 5000;
 
 const SYSTEM_PROMPT = `あなたはニコニコ超会議2026「すれちがいライト」アプリのガイドキャラクター3人です。
 クリエイタークロス参加者やXユーザーを紹介するゆっくり解説を行います。
@@ -83,48 +114,58 @@ function buildUserMessage(
   return `以下のXユーザーを3人でゆっくり個別紹介してください:\n${lines}`;
 }
 
+function isDialogue(p: Record<string, unknown>): p is { rink: string; konta: string; tanunee: string } {
+  return typeof p.rink === "string" && typeof p.konta === "string" && typeof p.tanunee === "string";
+}
+
 function extractDialogue(text: string) {
-  const jsonMatch = text.match(/\{[^{}]*\}/);
-  if (!jsonMatch) return null;
+  const cleaned = text.replace(/```(?:json)?\n?/g, "").replace(/```/g, "").trim();
   try {
-    const parsed = JSON.parse(jsonMatch[0]) as Record<string, unknown>;
-    if (
-      typeof parsed.rink === "string" &&
-      typeof parsed.konta === "string" &&
-      typeof parsed.tanunee === "string"
-    ) {
-      return { rink: parsed.rink, konta: parsed.konta, tanunee: parsed.tanunee };
-    }
-  } catch {
-    // fall through
-  }
+    const parsed = JSON.parse(cleaned) as Record<string, unknown>;
+    if (isDialogue(parsed)) return parsed;
+  } catch { /* fall through */ }
+  const match = cleaned.match(/\{[\s\S]*?\}/);
+  if (!match) return null;
+  try {
+    const parsed = JSON.parse(match[0]) as Record<string, unknown>;
+    if (isDialogue(parsed)) return parsed;
+  } catch { /* fall through */ }
   return null;
 }
 
 async function callModel(apiKey: string, model: string, userMessage: string) {
-  const res = await fetch(OPENROUTER_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": "https://surechigai-nico.link/",
-      "X-Title": "すれちがいライト ゆっくり解説",
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userMessage },
-      ],
-      max_tokens: 400,
-      temperature: 0.9,
-    }),
-  });
-  if (!res.ok) return null;
-  const data = await res.json() as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  return data.choices?.[0]?.message?.content ?? null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), MODEL_TIMEOUT_MS);
+  try {
+    const res = await fetch(OPENROUTER_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://surechigai-nico.link/",
+        "X-Title": "すれちがいライト ゆっくり解説",
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userMessage },
+        ],
+        max_tokens: 300,
+        temperature: 0.7,
+      }),
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    const data = await res.json() as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    return data.choices?.[0]?.message?.content ?? null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -142,9 +183,14 @@ export async function POST(req: NextRequest) {
     intro?: string;
   };
 
+  const handle = body.xHandle?.replace(/^@/, "") ?? "";
+
+  // キャッシュ確認
+  const cached = await getCached(handle);
+  if (cached) return NextResponse.json(cached);
+
   // Xプロフィールをベアラートークンで取得（設定されている場合のみ）
   const bearerToken = process.env.TWITTER_BEARER_TOKEN;
-  const handle = body.xHandle?.replace(/^@/, "") ?? "";
   const profile = (bearerToken && handle) ? await fetchXProfile(handle, bearerToken) : null;
 
   const userMessage = buildUserMessage(body, profile);
@@ -154,7 +200,10 @@ export async function POST(req: NextRequest) {
       const text = await callModel(apiKey, model, userMessage);
       if (!text) continue;
       const dialogue = extractDialogue(text);
-      if (dialogue) return NextResponse.json(dialogue);
+      if (dialogue) {
+        await setCached(handle, dialogue);
+        return NextResponse.json(dialogue);
+      }
     } catch {
       // try next model
     }
