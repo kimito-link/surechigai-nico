@@ -43,8 +43,13 @@ function groupByRegion(list: PrefectureSummary[]): RegionGroup[] {
 }
 
 export default async function CreatorsIndexPage() {
-  const { prefectures, totalCreators, totalLive } =
-    await getPrefectureSummaries();
+  const {
+    prefectures,
+    totalCreators,
+    totalLive,
+    unknownLocationCount,
+    grandTotal,
+  } = await getPrefectureSummaries();
   const groups = groupByRegion(prefectures);
 
   return (
@@ -63,8 +68,14 @@ export default async function CreatorsIndexPage() {
         </p>
         <div className={styles.metaRow}>
           <span className={styles.metaChip}>
-            参加者 <strong>{totalCreators.toLocaleString("ja-JP")}</strong> 人
+            参加者 <strong>{grandTotal.toLocaleString("ja-JP")}</strong> 人
           </span>
+          {unknownLocationCount > 0 && (
+            <span className={styles.metaChip}>
+              位置情報マップ上 <strong>{totalCreators.toLocaleString("ja-JP")}</strong> 人
+              {" / "}未送信 <strong>{unknownLocationCount.toLocaleString("ja-JP")}</strong> 人
+            </span>
+          )}
           {totalLive > 0 && (
             <span className={`${styles.metaChip} ${styles.metaChipLive}`}>
               <span className={styles.liveDot} aria-hidden="true" />{" "}
@@ -114,6 +125,38 @@ export default async function CreatorsIndexPage() {
           </div>
         </section>
       ))}
+
+      {unknownLocationCount > 0 && (
+        <section
+          className={styles.regionBlock}
+          aria-labelledby="unknown-location-heading"
+        >
+          <h2
+            id="unknown-location-heading"
+            className={styles.regionHeading}
+          >
+            まだ位置情報が届いていない参加者
+          </h2>
+          <div className={styles.prefectureGrid}>
+            <div
+              className={`${styles.prefectureCard} ${styles.prefectureCardEmpty}`}
+              aria-label="位置情報未送信の参加者"
+            >
+              <span className={styles.prefectureName}>位置情報未送信</span>
+              <span className={styles.prefectureCount}>
+                <span className={styles.prefectureCountNum}>
+                  {unknownLocationCount.toLocaleString("ja-JP")}
+                </span>
+                人
+              </span>
+            </div>
+          </div>
+          <p className={styles.regionNote}>
+            すれちがいライトに登録済みですが、まだ一度も位置情報を送っていない参加者です。
+            アプリを開いて位置情報を許可すると、お住まいの都道府県に表示されます。
+          </p>
+        </section>
+      )}
 
       <div className={styles.backLinkRow}>
         <Link href="/" className={styles.backLink}>

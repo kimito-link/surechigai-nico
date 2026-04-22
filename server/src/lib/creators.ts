@@ -29,8 +29,13 @@ export type PrefectureSummary = {
 
 export type PrefectureListResult = {
   prefectures: PrefectureSummary[];
+  /** いずれかの県にマッピングできた参加者数（都道府県カードの合計） */
   totalCreators: number;
   totalLive: number;
+  /** 登録済みだが位置情報を 1 度も送っていないユーザー数 */
+  unknownLocationCount: number;
+  /** TOP の「すれちがい通信 登録」と一致する全体人数 (totalCreators + unknownLocationCount) */
+  grandTotal: number;
 };
 
 export type PrefectureDetailResult = {
@@ -71,6 +76,8 @@ function buildEmptySummary(): PrefectureSummary[] {
   }));
 }
 
+type UnknownCountRow = RowDataPacket & { cnt: number };
+
 export async function getPrefectureSummaries(): Promise<PrefectureListResult> {
   try {
     // twitter_handle 未設定の参加者も、逆ジオが未完了で municipality=NULL の行も含める。
@@ -87,6 +94,18 @@ export async function getPrefectureSummaries(): Promise<PrefectureListResult> {
        WHERE u.is_deleted = FALSE
          AND u.is_suspended = FALSE`
     );
+
+    // 位置情報を 1 度も送っていない参加者（= 登録はしたがピンが立っていない）
+    const [unknownRows] = await pool.execute<UnknownCountRow[]>(
+      `SELECT COUNT(*) AS cnt
+       FROM users u
+       LEFT JOIN locations l ON l.user_id = u.id
+       WHERE u.is_deleted = FALSE
+         AND u.is_suspended = FALSE
+         AND l.user_id IS NULL`
+    );
+    const unknownLocationCount =
+      unknownRows.length > 0 ? Number(unknownRows[0].cnt) : 0;
 
     const now = Date.now();
     const byPref = new Map<
@@ -126,10 +145,13 @@ export async function getPrefectureSummaries(): Promise<PrefectureListResult> {
       };
     });
 
+    const totalCreators = prefectures.reduce((a, p) => a + p.count, 0);
     return {
       prefectures,
-      totalCreators: prefectures.reduce((a, p) => a + p.count, 0),
+      totalCreators,
       totalLive: prefectures.reduce((a, p) => a + p.liveCount, 0),
+      unknownLocationCount,
+      grandTotal: totalCreators + unknownLocationCount,
     };
   } catch (err) {
     console.error("[getPrefectureSummaries] error", err);
@@ -137,6 +159,8 @@ export async function getPrefectureSummaries(): Promise<PrefectureListResult> {
       prefectures: buildEmptySummary(),
       totalCreators: 0,
       totalLive: 0,
+      unknownLocationCount: 0,
+      grandTotal: 0,
     };
   }
 }

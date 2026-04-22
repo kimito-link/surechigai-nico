@@ -39,15 +39,11 @@ async function loadActiveNow(): Promise<number> {
 
 async function loadRegisteredTotal(): Promise<number> {
   try {
-    // 「すれちがい通信 登録」= これまでに 1 度でも位置情報を送った参加者の
-    // ユニーク数に揃える。単に users を COUNT すると位置未送信ユーザーも
-    // 含んでしまい、/creators 側 (locations INNER JOIN) と人数が食い違う。
     const [rows] = await pool.query<CountRow[]>(
-      `SELECT COUNT(DISTINCT l.user_id) AS cnt
-       FROM locations l
-       INNER JOIN users u ON u.id = l.user_id
-       WHERE u.is_deleted = FALSE
-         AND u.is_suspended = FALSE`
+      `SELECT COUNT(*) AS cnt
+       FROM users
+       WHERE is_deleted = FALSE
+         AND is_suspended = FALSE`
     );
     return rows.length > 0 ? Number(rows[0].cnt) : 0;
   } catch {
