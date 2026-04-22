@@ -118,7 +118,22 @@ export function YukkuriVoicePlayer({ dialogue, compact }: Props) {
 
   if (!dialogue) return null;
 
-  if (gate === "off") return null;
+  if (gate === "off") {
+    return (
+      <div
+        className={`${styles.wrap}${compact ? ` ${styles.wrapCompact}` : ""}`}
+        role="region"
+        aria-label="VOICEVOX 読み上げ"
+      >
+        <button type="button" className={styles.playBtnDisabled} disabled>
+          VOICEVOX は未設定です
+        </button>
+        <p className={styles.hintMuted}>
+          サーバー環境変数 `VOICEVOX_BASE_URL` を設定すると読み上げできます。
+        </p>
+      </div>
+    );
+  }
 
   if (gate === "unknown") {
     return (
