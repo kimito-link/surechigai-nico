@@ -252,6 +252,12 @@ export const SPECIAL_THANKS_X_ONLY: ReadonlyArray<SpecialThanksXLink> = [
   { label: "@ruserock", href: "https://x.com/ruserock" },
   { label: "@suke_arts", href: "https://x.com/suke_arts" },
   { label: "@Uchu_sumi", href: "https://x.com/Uchu_sumi" },
+  { label: "@Colorfulbldra", href: "https://x.com/Colorfulbldra" },
+  { label: "@LQFtHRMiyCXONqM", href: "https://x.com/LQFtHRMiyCXONqM" },
+  { label: "@miku_nosuke", href: "https://x.com/miku_nosuke" },
+  { label: "@mini_size_piano", href: "https://x.com/mini_size_piano" },
+  { label: "@mini_sub_piano", href: "https://x.com/mini_sub_piano" },
+  { label: "@nicotomo_jp", href: "https://x.com/nicotomo_jp" },
 ] as const;
 
 /**
