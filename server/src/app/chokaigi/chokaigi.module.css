@@ -2818,6 +2818,7 @@ details[open] .detailMapSummary::before {
 }
 
 .scatterMap {
+  position: relative;
   width: 100%;
   max-width: min(100%, 28rem);
   border-radius: 1rem;
@@ -2825,12 +2826,34 @@ details[open] .detailMapSummary::before {
   border: 1px solid rgba(26, 88, 152, 0.12);
   background: rgba(244, 237, 224, 0.75);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+  aspect-ratio: 320 / 220;
+}
+
+.scatterBase {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.scatterBase .scatterSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .scatterSvg {
   display: block;
   width: 100%;
   height: auto;
+}
+
+.scatterOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
 .scatterCenter {
@@ -3300,5 +3323,213 @@ details[open] .detailMapSummary::before {
 
   .usagePhone {
     width: clamp(50px, 15vw, 70px);
+  }
+}
+
+/* ========================================
+   ヒーローのコンセプトバナー（日本地図＋コピー）
+   izanami 記事の「情報の優先順位」「体験の一貫性」に基づき、
+   主役（入力フォーム）を邪魔しないよう、地図は薄く背景化する。
+   ======================================== */
+
+.conceptBanner {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(160px, 42%) 1fr;
+  align-items: center;
+  gap: clamp(0.75rem, 3vw, 1.5rem);
+  padding: clamp(0.6rem, 2.5vw, 1rem) clamp(0.75rem, 3vw, 1.25rem);
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 248, 238, 0.7));
+  border: 1px solid rgba(26, 88, 152, 0.12);
+  box-shadow: 0 6px 20px rgba(26, 88, 152, 0.06);
+}
+
+.conceptMapLayer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 320 / 220;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.conceptMapSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.conceptArrowsSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.conceptPin {
+  transform-origin: 245px 105px;
+  animation: conceptPinPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes conceptPinPulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50%      { transform: scale(1.12); opacity: 1; }
+}
+
+/*
+ * 呼吸アニメ（集まる → 散らばる → また集まる）
+ * 1 ループ 8s のうち、前半 4s で inbound（全国→幕張）、
+ * 後半 4s で outbound（幕張→全国）が描かれる。
+ * それぞれ 5 本の線は時間差でずらして、群衆感を出す。
+ */
+.conceptInbound1,
+.conceptInbound2,
+.conceptInbound3,
+.conceptInbound4,
+.conceptInbound5 {
+  stroke-dashoffset: 200;
+  opacity: 0;
+  animation: conceptInboundDraw 8s ease-in-out infinite;
+}
+
+.conceptInbound1 { animation-delay: 0s; }
+.conceptInbound2 { animation-delay: 0.25s; }
+.conceptInbound3 { animation-delay: 0.5s; }
+.conceptInbound4 { animation-delay: 0.75s; }
+.conceptInbound5 { animation-delay: 1s; }
+
+@keyframes conceptInboundDraw {
+  0%   { stroke-dashoffset: 200; opacity: 0; }
+  8%   { opacity: 0.55; }
+  35%  { stroke-dashoffset: 0; opacity: 0.55; }
+  45%  { stroke-dashoffset: -60; opacity: 0; }
+  100% { stroke-dashoffset: -60; opacity: 0; }
+}
+
+.conceptOutbound1,
+.conceptOutbound2,
+.conceptOutbound3,
+.conceptOutbound4,
+.conceptOutbound5 {
+  stroke-dashoffset: 200;
+  opacity: 0;
+  animation: conceptOutboundDraw 8s ease-in-out infinite;
+}
+
+.conceptOutbound1 { animation-delay: 0s; }
+.conceptOutbound2 { animation-delay: 0.25s; }
+.conceptOutbound3 { animation-delay: 0.5s; }
+.conceptOutbound4 { animation-delay: 0.75s; }
+.conceptOutbound5 { animation-delay: 1s; }
+
+@keyframes conceptOutboundDraw {
+  0%, 50% { stroke-dashoffset: 200; opacity: 0; }
+  58%     { opacity: 0.5; }
+  85%     { stroke-dashoffset: 0; opacity: 0.5; }
+  95%     { stroke-dashoffset: -60; opacity: 0; }
+  100%    { stroke-dashoffset: -60; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .conceptPin,
+  .conceptInbound1,
+  .conceptInbound2,
+  .conceptInbound3,
+  .conceptInbound4,
+  .conceptInbound5,
+  .conceptOutbound1,
+  .conceptOutbound2,
+  .conceptOutbound3,
+  .conceptOutbound4,
+  .conceptOutbound5 {
+    animation: none;
+    stroke-dashoffset: 0;
+    opacity: 0.45;
+  }
+}
+
+.conceptCaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.conceptLine {
+  margin: 0;
+  font-size: clamp(0.92rem, 2.8vw, 1.1rem);
+  font-weight: 800;
+  color: #1a5898;
+  line-height: 1.35;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3em;
+}
+
+.conceptNationwide {
+  color: #1a5898;
+}
+
+.conceptMakuhari {
+  color: #c62828;
+  position: relative;
+}
+
+.conceptMakuhari::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.1em;
+  height: 2px;
+  background: #c62828;
+  opacity: 0.35;
+  border-radius: 1px;
+}
+
+.conceptArrow {
+  color: #DD6500;
+  font-weight: 900;
+}
+
+.conceptSub {
+  margin: 0;
+  font-size: clamp(0.76rem, 2.1vw, 0.88rem);
+  color: rgba(26, 26, 26, 0.72);
+  line-height: 1.55;
+}
+
+.conceptSub strong {
+  color: #DD6500;
+  font-weight: 800;
+}
+
+/* モバイル: 横並びが厳しくなる 480px 以下で縦積みに切り替え */
+@media (max-width: 480px) {
+  .conceptBanner {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+    padding: 0.7rem 0.85rem;
+  }
+
+  .conceptMapLayer {
+    max-width: 17rem;
+    margin: 0 auto;
+  }
+
+  .conceptCaption {
+    text-align: center;
+    align-items: center;
+  }
+
+  .conceptLine {
+    justify-content: center;
   }
 }

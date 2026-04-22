@@ -1,10 +1,15 @@
 "use client";
 
 import styles from "./chokaigi.module.css";
+import { JapanMapSilhouette } from "./JapanMapSilhouette";
 
 /**
  * 超会議が終わったら全国に散らばるけど、みんな同じ方向を見ている
  * — エモーショナルな演出
+ *
+ * ベースの地図シルエット／幕張ピンは `JapanMapSilhouette` を使い、
+ * ヒーローのコンセプトバナーと「同じ地図」で体験の一貫性を保つ。
+ * ここでは散らばっていく人々と放射状の軌跡だけをレイヤーとして重ねる。
  */
 export function JapanVenueLocator() {
   return (
@@ -13,51 +18,15 @@ export function JapanVenueLocator() {
       aria-label="超会議で出会ったみんなが、全国へ散らばっていくイメージ"
     >
       <div className={styles.scatterMap}>
+        <div className={styles.scatterBase}>
+          <JapanMapSilhouette variant="scatter" />
+        </div>
         <svg
-          className={styles.scatterSvg}
+          className={styles.scatterOverlay}
           viewBox="0 0 320 220"
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
         >
-          <defs>
-            <linearGradient id="scatterSea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#e8f4fc" />
-              <stop offset="100%" stopColor="#d4e9f7" />
-            </linearGradient>
-          </defs>
-          <rect width="320" height="220" fill="url(#scatterSea)" rx="12" />
-
-          {/* 日本列島シルエット（シンプル） */}
-          <g fill="#f5f0eb" stroke="#c9b8a8" strokeWidth="1.2" strokeLinejoin="round">
-            {/* 北海道 */}
-            <path d="M 230 25 Q 270 20 280 35 Q 285 50 270 55 Q 250 60 235 50 Q 225 40 230 25 Z" />
-            {/* 本州 */}
-            <path d="M 235 65 Q 260 60 270 75 Q 275 95 265 115 Q 250 135 230 145 Q 200 155 170 150 Q 140 145 120 130 Q 110 120 115 105 Q 125 90 145 85 Q 170 80 195 75 Q 220 70 235 65 Z" />
-            {/* 四国 */}
-            <path d="M 145 140 Q 170 135 175 150 Q 170 165 145 160 Q 130 155 145 140 Z" />
-            {/* 九州 */}
-            <path d="M 95 135 Q 120 130 125 150 Q 120 175 100 180 Q 80 175 75 160 Q 80 140 95 135 Z" />
-            {/* 沖縄 */}
-            <ellipse cx="65" cy="200" rx="18" ry="8" />
-          </g>
-
-          {/* 幕張（中心・スタート地点） */}
-          <g className={styles.scatterCenter}>
-            <circle cx="245" cy="105" r="10" fill="#c62828" opacity="0.9" />
-            <circle cx="245" cy="105" r="4" fill="#fff" />
-            <text
-              x="245"
-              y="125"
-              textAnchor="middle"
-              fill="#5d4037"
-              fontSize="9"
-              fontWeight="700"
-              fontFamily="inherit"
-            >
-              幕張
-            </text>
-          </g>
-
           {/* 散らばっていく人々（全員同じ方向を向いている） */}
           {/* 北海道 */}
           <g className={`${styles.scatterPerson} ${styles.scatterDelay1}`}>

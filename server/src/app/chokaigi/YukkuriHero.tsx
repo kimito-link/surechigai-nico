@@ -8,6 +8,7 @@ import type { YukkuriDialogue } from "@/lib/yukkuriExplainClient";
 import { useYukkuriExplain } from "@/lib/useYukkuriExplain";
 import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
 import { AUTH_LESS_FIRST_COPY } from "./lp-content";
+import { ChokaigiConceptBanner } from "./ChokaigiConceptBanner";
 import styles from "./YukkuriHero.module.css";
 
 type Dialogue = YukkuriDialogue;
@@ -63,6 +64,7 @@ export function YukkuriHero() {
 
   return (
     <section className={styles.hero} aria-label="ゆっくり解説ヒーロー">
+      <ChokaigiConceptBanner />
       <p className={styles.authLessFirst}>{AUTH_LESS_FIRST_COPY}</p>
       <p className={styles.headline}>
         誰を紹介してもらう？
