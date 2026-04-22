@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
+/** ローカル / Tunnel の Ollama は応答が長い。Edge ではなく Node ランタイムを使う。 */
+export const runtime = "nodejs";
+/** Vercel 等で長めの生成を許可（未対応ホストでは無視） */
+export const maxDuration = 300;
 
 const CACHE_TTL = 3600; // 1時間キャッシュ
 
@@ -40,6 +43,8 @@ const MODELS = [
 ];
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const MODEL_TIMEOUT_MS = 5000;
+const DEFAULT_OLLAMA_TIMEOUT_MS = 120_000;
+const OLLAMA_HEALTH_TIMEOUT_MS = 4000;
 
 const SYSTEM_PROMPT = `あなたはニコニコ超会議2026「すれちがいライト」アプリのガイドキャラクター3人です。
 クリエイタークロス参加者やXユーザーを紹介するゆっくり解説を行います。
@@ -168,10 +173,111 @@ async function callModel(apiKey: string, model: string, userMessage: string) {
   }
 }
 
+function normalizeOllamaBase(baseUrl: string) {
+  return baseUrl.replace(/\/$/, "");
+}
+
+/**
+ * Ollama OpenAI 互換: POST /v1/chat/completions
+ */
+async function callOllama(
+  baseUrl: string,
+  model: string,
+  userMessage: string,
+  timeoutMs: number,
+  apiKey?: string
+) {
+  const url = `${normalizeOllamaBase(baseUrl)}/v1/chat/completions`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const auth = apiKey?.trim() || "ollama";
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${auth}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userMessage },
+        ],
+        max_tokens: 300,
+        temperature: 0.7,
+      }),
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    const data = await res.json() as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    return data.choices?.[0]?.message?.content ?? null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function pingOllama(baseUrl: string, apiKey?: string): Promise<boolean> {
+  const url = `${normalizeOllamaBase(baseUrl)}/v1/models`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), OLLAMA_HEALTH_TIMEOUT_MS);
+  const auth = apiKey?.trim() || "ollama";
+  try {
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${auth}` },
+      signal: controller.signal,
+    });
+    return res.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** 開発・本番での LLM 設定確認用（認証不要・キーは返さない） */
+export async function GET() {
+  const ollamaBase = process.env.OLLAMA_BASE_URL?.trim();
+  const ollamaModel = process.env.OLLAMA_MODEL?.trim();
+  const ollamaKey = process.env.OLLAMA_API_KEY?.trim();
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  const ollamaConfigured = Boolean(ollamaBase && ollamaModel);
+  let ollamaReachable: boolean | null = null;
+  if (ollamaBase) {
+    ollamaReachable = await pingOllama(ollamaBase, ollamaKey);
+  }
+  return NextResponse.json({
+    yukkuriExplain: "ok",
+    ollama: ollamaConfigured
+      ? { configured: true, model: ollamaModel, reachable: ollamaReachable }
+      : { configured: false },
+    openRouter: { configured: Boolean(apiKey) },
+  });
+}
+
 export async function POST(req: NextRequest) {
   const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: "OPENROUTER_API_KEY が未設定です" }, { status: 500 });
+  const ollamaBase = process.env.OLLAMA_BASE_URL?.trim();
+  const ollamaModel = process.env.OLLAMA_MODEL?.trim();
+  const ollamaKey = process.env.OLLAMA_API_KEY?.trim();
+  const ollamaTimeoutRaw = process.env.OLLAMA_TIMEOUT_MS?.trim();
+  const ollamaTimeoutMs = ollamaTimeoutRaw
+    ? Math.max(1000, Number.parseInt(ollamaTimeoutRaw, 10) || DEFAULT_OLLAMA_TIMEOUT_MS)
+    : DEFAULT_OLLAMA_TIMEOUT_MS;
+
+  const useOllama = Boolean(ollamaBase && ollamaModel);
+  if (!useOllama && !apiKey) {
+    return NextResponse.json(
+      {
+        error:
+          "LLM が未設定です。Ollama なら OLLAMA_BASE_URL と OLLAMA_MODEL、または OPENROUTER_API_KEY を設定してください。",
+      },
+      { status: 500 }
+    );
   }
 
   const body = await req.json() as {
@@ -194,6 +300,28 @@ export async function POST(req: NextRequest) {
   const profile = (bearerToken && handle) ? await fetchXProfile(handle, bearerToken) : null;
 
   const userMessage = buildUserMessage(body, profile);
+
+  if (useOllama && ollamaBase && ollamaModel) {
+    try {
+      const text = await callOllama(ollamaBase, ollamaModel, userMessage, ollamaTimeoutMs, ollamaKey);
+      if (text) {
+        const dialogue = extractDialogue(text);
+        if (dialogue) {
+          await setCached(handle, dialogue);
+          return NextResponse.json(dialogue);
+        }
+      }
+    } catch {
+      /* OpenRouter へフォールバック */
+    }
+  }
+
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: "Ollama での生成に失敗し、フォールバック用の OPENROUTER_API_KEY もありません" },
+      { status: 503 }
+    );
+  }
 
   for (const model of MODELS) {
     try {
