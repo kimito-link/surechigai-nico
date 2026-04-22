@@ -117,6 +117,25 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
     ],
     xHandles: [{ label: "@OTO1to1", href: "https://x.com/OTO1to1" }],
   },
+  {
+    id: "miidesu",
+    name: "みぃ さん（@bakusyokuM）",
+    title:
+      "パフォーマンス／声優／配信／イラスト／YouTube ── 才能すべてを持つ “すーぱーくりえいたー”",
+    intro: [
+      "実は、このアプリの案内役『りんく』の声も、みぃさんが担当してくださっています。",
+      "パフォーマンス、声優、配信、イラスト、YouTube と、活動ジャンルは広いのに、ひとつひとつのクオリティがとにかく高い。そのうえ頭が超絶良くて、話すとロジカルで的確、さらに声もかわいい／見た目もかわいい／気配りまで完璧という、バランスが壊れているとしか言いようのない “すーぱーくりえいたー” です。",
+      "このアプリの世界観を声の面から支えてくださっている、大切な方。アイコンをクリックすると、ゆっくり 3 人が熱量多めにご紹介します。",
+    ],
+    sites: [
+      {
+        label: "みぃさん X プロフィール（@bakusyokuM）",
+        href: "https://x.com/bakusyokuM",
+        tagline:
+          "パフォーマンス／声優（りんくの声も担当）／配信／イラスト／YouTube",
+      },
+    ],
+  },
 ] as const;
 
 /**
@@ -129,7 +148,6 @@ export const SPECIAL_THANKS_X_ONLY: ReadonlyArray<SpecialThanksXLink> = [
   { label: "@ewbcwj_lv", href: "https://x.com/ewbcwj_lv" },
   { label: "@sinseinaru", href: "https://x.com/sinseinaru" },
   { label: "@yuzuchis_mammy", href: "https://x.com/yuzuchis_mammy" },
-  { label: "@bakusyokuM", href: "https://x.com/bakusyokuM" },
   { label: "@m20210411", href: "https://x.com/m20210411" },
   { label: "@flap_shizuku", href: "https://x.com/flap_shizuku" },
 ] as const;

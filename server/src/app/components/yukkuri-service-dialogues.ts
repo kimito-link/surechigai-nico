@@ -243,6 +243,50 @@ export const OTO1TO1_DIALOGUE: YukkuriDialogue = {
   ctaLabel: "OTO（One To One）公式サイトを開く",
 };
 
+/**
+ * みぃさん（@bakusyokuM）— りんくの声を担当してくださっている
+ * 多才クリエイター。才能・知性・声・ビジュアル・気配りが全部そろった
+ * “すーぱーくりえいたー” として、熱量多めにご紹介。
+ */
+export const MIIDESU_DIALOGUE: YukkuriDialogue = {
+  title: "🌟 みぃさん（@bakusyokuM） — りんくの声を担当する、すーぱーくりえいたー",
+  lines: [
+    {
+      who: "rink",
+      text: "実はね……ぼく『りんく』の声、みぃさん（@bakusyokuM）に担当してもらってるんだ！もうこの時点で感謝しかないんだけど、ちょっと聞いて！？",
+    },
+    {
+      who: "konta",
+      text: "えっ！？りんくの声って中の人いたの！？しかもパフォーマンス、声優、配信、イラスト、YouTube までこなすタイプ！？多才すぎでしょ！",
+    },
+    {
+      who: "tanunee",
+      text: "才能が、とにかく、すごすぎるのだー。どのジャンルもかじってるだけじゃなくて、ひとつひとつのクオリティがちゃんと高いのが恐ろしいのだー。",
+    },
+    {
+      who: "rink",
+      text: "しかもね、頭が超絶いいんだよ。話してると『その整理のしかた天才すぎる…』ってなるくらいロジカルで的確。気配りも半端ないんだ。",
+    },
+    {
+      who: "konta",
+      text: "待って、そのうえで声もかわいい、見た目もかわいいって……ちょっとバランス崩壊してない！？そんなキャラ物語でも見たことないよ〜！",
+    },
+    {
+      who: "tanunee",
+      text: "才能・知性・声・ビジュアル・気配り、フルスタックで全部持ってるのだー。ここまで来ると “すーぱーくりえいたー” って呼ぶしかないのだー。",
+    },
+    {
+      who: "rink",
+      text: "ぼくの声を吹き込んでくれていることも含めて、このアプリの世界観へのご貢献はほんとに大きい。プロフィールを覗いてもらえたら、いろんな活動がひと目で分かるよ！",
+    },
+    {
+      who: "konta",
+      text: "みんな、フォローしていろんな表現を楽しんでね〜！",
+    },
+  ],
+  ctaLabel: "みぃさんの X プロフィールを開く",
+};
+
 const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://socialxup.com/": SOCIALXUP_DIALOGUE,
   "https://threads.socialxup.com/": SOCIALXUP_THREADS_DIALOGUE,
@@ -252,6 +296,7 @@ const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://ohalu.bitfan.id/": OKI_HARUMI_DIALOGUE,
   "https://www.ahuranproject.com/": AHURAN_DIALOGUE,
   "https://oto1to1.com/": OTO1TO1_DIALOGUE,
+  "https://x.com/bakusyokuM": MIIDESU_DIALOGUE,
 };
 
 export function getYukkuriDialogue(href: string): YukkuriDialogue | undefined {
