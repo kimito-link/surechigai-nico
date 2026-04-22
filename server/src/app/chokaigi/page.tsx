@@ -1,4 +1,5 @@
 /** viewport / canonical: chokaigi/layout.tsx */
+import Link from "next/link";
 import Image from "next/image";
 import {
   GUIDES,
@@ -53,73 +54,9 @@ import { VenueLiveMap } from "./VenueLiveMap";
 import { CreatorCrossSearch } from "./CreatorCrossSearch";
 import { StarField } from "./StarField";
 import { YukkuriHero } from "./YukkuriHero";
+import { SPECIAL_THANKS_LINKS } from "./special-thanks-links";
 
-const SPECIAL_THANKS_LINKS = [
-  {
-    label: "大木ハルミさん 公式サイト",
-    href: "https://ohalu.bitfan.id/",
-  },
-  {
-    label: "アフランカフェ 公式ホームページ",
-    href: "https://www.ahuranproject.com/",
-  },
-  {
-    label: "@yuka_designer",
-    href: "https://x.com/yuka_designer",
-  },
-  {
-    label: "@oomayu12345",
-    href: "https://x.com/oomayu12345",
-  },
-  {
-    label: "oto1to1 公式サイト",
-    href: "https://oto1to1.com/",
-  },
-  {
-    label: "@OTO1to1",
-    href: "https://x.com/OTO1to1",
-  },
-  {
-    label: "@abuso2525",
-    href: "https://x.com/abuso2525",
-  },
-  {
-    label: "@shirase_0404",
-    href: "https://x.com/shirase_0404",
-  },
-  {
-    label: "@ewbcwj_lv",
-    href: "https://x.com/ewbcwj_lv",
-  },
-  {
-    label: "@sinseinaru",
-    href: "https://x.com/sinseinaru",
-  },
-  {
-    label: "@yuzuchis_mammy",
-    href: "https://x.com/yuzuchis_mammy",
-  },
-  {
-    label: "@bakusyokuM",
-    href: "https://x.com/bakusyokuM",
-  },
-  {
-    label: "@m20210411",
-    href: "https://x.com/m20210411",
-  },
-  {
-    label: "@flap_shizuku",
-    href: "https://x.com/flap_shizuku",
-  },
-  {
-    label: "@romi_hoshino",
-    href: "https://x.com/romi_hoshino",
-  },
-  {
-    label: "@romi63hoshino",
-    href: "https://x.com/romi63hoshino",
-  },
-] as const;
+const SPECIAL_THANKS_PREVIEW_COUNT = 6;
 
 export default function ChokaigiPage() {
   return (
@@ -383,7 +320,7 @@ export default function ChokaigiPage() {
               プログラムの提供と公開に感謝します。星野ロミさん、ありがとうございます。
             </p>
             <ul className={styles.footerThanksList}>
-              {SPECIAL_THANKS_LINKS.map((link) => (
+              {SPECIAL_THANKS_LINKS.slice(0, SPECIAL_THANKS_PREVIEW_COUNT).map((link) => (
                 <li key={link.href} className={styles.footerThanksItem}>
                   <a
                     href={link.href}
@@ -396,6 +333,19 @@ export default function ChokaigiPage() {
                 </li>
               ))}
             </ul>
+            {SPECIAL_THANKS_LINKS.length > SPECIAL_THANKS_PREVIEW_COUNT ? (
+              <div className={styles.footerThanksMore}>
+                <p className={styles.footerThanksMoreText}>
+                  他 {SPECIAL_THANKS_LINKS.length - SPECIAL_THANKS_PREVIEW_COUNT} 件
+                </p>
+                <Link
+                  href="/chokaigi/special-thanks"
+                  className={styles.footerThanksMoreButton}
+                >
+                  Special Thanks 一覧を見る
+                </Link>
+              </div>
+            ) : null}
           </section>
           <div className={styles.footerBrand}>
             <Image

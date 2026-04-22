@@ -2287,6 +2287,55 @@ details[open] .detailMapSummary::before {
   outline-offset: 3px;
 }
 
+.footerThanksMore {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.footerThanksMoreText {
+  margin: 0;
+  color: #6a5840;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.footerThanksMoreButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.1rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  background: #1a5898;
+  color: #fff;
+  font-weight: 800;
+  text-decoration: none;
+  transition: filter 0.18s ease, transform 0.18s ease;
+}
+
+.footerThanksMoreButton:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.footerThanksMoreButton:focus-visible {
+  outline: 2px solid #2a78d8;
+  outline-offset: 3px;
+}
+
+.specialThanksPageTitle {
+  margin: 0 0 1rem;
+}
+
+.specialThanksBackRow {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
 .footerBrand {
   display: flex;
   flex-wrap: wrap;
