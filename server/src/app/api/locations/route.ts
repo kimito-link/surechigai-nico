@@ -77,8 +77,8 @@ export async function POST(req: NextRequest) {
         ? String(rawMunicipality).trim().slice(0, MUNICIPALITY_MAX)
         : null;
 
-    // WKT: POINT(経度 緯度) + ST_GeomFromText（ST_SRID(POINT) より本番の MySQL / MariaDB で安定）
-    const pointWkt = `POINT(${Number(lng)} ${Number(lat)})`;
+    // WKT: MySQL 8.0 + SRID 4326 は軸順序が POINT(緯度 経度) = POINT(lat lng)
+    const pointWkt = `POINT(${Number(lat)} ${Number(lng)})`;
     await pool.execute(
       `INSERT INTO locations (user_id, point, lat_grid, lng_grid, municipality)
        VALUES (?, ST_GeomFromText(?, 4326), ?, ?, ?)`,

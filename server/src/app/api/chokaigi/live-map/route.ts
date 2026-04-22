@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
          )`
       : "";
 
-    const params: Array<number> = [VENUE.lng, VENUE.lat, RADIUS_METERS];
+    const params: Array<number> = [VENUE.lat, VENUE.lng, RADIUS_METERS];
     if (authUser) {
       params.push(authUser.id, authUser.id);
     }
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
          u.is_deleted = FALSE
          AND u.is_suspended = FALSE
          AND ST_Distance_Sphere(
-           ST_SRID(POINT(latest.lng_grid, latest.lat_grid), 4326),
+           ST_SRID(POINT(latest.lat_grid, latest.lng_grid), 4326),
            ST_SRID(POINT(?, ?), 4326)
          ) <= ?
          ${blockFilter}
