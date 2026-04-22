@@ -127,6 +127,38 @@
   }
 }
 
+/* ==== 解説中のフッター（ボイス + シェア行）をオーバーレイ内に収める ====
+ *   .charsTalking は position:fixed で DOM flow から外れるため、従来ページ下に
+ *   置いていた shareRow / registerCta が上に詰め上がって透けていた。
+ *   そこで解説中のアクションは全てこの .talkingFooter に入れて、オーバーレイと
+ *   一体になって表示・スクロールする。 */
+.talkingFooter {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+  padding: 0.55rem 0.25rem 0.3rem;
+  border-top: 1px dashed rgba(34, 34, 34, 0.14);
+}
+
+.charsTalking .shareRow {
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* 狭いオーバーレイ内でも各 CTA が押しやすい高さを維持 */
+.charsTalking .shareBtn,
+.charsTalking .btnResetExplain,
+.charsTalking .btnRegister {
+  height: 2.4rem;
+  font-size: 0.86rem;
+  padding: 0 0.95rem;
+  min-width: 0;
+  flex: 1 1 140px;
+}
+
 .charsTalking .charCard {
   filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.18));
   will-change: transform;

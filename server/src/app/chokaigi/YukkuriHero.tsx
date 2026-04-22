@@ -142,7 +142,11 @@ export function YukkuriHero() {
         )}
       </form>
 
-      {/* キャラクター3人 — 縦積み＋左右交互（ジグザグ）レイアウト */}
+      {/* キャラクター3人 — 縦積み＋左右交互（ジグザグ）レイアウト。
+       *   解説中 (isTalking) は position:fixed オーバーレイになる。DOM flow から抜けるため
+       *   以下のボイスプレイヤー/シェア行もオーバーレイの内側にまとめて描画する
+       *   （外に置くと `.registerCta` / `.shareRow` が上に詰め上がって透過した隙間から透けてしまう）。
+       */}
       <div className={`${styles.chars}${isTalking ? ` ${styles.charsTalking}` : ""}`}>
         {CHARS.map(({ key, label, src, color }, i) => {
           const isReverse = i % 2 === 1; // 0=左, 1=右, 2=左
@@ -168,10 +172,56 @@ export function YukkuriHero() {
             </div>
           );
         })}
+
+        {/* 解説中のアクション（ボイス + シェア + 次のアクション）はオーバーレイ内に収める */}
+        {isTalking && dialogue && (
+          <div className={styles.talkingFooter}>
+            <YukkuriVoicePlayer dialogue={dialogue} autoPlayOnReady />
+            <div className={styles.shareRow}>
+              <a
+                href={buildTweetUrl(raw, dialogue)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.shareBtn}
+              >
+                Xでシェアする
+              </a>
+              <button
+                type="button"
+                className={styles.btnResetExplain}
+                onClick={() => {
+                  reset();
+                  setHandle("");
+                }}
+              >
+                別の人を解説してもらう
+              </button>
+              {isLoaded && !isSignedIn && (
+                <button
+                  type="button"
+                  className={styles.btnRegister}
+                  onClick={() => router.push("/sign-in")}
+                >
+                  すれ違い通信に登録する
+                </button>
+              )}
+              {isLoaded && isSignedIn && (
+                <button
+                  type="button"
+                  className={styles.btnRegister}
+                  onClick={() => router.push("/app")}
+                >
+                  ダッシュボードへ
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* 登録は入力欄と独立したCTA */}
-      {isLoaded && !isSignedIn && (
+      {/* 登録 CTA は「解説していない時」のファーストビュー用。
+       *   解説中は上のオーバーレイに同等の登録ボタンが入っているので重複を避けるため非表示にする。 */}
+      {!isTalking && isLoaded && !isSignedIn && (
         <div className={styles.registerCta}>
           <p className={styles.registerCtaText}>自分がすれ違い通信に参加する場合はこちら</p>
           <button
@@ -183,7 +233,7 @@ export function YukkuriHero() {
           </button>
         </div>
       )}
-      {isLoaded && isSignedIn && (
+      {!isTalking && isLoaded && isSignedIn && (
         <div className={styles.registerCta}>
           <p className={styles.registerCtaText}>すれ違い通信に参加中</p>
           <button
@@ -213,51 +263,6 @@ export function YukkuriHero() {
             再試行
           </button>
         </div>
-      )}
-
-      {/* 結果後のシェア */}
-      {dialogue && (
-        <>
-          <YukkuriVoicePlayer dialogue={dialogue} autoPlayOnReady />
-          <div className={styles.shareRow}>
-            <a
-              href={buildTweetUrl(raw, dialogue)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.shareBtn}
-            >
-              Xでシェアする
-            </a>
-            <button
-              type="button"
-              className={styles.btnResetExplain}
-              onClick={() => {
-                reset();
-                setHandle("");
-              }}
-            >
-              別の人を解説してもらう
-            </button>
-            {isLoaded && !isSignedIn && (
-              <button
-                type="button"
-                className={styles.btnRegister}
-                onClick={() => router.push("/sign-in")}
-              >
-                すれ違い通信に登録する
-              </button>
-            )}
-            {isLoaded && isSignedIn && (
-              <button
-                type="button"
-                className={styles.btnRegister}
-                onClick={() => router.push("/app")}
-              >
-                ダッシュボードへ
-              </button>
-            )}
-          </div>
-        </>
       )}
       </div>
     </section>
