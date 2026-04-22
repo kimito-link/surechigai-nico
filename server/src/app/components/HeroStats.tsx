@@ -14,7 +14,7 @@ function formatCount(n: number): string {
  * 各チップは a/Link 要素として導線化し、
  *  - 現在参加中 → 同一ページ下部の #live-participants-heading へスクロール
  *  - 登録数     → /creators（都道府県別 一覧）
- *  - ゆっくり解説 → /chokaigi#yukkuri-dialogue-heading（ゆっくり掛け合い）
+ *  - ゆっくり解説 → /yukkuri/explained（解説アーカイブ一覧）
  * を目指す。数字が 0 でも押せるよう常に表示する（導線優先）。
  */
 export default async function HeroStats() {
@@ -49,7 +49,7 @@ export default async function HeroStats() {
       </Link>
 
       <Link
-        href="/chokaigi#yukkuri-dialogue-heading"
+        href="/yukkuri/explained"
         className={styles.heroStatsChip}
       >
         <span className={styles.heroStatsChipIcon} aria-hidden="true">

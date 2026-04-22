@@ -72,9 +72,14 @@ export default async function YukkuriSharePage({ searchParams }: Props) {
 
       <YukkuriShareVoice rink={rink} konta={konta} tanunee={tanunee} />
 
-      <Link href="/chokaigi" className={styles.cta}>
-        自分も解説してもらう →
-      </Link>
+      <div className={styles.ctaRow}>
+        <Link href="/chokaigi" className={styles.cta}>
+          自分も解説してもらう →
+        </Link>
+        <Link href="/yukkuri/explained" className={styles.ctaGhost}>
+          解説アーカイブ一覧 →
+        </Link>
+      </div>
     </div>
   );
 }

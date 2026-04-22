@@ -234,3 +234,19 @@ CREATE TABLE IF NOT EXISTS user_badges (
   INDEX idx_badge (badge_id),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+-- ============================================================
+-- yukkuri_explained（ゆっくり解説アーカイブ・ヒーロー統計用）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS yukkuri_explained (
+  x_handle VARCHAR(30) NOT NULL COMMENT 'X ハンドル（小文字・@なし）',
+  display_name VARCHAR(200) NULL COMMENT '解説リクエスト時の表示名',
+  rink TEXT NOT NULL,
+  konta TEXT NOT NULL,
+  tanunee TEXT NOT NULL,
+  source VARCHAR(64) NULL COMMENT 'ollama / fallback 等',
+  first_explained_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (x_handle),
+  INDEX idx_yukkuri_explained_updated (updated_at)
+) ENGINE=InnoDB;

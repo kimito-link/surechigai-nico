@@ -8,6 +8,7 @@ export const SITE_NAV_LINKS: readonly HeaderNavLink[] = [
   { href: "/", label: "ホーム" },
   { href: "/chokaigi", label: "超会議で使う" },
   { href: "/chokaigi#usage-heading", label: "つかいかた" },
+  { href: "/yukkuri/explained", label: "解説アーカイブ" },
 ] as const;
 
 /** ハンバーガー内: 主要ページ */
@@ -18,6 +19,11 @@ export const MOBILE_PRIMARY_LINKS: readonly HeaderNavLink[] = [
     href: "/creators",
     label: "都道府県別クリエイター",
     description: "47 都道府県の参加者一覧",
+  },
+  {
+    href: "/yukkuri/explained",
+    label: "ゆっくり解説アーカイブ",
+    description: "解説が掲載された X アカウント一覧",
   },
   {
     href: "/chokaigi/special-thanks",
