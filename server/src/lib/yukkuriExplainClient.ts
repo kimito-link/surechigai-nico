@@ -4,8 +4,8 @@
 
 export type YukkuriDialogue = { rink: string; konta: string; tanunee: string };
 
-/** サーバー maxDuration 300s + 余裕 */
-export const YUKKURI_EXPLAIN_TIMEOUT_MS = 360_000;
+/** 長すぎる待機を避け、一定時間でフォールバック表示へ切り替える */
+export const YUKKURI_EXPLAIN_TIMEOUT_MS = 90_000;
 
 /**
  * サーバーが付与する `error_code` を保持するためのエラー型。

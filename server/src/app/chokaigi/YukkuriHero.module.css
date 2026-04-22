@@ -190,8 +190,7 @@
   flex: 1 1 auto;
   min-width: 0;
   max-width: 100%;
-  opacity: 0;
-  animation: stageBubbleIn 460ms ease forwards;
+  opacity: 1;
 }
 
 .charBubble::after {
@@ -229,14 +228,17 @@
 }
 
 .charCardSpeak0 .charBubble {
+  animation: stageBubbleIn 460ms ease both;
   animation-delay: 0s;
 }
 
 .charCardSpeak1 .charBubble {
+  animation: stageBubbleIn 460ms ease both;
   animation-delay: 0.24s;
 }
 
 .charCardSpeak2 .charBubble {
+  animation: stageBubbleIn 460ms ease both;
   animation-delay: 0.48s;
 }
 
