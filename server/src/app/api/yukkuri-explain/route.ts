@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { recordYukkuriExplainedHandleRedis, YUKKURI_EXPLAINED_SET_KEY } from "@/lib/homeStats";
 import { upsertYukkuriExplainedArchive } from "@/lib/yukkuriExplainedArchive";
+import {
+  OFFICIAL_CREATORCROSS_ENTRIES,
+  type OfficialCreatorCrossEntry,
+} from "@/app/chokaigi/creatorcross-official-data";
 
 /** ローカル / Tunnel の Ollama は応答が長い。Edge ではなく Node ランタイムを使う。 */
 export const runtime = "nodejs";
@@ -274,6 +278,87 @@ type XProfile = {
   tweetCount?: number;
 };
 
+type OfficialCreatorContext = {
+  name: string;
+  intro: string;
+  booth: string;
+  hallNo: string;
+  days: string[];
+  genre: string[];
+  detailUrl: string;
+};
+
+function normalizeHandleToken(input: string | null | undefined): string {
+  if (!input) return "";
+  const trimmed = input.trim();
+  if (!trimmed) return "";
+  const withoutAt = trimmed.replace(/^@+/, "");
+  const urlMatch = withoutAt.match(/^https?:\/\/(?:x\.com|twitter\.com)\/([^/?#]+)/i);
+  const handle = urlMatch?.[1] ?? withoutAt.split(/[/?#]/)[0] ?? "";
+  return handle.trim().toLowerCase();
+}
+
+function extractHandleFromHref(href: string): string {
+  try {
+    const u = new URL(href);
+    if (!/(^|\.)x\.com$/i.test(u.hostname) && !/(^|\.)twitter\.com$/i.test(u.hostname)) {
+      return "";
+    }
+    const segment = u.pathname.split("/").filter(Boolean)[0] ?? "";
+    return normalizeHandleToken(segment);
+  } catch {
+    return "";
+  }
+}
+
+function collectOfficialHandles(entry: OfficialCreatorCrossEntry): string[] {
+  const set = new Set<string>();
+  for (const link of entry.links) {
+    const fromHandle = normalizeHandleToken(link.handle);
+    if (fromHandle) set.add(fromHandle);
+    const fromHref = extractHandleFromHref(link.href);
+    if (fromHref) set.add(fromHref);
+  }
+  return [...set];
+}
+
+const OFFICIAL_CREATOR_BY_HANDLE = (() => {
+  const map = new Map<string, OfficialCreatorCrossEntry>();
+  for (const entry of OFFICIAL_CREATORCROSS_ENTRIES) {
+    for (const h of collectOfficialHandles(entry)) {
+      if (!map.has(h)) {
+        map.set(h, entry);
+      }
+    }
+  }
+  return map;
+})();
+
+function findOfficialCreatorContext(
+  handleRaw: string | undefined,
+  nameRaw: string | undefined
+): OfficialCreatorContext | null {
+  const handle = normalizeHandleToken(handleRaw);
+  const byHandle = handle ? OFFICIAL_CREATOR_BY_HANDLE.get(handle) : undefined;
+  const byName =
+    !byHandle && nameRaw
+      ? OFFICIAL_CREATORCROSS_ENTRIES.find(
+          (entry) => entry.name.trim().toLowerCase() === nameRaw.trim().toLowerCase()
+        )
+      : undefined;
+  const found = byHandle ?? byName;
+  if (!found) return null;
+  return {
+    name: found.name,
+    intro: found.intro,
+    booth: found.booth,
+    hallNo: found.hallNo,
+    days: found.days,
+    genre: found.genre,
+    detailUrl: found.detailUrl,
+  };
+}
+
 function compactText(input: string | undefined, max = 70): string {
   if (!input) return "";
   const squashed = input.replace(/\s+/g, " ").trim();
@@ -290,30 +375,46 @@ function buildFallbackDialogue(
     sub?: string;
     intro?: string;
   },
-  profile: XProfile | null
+  profile: XProfile | null,
+  official: OfficialCreatorContext | null
 ): Dialogue {
-  const rawHandle = body.xHandle?.replace(/^@/, "") ?? "";
+  const rawHandle = body.xHandle?.replace(/^@+/, "").trim() ?? "";
   const handleText = rawHandle ? `@${rawHandle}` : "この方";
-  const displayName = compactText(profile?.name || body.name, 28) || handleText;
-  const profileText = compactText(profile?.description || body.intro, 60);
-  const boothText = compactText(body.booth, 32);
-  const placeText = compactText(body.hallLabel, 24);
+  const displayName = compactText(profile?.name || official?.name || body.name, 28) || handleText;
+  const profileText = compactText(profile?.description, 72);
+  const introText = compactText(body.intro || official?.intro, 90);
+  const boothText = compactText(body.booth || official?.booth, 36);
+  const placeText = compactText(
+    body.hallLabel || (official?.hallNo ? `ホール${official.hallNo}` : ""),
+    24
+  );
+  const genreText = compactText(body.sub || official?.genre.join(" / "), 36);
+  const daysText = compactText(official?.days.join("・"), 28);
   const followerText =
     profile?.followersCount != null
       ? `フォロワーは約${profile.followersCount.toLocaleString()}人。`
       : "";
+  const detailText = compactText(official?.detailUrl, 64);
 
-  const rink = `${displayName}さんだよ！今は混雑中だけど、気になるクリエイターとしてしっかりチェックしておこうね！`;
+  const rink = `${displayName}さんを紹介するよ！公開プロフィールと会場データをもとに、ポイントをぎゅっとまとめるね！`;
   const konta = [
     `${handleText} の紹介だよ。`,
-    profileText ? `プロフィールは「${profileText}」なんだよ！` : "",
+    genreText ? `活動ジャンルは ${genreText} なんだよ！` : "",
+    profileText ? `プロフィールは「${profileText}」。` : introText ? `会場紹介は「${introText}」。` : "",
     followerText,
     boothText ? `ブースは ${boothText}。` : "",
     placeText ? `${placeText} 周辺も要チェックだね。` : "",
+    daysText ? `出展日は ${daysText}。` : "",
   ]
     .filter(Boolean)
     .join(" ");
-  const tanunee = `${displayName}さん、応援してるよ！詳しい紹介は少し時間をおいて再実行してね〜。交流はXでやさしくいこうね。`;
+  const tanunee = [
+    `${displayName}さん、応援してるよ！`,
+    detailText ? `公式情報は ${detailText} でも確認できるよ。` : "",
+    "交流はXでやさしくいこうね。",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return { rink, konta, tanunee };
 }
@@ -364,9 +465,10 @@ function buildUserMessage(
     sub?: string;
     intro?: string;
   },
-  profile: XProfile | null
+  profile: XProfile | null,
+  official: OfficialCreatorContext | null
 ): string {
-  const handle = body.xHandle?.replace(/^@/, "") ?? "";
+  const handle = body.xHandle?.replace(/^@+/, "").trim() ?? "";
   const lines = [
     handle ? `Xアカウント: @${handle}` : null,
     profile?.name
@@ -385,6 +487,11 @@ function buildUserMessage(
     body.hallLabel ? `場所: ${body.hallLabel}` : null,
     body.sub ? `ジャンル/日程: ${body.sub}` : null,
     body.intro ? `紹介文: ${body.intro}` : null,
+    official?.name ? `公式出展名: ${official.name}` : null,
+    official?.genre?.length ? `公式ジャンル: ${official.genre.join(" / ")}` : null,
+    official?.days?.length ? `公式出展日: ${official.days.join(" / ")}` : null,
+    official?.booth ? `公式ブース: ${official.booth}` : null,
+    official?.intro ? `公式紹介文: ${official.intro}` : null,
   ]
     .filter(Boolean)
     .join("\n");
@@ -852,7 +959,10 @@ export async function POST(req: NextRequest) {
   }
 
   const useOllama = Boolean(ollamaBase && ollamaModel);
-  const handle = body.xHandle?.replace(/^@/, "") ?? "";
+  // 全ての先頭 @ を取り除いて trim。キャッシュキー / Redis SADD / DB PK の
+  // 正規化ロジックと揃えて、`@@handle` のような入力で二重登録されないようにする。
+  const handle = body.xHandle?.replace(/^@+/, "").trim() ?? "";
+  const official = findOfficialCreatorContext(handle, body.name);
 
   // キャッシュ確認（成功 / 失敗いずれもヒットさせてレート浪費を防ぐ）
   const cached = await getCached(handle);
@@ -862,7 +972,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(cached.dialogue);
     }
     if (!useOllama) {
-      const fallback = buildFallbackDialogue(body, null);
+      const fallback = buildFallbackDialogue(body, null, official);
       if (handle) {
         await setCached(handle, { ok: true, dialogue: fallback });
       }
@@ -886,7 +996,7 @@ export async function POST(req: NextRequest) {
 
   // Ollama 未設定でも、会場ではフォールバック解説を返して体験を止めない
   if (!useOllama) {
-    const fallback = buildFallbackDialogue(body, profile);
+    const fallback = buildFallbackDialogue(body, profile, official);
     if (handle) {
       await setCached(handle, { ok: true, dialogue: fallback });
     }
@@ -898,7 +1008,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const userMessage = buildUserMessage(body, profile);
+  const userMessage = buildUserMessage(body, profile, official);
 
   const failures: CallResult[] = [];
   const startedTotal = Date.now();
@@ -927,7 +1037,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (failures.length > 0) {
-    const fallback = buildFallbackDialogue(body, profile);
+    const fallback = buildFallbackDialogue(body, profile, official);
     if (handle) {
       await setCached(handle, { ok: true, dialogue: fallback });
     }
