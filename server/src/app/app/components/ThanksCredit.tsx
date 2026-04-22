@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import MangamuraPranksterLink from "@/app/components/MangamuraPranksterLink";
 import styles from "../app.module.css";
 
 declare global {
@@ -79,7 +80,12 @@ export default function ThanksCredit() {
 
       <div className={styles.thanksCreditLinks}>
         <p className={styles.thanksCreditLinksTitle}>
-          星野ロミさんの他のプロジェクト
+          ✨ 星野ロミさんがつくった、偉大なサービスたち ✨
+        </p>
+        <p className={styles.thanksCreditBody}>
+          星野ロミさんは、たくさんの人が使う <strong>すごいサービス</strong>
+          を自分の手でつくってきた、まさに<strong>天才プログラマー</strong>
+          。そんなお方が途中まで書いてくださったコードを、私たちが引き継がせていただいているんです…！
         </p>
         <ul className={styles.thanksCreditLinksList}>
           <li>
@@ -89,9 +95,12 @@ export default function ThanksCredit() {
               rel="noopener noreferrer"
               className={styles.thanksCreditLink}
             >
-              <span className={styles.thanksCreditLinkName}>SocialXup</span>
+              <span className={styles.thanksCreditLinkName}>
+                🌟 SocialXup（ほんとに便利！）
+              </span>
               <span className={styles.thanksCreditLinkDesc}>
-                X ユーザー数推移ツール（フォロワー・フォロー数の推移追跡）
+                X のフォロワー・フォロー数の推移を追跡できる神ツール。
+                「あの人、いつからフォロワー増えたの？」が一瞬でわかります。
               </span>
             </a>
           </li>
@@ -103,25 +112,44 @@ export default function ThanksCredit() {
               className={styles.thanksCreditLink}
             >
               <span className={styles.thanksCreditLinkName}>
-                SocialXup for Threads
+                🌟 SocialXup for Threads（これも便利！）
               </span>
               <span className={styles.thanksCreditLinkDesc}>
-                Threads 版ユーザー数推移ツール
+                Threads 版のユーザー数推移ツール。
+                Threads を伸ばしたい人は絶対ブックマーク推奨です。
               </span>
             </a>
           </li>
           <li>
             <a
-              href="https://mangamura.org/"
+              href="https://mmake.net/"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.thanksCreditLink}
             >
-              <span className={styles.thanksCreditLinkName}>mangamura.org</span>
+              <span className={styles.thanksCreditLinkName}>
+                🎓 まんがくらぶ（mmake.net）
+              </span>
+              <span className={styles.thanksCreditLinkDesc}>
+                あの星野ロミさんから<strong>直接プログラミングを学べる</strong>
+                初心者向けオンラインスクール。
+                <strong>天才の技術を学べるのだー！</strong>
+                コードを書いてサービスを立ち上げたい人は覗いてみる価値アリです。
+              </span>
+            </a>
+          </li>
+          <li>
+            <MangamuraPranksterLink
+              href="https://mangamura.org/"
+              className={styles.thanksCreditLink}
+            >
+              <span className={styles.thanksCreditLinkName}>
+                mangamura.org
+              </span>
               <span className={styles.thanksCreditLinkDesc}>
                 漫画村 <span aria-label="おばけ">👻</span> ※もうないらしい
               </span>
-            </a>
+            </MangamuraPranksterLink>
           </li>
         </ul>
       </div>

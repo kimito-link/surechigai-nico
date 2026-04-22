@@ -32,6 +32,10 @@ export const SPECIAL_THANKS_LINKS = [
     href: "https://mangamura.org/",
   },
   {
+    label: "まんがくらぶ（mmake.net）｜元運営者が教えるプログラミングスクール",
+    href: "https://mmake.net/",
+  },
+  {
     label: "@OTO1to1",
     href: "https://x.com/OTO1to1",
   },
