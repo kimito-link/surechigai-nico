@@ -9,6 +9,7 @@ const CreatorCrossSearchImpl = dynamic(
   {
     loading: () => (
       <section
+        id="creator-cross-search-heading"
         className={styles.creatorSearchWrap}
         aria-busy="true"
         aria-label="クリエイタークロス検索を読み込み中"

@@ -98,7 +98,14 @@ export default function EncounterCard({ encounter }: { encounter: EncounterRow }
           href={
             encounter.other_spotify_track_id
               ? `https://open.spotify.com/track/${encounter.other_spotify_track_id}`
-              : "#"
+              : `https://open.spotify.com/search/${encodeURIComponent(
+                  [
+                    encounter.other_spotify_track_name,
+                    encounter.other_spotify_artist_name,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")
+                )}`
           }
           target="_blank"
           rel="noopener noreferrer"

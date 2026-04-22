@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import styles from "./chokaigi.module.css";
 import { VENUE_GOOGLE_MAPS_URL } from "./lp-content";
 import { YukkuriCreatorTalk } from "./YukkuriCreatorTalk";
@@ -17,7 +17,18 @@ function toXGlobalUserSearchUrl(keyword: string) {
 
 const DEFAULT_VISIBLE_COUNT = 60;
 
+const CREATOR_SEARCH_HEADING_ID = "creator-cross-search-heading";
+
+function scrollCreatorSearchHeadingIntoView() {
+  const el = document.getElementById(CREATOR_SEARCH_HEADING_ID);
+  if (!el) return;
+  requestAnimationFrame(() => {
+    setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+  });
+}
+
 export function CreatorCrossSearchImpl() {
+  const pathname = usePathname() ?? "";
   const searchParams = useSearchParams();
   const creatorParam = searchParams.get("creator")?.trim() ?? "";
 
@@ -28,13 +39,27 @@ export function CreatorCrossSearchImpl() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const onHash = () => {
+      if (window.location.hash === `#${CREATOR_SEARCH_HEADING_ID}`) {
+        scrollCreatorSearchHeadingIntoView();
+      }
+    };
+    onHash();
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  useEffect(() => {
+    if (!pathname.startsWith("/chokaigi")) return;
+    if (window.location.hash === `#${CREATOR_SEARCH_HEADING_ID}`) {
+      scrollCreatorSearchHeadingIntoView();
+    }
+  }, [pathname]);
+
+  useEffect(() => {
     setQuery((prev) => (prev === creatorParam ? prev : creatorParam));
     if (creatorParam) {
-      const id = "creator-cross-search-heading";
-      const el = document.getElementById(id);
-      if (el) {
-        setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
-      }
+      scrollCreatorSearchHeadingIntoView();
     }
   }, [creatorParam]);
 
@@ -102,8 +127,8 @@ export function CreatorCrossSearchImpl() {
   }, [loading, loadError, data, normalized.length, hallFilter]);
 
   return (
-    <section className={styles.creatorSearchWrap} aria-labelledby="creator-cross-search-heading">
-      <h3 id="creator-cross-search-heading" className={styles.mapSubheading}>
+    <section className={styles.creatorSearchWrap} aria-labelledby={CREATOR_SEARCH_HEADING_ID}>
+      <h3 id={CREATOR_SEARCH_HEADING_ID} className={styles.mapSubheading}>
         参加者・関係者検索（クリエイタークロス）
       </h3>
       <XHandleYukkuri />

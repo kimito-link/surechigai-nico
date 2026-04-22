@@ -25,6 +25,7 @@ export default function SignUpPage() {
         <h1 className={styles.title}>すれちがいライト</h1>
         <p className={styles.lead}>Xアカウントで登録して始めよう</p>
         <SignUp
+          fallbackRedirectUrl="/onboarding"
           appearance={{
             elements: {
               rootBox: styles.clerkRoot,
