@@ -118,6 +118,24 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
     xHandles: [{ label: "@OTO1to1", href: "https://x.com/OTO1to1" }],
   },
   {
+    id: "shiraitchan",
+    name: "しらいっ さん（@ewbcwj_lv）",
+    title:
+      "ニコニコ生放送の現役配信者（茨城出身 18 歳）／RAIVEN 歌舞伎町店で活動中",
+    intro: [
+      "とにかく、かわいすぎる現役配信者さん。見た目もかわいいし、配信中の空気感・話しぶりもかわいくて、いい意味で『ふわっと画面を明るくしてくれる』タイプの方です。",
+      "じつはこのアプリ（というより、ゆっくり解説の歴史そのもの）が動き出すきっかけをくれた恩人でもあります。『君斗りんく@クリエイター応援ちゃんねる』がまだ “弱小アカウント” と呼んでいい規模だったころから、しらいっさんは気持ちよくゆっくり解説動画を作らせてくださっていました。あのときの『いいですよ』がなければ、ここまで物語は続いていません。感謝が、止まりません。",
+      "そのしらいっさん自身も、いまはどんどん人気が上がっていて、配信するたびにキラキラが増している最中。アイコンをクリックすると、ゆっくり 3 人がそのエピソードも熱めに語ってくれます。",
+    ],
+    sites: [
+      {
+        label: "しらいっさん X プロフィール（@ewbcwj_lv）",
+        href: "https://x.com/ewbcwj_lv",
+        tagline: "茨城出身／ニコ生 現役配信者／RAIVEN 歌舞伎町店",
+      },
+    ],
+  },
+  {
     id: "imagawa-gyarara",
     name: "今川ギララ さん（@Tottokotokobusi）",
     title:
@@ -163,7 +181,6 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
 export const SPECIAL_THANKS_X_ONLY: ReadonlyArray<SpecialThanksXLink> = [
   { label: "@abuso2525", href: "https://x.com/abuso2525" },
   { label: "@shirase_0404", href: "https://x.com/shirase_0404" },
-  { label: "@ewbcwj_lv", href: "https://x.com/ewbcwj_lv" },
   { label: "@sinseinaru", href: "https://x.com/sinseinaru" },
   { label: "@yuzuchis_mammy", href: "https://x.com/yuzuchis_mammy" },
   { label: "@m20210411", href: "https://x.com/m20210411" },

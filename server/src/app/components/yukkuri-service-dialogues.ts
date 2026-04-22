@@ -374,6 +374,72 @@ export const IMAGAWA_DIALOGUE: YukkuriDialogue = {
   ctaLabel: "今川ギララさんの X プロフィールを開く",
 };
 
+/**
+ * しらいっさん（@ewbcwj_lv）— 君斗りんく@クリエイター応援ちゃんねるが
+ * まだ弱小だった頃から、ゆっくり解説の動画を作らせてくださっていた恩人。
+ * 『そこから物語が始まった』という感謝軸の紹介。
+ * 今はしらいっさん自身も人気上昇中でキラキラしている、というストーリー。
+ */
+export const SHIRAICCHAN_DIALOGUE: YukkuriDialogue = {
+  title:
+    "🌸 しらいっさん（@ewbcwj_lv） — ぼくらの物語のはじまりをくれた、かわいすぎる現役配信者",
+  lines: [
+    {
+      who: "rink",
+      text: "今日はね、ぼくらにとってほんとうに特別な方をご紹介します。茨城出身、ニコ生の現役配信者、しらいっさん（@ewbcwj_lv）だよ。",
+    },
+    {
+      who: "konta",
+      text: "特別って、どんな意味で特別なの〜！？",
+    },
+    {
+      who: "tanunee",
+      text: "まず、とにかく、かわいすぎるのだー。見た目も、話し方も、配信中のふわっとした空気感もぜんぶかわいい。画面がひとつ明るくなるタイプなのだー。",
+    },
+    {
+      who: "rink",
+      text: "でも、かわいいだけじゃないんだ。実はね……『君斗りんく@クリエイター応援ちゃんねる』がまだ“弱小アカウント”って呼んでいいレベルだったころから、しらいっさんはゆっくり解説の動画を作らせてくださっていたんだ。",
+    },
+    {
+      who: "konta",
+      text: "えっ、まだ登録者もほとんどいない時期から……！？それってめちゃくちゃすごいことじゃん！！",
+    },
+    {
+      who: "tanunee",
+      text: "あのとき、しらいっさんの『いいですよ』がなかったら、ゆっくり解説の物語も、このアプリの世界観も、ここまで続いていなかったのだー。感謝が、止まらないのだー。",
+    },
+    {
+      who: "rink",
+      text: "本当に、ここから物語がはじまったって言っていい。だからぼくたちにとって、しらいっさんは“物語のはじまりをくれた方”なんだ。",
+    },
+    {
+      who: "konta",
+      text: "それ聞くと、もう拝みたくなるレベル〜……！",
+    },
+    {
+      who: "tanunee",
+      text: "そしてね、ここが嬉しいのだけど、しらいっさん自身もいま、ぐんぐん人気が上がってきていて、配信するたびにキラキラが増しているのだー。",
+    },
+    {
+      who: "rink",
+      text: "5 月からは RAIVEN 歌舞伎町店 でも新しい挑戦をはじめていて、ドキドキしながらも前に進んでるんだ。その姿が、ほんとうに眩しい。",
+    },
+    {
+      who: "konta",
+      text: "これはもう、応援しないほうが無理じゃん〜！みんな、フォローしよう〜！",
+    },
+    {
+      who: "tanunee",
+      text: "しらいっさんの紹介動画『[ニコ生]現役JK配信者しらいっちゃんゆっくり紹介動画』も、君斗りんく@クリエイター応援ちゃんねるに公開されているのだー。あわせて覗いてみてほしいのだー。",
+    },
+    {
+      who: "rink",
+      text: "まずは X プロフィールから、しらいっさんの今の活動をぜひチェックしてみてね。ぼくらはこれからも、しらいっさんを全力で応援していきます！",
+    },
+  ],
+  ctaLabel: "しらいっさんの X プロフィールを開く",
+};
+
 const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://socialxup.com/": SOCIALXUP_DIALOGUE,
   "https://threads.socialxup.com/": SOCIALXUP_THREADS_DIALOGUE,
@@ -385,6 +451,7 @@ const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://oto1to1.com/": OTO1TO1_DIALOGUE,
   "https://x.com/bakusyokuM": MIIDESU_DIALOGUE,
   "https://x.com/Tottokotokobusi": IMAGAWA_DIALOGUE,
+  "https://x.com/ewbcwj_lv": SHIRAICCHAN_DIALOGUE,
 };
 
 export function getYukkuriDialogue(href: string): YukkuriDialogue | undefined {
