@@ -1,5 +1,7 @@
+import Link from "next/link";
 import type { RowDataPacket } from "mysql2";
 import pool from "@/lib/db";
+import JapanMap from "../app/components/JapanMap";
 import styles from "../page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -51,26 +53,52 @@ async function loadStats(): Promise<{ total: number; areas: Array<{ area: string
 export default async function LiveParticipants() {
   const { total, areas } = await loadStats();
 
-  if (total === 0) {
-    return null;
-  }
-
   return (
     <div className={styles.liveStats}>
-      <p className={styles.liveStatsTotal}>
-        現在<span className={styles.liveStatsNumber}>{total}</span>人が参加中
-      </p>
-      {areas.length > 0 && (
-        <ul className={styles.liveStatsAreas}>
-          {areas.map((a) => (
-            <li key={a.area} className={styles.liveStatsArea}>
-              <span className={styles.liveStatsAreaName}>{a.area}</span>
-              <span className={styles.liveStatsAreaCount}>{a.count}</span>
-            </li>
-          ))}
-        </ul>
+      {total > 0 ? (
+        <p className={styles.liveStatsTotal}>
+          現在<span className={styles.liveStatsNumber}>{total}</span>人が参加中
+        </p>
+      ) : (
+        <p className={styles.liveStatsTotal}>
+          まもなく開始 — あなたが最初の参加者かもしれません
+        </p>
       )}
-      <p className={styles.liveStatsNote}>直近30分の匿名集計</p>
+
+      {areas.length > 0 && (
+        <>
+          <JapanMap areaStats={areas} />
+          <ul className={styles.liveStatsAreas}>
+            {areas.map((a) => (
+              <li key={a.area} className={styles.liveStatsArea}>
+                <span className={styles.liveStatsAreaName}>{a.area}</span>
+                <span className={styles.liveStatsAreaCount}>{a.count}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      <div className={styles.liveStatsCta}>
+        <p className={styles.liveStatsCtaTitle}>ログインするとできること</p>
+        <ul className={styles.liveStatsCtaList}>
+          <li>会場内のあなたの近くにいる参加者がピン表示されます</li>
+          <li>相手の X（Twitter）アカウントが分かります</li>
+          <li>位置を送信してすれ違った相手と繋がれます</li>
+        </ul>
+        <div className={styles.liveStatsCtaButtons}>
+          <Link href="/sign-in" className={styles.liveStatsCtaPrimary}>
+            ログインして参加する
+          </Link>
+          <Link href="/sign-up" className={styles.liveStatsCtaGhost}>
+            新規登録
+          </Link>
+        </div>
+      </div>
+
+      <p className={styles.liveStatsNote}>
+        {total > 0 ? "直近30分の匿名集計" : "参加者が増えると全国分布マップが表示されます"}
+      </p>
     </div>
   );
 }

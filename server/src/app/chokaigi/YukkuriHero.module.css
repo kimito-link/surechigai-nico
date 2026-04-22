@@ -1,10 +1,14 @@
 .hero {
+  position: relative;
   padding: clamp(2rem, 6vw, 3.5rem) clamp(1rem, 5vw, 2rem) clamp(2rem, 5vw, 3rem);
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1.75rem;
+  overflow: hidden;
+  min-height: clamp(480px, 70vh, 760px);
+  isolation: isolate;
 }
 
 .authLessFirst {

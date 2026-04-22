@@ -1,82 +1,104 @@
 /**
- * ファーストビュー冒頭のコンセプトバナー。
+ * ヒーローの背景を覆う日本地図レイヤー。
  *
- * 目的（izanami 記事 3-1 / 4-1 に準拠）:
- * - 「全国の X ユーザーが幕張に集まり、また全国へ散り、いつかすれちがう」
- *   というコア体験を 3 秒で立ち上げる
- * - 下部 `JapanVenueLocator` と同じ地図モチーフを再利用し、
- *   スクロール後に「同じ地図だ」と気づかせる（ブランド反復）
+ * 実体:
+ * - 正確な日本列島のシルエット（Wikimedia Commons 由来, CC BY-SA 3.0）を
+ *   `/chokaigi/japan-outline.svg` として読み込む
+ * - その上に「全国 → 幕張（集まる）」「幕張 → 全国（散らばる）」の
+ *   呼吸アニメ、幕張ピンをオーバーレイする
  *
- * 情報の優先順位の考え方:
- * - 主役は下にある「X ID 入力 → ゆっくり解説」
- * - 本コンポーネントは地図を薄く背景化し、視線を入力フォームへ受け渡す
+ * 位置は `position: absolute` で親ヒーロー section に広がり、
+ * 入力フォームやキャラクターは前面（z-index）で視認性を担保する。
+ *
+ * izanami 記事の原則:
+ * - 情報の優先順位: 入力フォームが主役なので、地図は薄く（opacity 低め）
+ * - 体験の一貫性: 下部 `JapanVenueLocator` と同じ幕張赤ピン、同じ配色
  */
 
-import { JapanMapSilhouette } from "./JapanMapSilhouette";
 import styles from "./chokaigi.module.css";
+
+// 幕張の SVG viewBox (0..1024) 上の座標（日本の原画に対してだいたい千葉のあたり）
+// 原 SVG は 1024x1024, 東京湾は viewBox の右下寄りなので手動調整。
+const MAKUHARI = { x: 730, y: 480 };
+
+// 日本各地 → 幕張 への入射軌跡（主要地方の概略点から）
+const INBOUND_LINES: { d: string; className: string }[] = [
+  { d: `M 180 950 Q 450 720 ${MAKUHARI.x} ${MAKUHARI.y}`, className: styles.conceptInbound1 }, // 沖縄
+  { d: `M 310 780 Q 500 640 ${MAKUHARI.x} ${MAKUHARI.y}`, className: styles.conceptInbound2 }, // 九州
+  { d: `M 450 620 Q 600 560 ${MAKUHARI.x} ${MAKUHARI.y}`, className: styles.conceptInbound3 }, // 四国・中国
+  { d: `M 600 420 Q 660 450 ${MAKUHARI.x} ${MAKUHARI.y}`, className: styles.conceptInbound4 }, // 近畿
+  { d: `M 820 180 Q 780 320 ${MAKUHARI.x} ${MAKUHARI.y}`, className: styles.conceptInbound5 }, // 北海道
+];
+
+// 幕張 → 各地 の散出軌跡（同じ5方向）
+const OUTBOUND_LINES: { d: string; className: string }[] = [
+  { d: `M ${MAKUHARI.x} ${MAKUHARI.y} Q 450 720 180 950`, className: styles.conceptOutbound1 },
+  { d: `M ${MAKUHARI.x} ${MAKUHARI.y} Q 500 640 310 780`, className: styles.conceptOutbound2 },
+  { d: `M ${MAKUHARI.x} ${MAKUHARI.y} Q 600 560 450 620`, className: styles.conceptOutbound3 },
+  { d: `M ${MAKUHARI.x} ${MAKUHARI.y} Q 660 450 600 420`, className: styles.conceptOutbound4 },
+  { d: `M ${MAKUHARI.x} ${MAKUHARI.y} Q 780 320 820 180`, className: styles.conceptOutbound5 },
+];
 
 export function ChokaigiConceptBanner() {
   return (
-    <aside className={styles.conceptBanner} aria-label="サービスコンセプト">
-      <div className={styles.conceptMapLayer}>
-        <JapanMapSilhouette variant="concept" />
+    <div className={styles.heroBackdrop} aria-hidden="true">
+      {/* 正確な日本列島シルエット */}
+      <div className={styles.heroBackdropMap}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/chokaigi/japan-outline.svg"
+          alt=""
+          className={styles.heroBackdropMapImg}
+          loading="eager"
+          decoding="async"
+        />
+      </div>
 
-        {/*
-         * 呼吸アニメ: 「全国 → 幕張（集まる）」と「幕張 → 全国（散らばる）」
-         * を前後半で交互に表示し、コンセプトを 1 ループで体験させる。
-         * - 前半（0-50%）: inbound 線が描かれる
-         * - 後半（50-100%）: outbound 線が描かれる
-         */}
-        <svg
-          className={styles.conceptArrowsSvg}
-          viewBox="0 0 320 220"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
+      {/* 集まる／散らばる軌跡と幕張ピンを、同じ viewBox 上に重ねる */}
+      <svg
+        className={styles.heroBackdropOverlay}
+        viewBox="0 0 1024 1024"
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        {/* 集まる（オレンジ, 前半） */}
+        <g
+          stroke="#DD6500"
+          strokeWidth="4"
+          strokeDasharray="10 12"
+          fill="none"
+          strokeLinecap="round"
         >
-          {/* 集まる（オレンジ） */}
-          <g
-            stroke="#DD6500"
-            strokeWidth="1.2"
-            strokeDasharray="3 4"
-            fill="none"
-            strokeLinecap="round"
-          >
-            <path d="M 65 195 Q 150 150 245 105" className={styles.conceptInbound1} />
-            <path d="M 100 155 Q 170 130 245 105" className={styles.conceptInbound2} />
-            <path d="M 140 115 Q 195 110 245 105" className={styles.conceptInbound3} />
-            <path d="M 200 90 Q 220 95 245 105" className={styles.conceptInbound4} />
-            <path d="M 255 40 Q 250 70 245 105" className={styles.conceptInbound5} />
-          </g>
-          {/* 散らばる（ネイビー） */}
-          <g
-            stroke="#1a5898"
-            strokeWidth="1.2"
-            strokeDasharray="3 4"
-            fill="none"
-            strokeLinecap="round"
-          >
-            <path d="M 245 105 Q 150 150 65 195" className={styles.conceptOutbound1} />
-            <path d="M 245 105 Q 170 130 100 155" className={styles.conceptOutbound2} />
-            <path d="M 245 105 Q 195 110 140 115" className={styles.conceptOutbound3} />
-            <path d="M 245 105 Q 220 95 200 90" className={styles.conceptOutbound4} />
-            <path d="M 245 105 Q 250 70 255 40" className={styles.conceptOutbound5} />
-          </g>
-        </svg>
-      </div>
+          {INBOUND_LINES.map((line, i) => (
+            <path key={`in-${i}`} d={line.d} className={line.className} />
+          ))}
+        </g>
+        {/* 散らばる（ネイビー, 後半） */}
+        <g
+          stroke="#1a5898"
+          strokeWidth="4"
+          strokeDasharray="10 12"
+          fill="none"
+          strokeLinecap="round"
+        >
+          {OUTBOUND_LINES.map((line, i) => (
+            <path key={`out-${i}`} d={line.d} className={line.className} />
+          ))}
+        </g>
 
-      <div className={styles.conceptCaption}>
-        <p className={styles.conceptLine}>
-          <span className={styles.conceptNationwide}>全国から</span>
-          <span className={styles.conceptArrow} aria-hidden="true">→</span>
-          <span className={styles.conceptMakuhari}>幕張</span>
-          <span className={styles.conceptArrow} aria-hidden="true">→</span>
-          <span className={styles.conceptNationwide}>また全国へ</span>
-        </p>
-        <p className={styles.conceptSub}>
-          X でつながって、超会議で出会う。<br />
-          全国に散らばっても、いつかまた<strong>すれちがう</strong>。
-        </p>
-      </div>
-    </aside>
+        {/* 幕張ピン（呼吸） */}
+        <g className={styles.conceptPinLarge}>
+          <circle
+            cx={MAKUHARI.x}
+            cy={MAKUHARI.y}
+            r="18"
+            fill="#c62828"
+            opacity="0.28"
+          />
+          <circle cx={MAKUHARI.x} cy={MAKUHARI.y} r="9" fill="#c62828" />
+          <circle cx={MAKUHARI.x} cy={MAKUHARI.y} r="3" fill="#fff" />
+        </g>
+      </svg>
+    </div>
   );
 }

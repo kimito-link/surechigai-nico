@@ -3327,58 +3327,66 @@ details[open] .detailMapSummary::before {
 }
 
 /* ========================================
-   ヒーローのコンセプトバナー（日本地図＋コピー）
+   ヒーロー背景: 日本列島シルエットを覆う背景レイヤー
    izanami 記事の「情報の優先順位」「体験の一貫性」に基づき、
-   主役（入力フォーム）を邪魔しないよう、地図は薄く背景化する。
+   主役（入力フォーム）を邪魔しないよう、地図は薄く・広く背景化する。
    ======================================== */
 
-.conceptBanner {
-  width: 100%;
-  max-width: 640px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: minmax(160px, 42%) 1fr;
-  align-items: center;
-  gap: clamp(0.75rem, 3vw, 1.5rem);
-  padding: clamp(0.6rem, 2.5vw, 1rem) clamp(0.75rem, 3vw, 1.25rem);
-  border-radius: 1rem;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 248, 238, 0.7));
-  border: 1px solid rgba(26, 88, 152, 0.12);
-  box-shadow: 0 6px 20px rgba(26, 88, 152, 0.06);
-}
-
-.conceptMapLayer {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 320 / 220;
-  border-radius: 0.75rem;
-  overflow: hidden;
-}
-
-.conceptMapSvg {
+.heroBackdrop {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.conceptArrowsSvg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  z-index: 0;
   pointer-events: none;
+  overflow: hidden;
+  /* 地図の上下に淡いグラデを入れて、フォーム背後の可読性を確保 */
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 55%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 70%);
 }
 
-.conceptPin {
-  transform-origin: 245px 105px;
+.heroBackdropMap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a5898; /* SVG の currentColor がこれで塗られる */
+  opacity: 0.13;
+}
+
+.heroBackdropMapImg {
+  width: 100%;
+  height: 100%;
+  max-width: 1024px;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.heroBackdropOverlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.55;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.75rem;
+  width: 100%;
+}
+
+/* 幕張ピン（大きめ）の呼吸演出 */
+.conceptPinLarge {
+  transform-origin: 730px 480px;
   animation: conceptPinPulse 2.4s ease-in-out infinite;
 }
 
 @keyframes conceptPinPulse {
-  0%, 100% { transform: scale(1); opacity: 0.9; }
+  0%, 100% { transform: scale(1); opacity: 0.95; }
   50%      { transform: scale(1.12); opacity: 1; }
 }
 
@@ -3393,7 +3401,8 @@ details[open] .detailMapSummary::before {
 .conceptInbound3,
 .conceptInbound4,
 .conceptInbound5 {
-  stroke-dashoffset: 200;
+  stroke-dashoffset: 1400;
+  stroke-dasharray: 1400;
   opacity: 0;
   animation: conceptInboundDraw 8s ease-in-out infinite;
 }
@@ -3405,11 +3414,11 @@ details[open] .detailMapSummary::before {
 .conceptInbound5 { animation-delay: 1s; }
 
 @keyframes conceptInboundDraw {
-  0%   { stroke-dashoffset: 200; opacity: 0; }
-  8%   { opacity: 0.55; }
-  35%  { stroke-dashoffset: 0; opacity: 0.55; }
-  45%  { stroke-dashoffset: -60; opacity: 0; }
-  100% { stroke-dashoffset: -60; opacity: 0; }
+  0%   { stroke-dashoffset: 1400; opacity: 0; }
+  8%   { opacity: 0.75; }
+  35%  { stroke-dashoffset: 0; opacity: 0.75; }
+  45%  { stroke-dashoffset: -600; opacity: 0; }
+  100% { stroke-dashoffset: -600; opacity: 0; }
 }
 
 .conceptOutbound1,
@@ -3417,7 +3426,8 @@ details[open] .detailMapSummary::before {
 .conceptOutbound3,
 .conceptOutbound4,
 .conceptOutbound5 {
-  stroke-dashoffset: 200;
+  stroke-dashoffset: 1400;
+  stroke-dasharray: 1400;
   opacity: 0;
   animation: conceptOutboundDraw 8s ease-in-out infinite;
 }
@@ -3429,15 +3439,15 @@ details[open] .detailMapSummary::before {
 .conceptOutbound5 { animation-delay: 1s; }
 
 @keyframes conceptOutboundDraw {
-  0%, 50% { stroke-dashoffset: 200; opacity: 0; }
-  58%     { opacity: 0.5; }
-  85%     { stroke-dashoffset: 0; opacity: 0.5; }
-  95%     { stroke-dashoffset: -60; opacity: 0; }
-  100%    { stroke-dashoffset: -60; opacity: 0; }
+  0%, 50% { stroke-dashoffset: 1400; opacity: 0; }
+  58%     { opacity: 0.7; }
+  85%     { stroke-dashoffset: 0; opacity: 0.7; }
+  95%     { stroke-dashoffset: -600; opacity: 0; }
+  100%    { stroke-dashoffset: -600; opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .conceptPin,
+  .conceptPinLarge,
   .conceptInbound1,
   .conceptInbound2,
   .conceptInbound3,
@@ -3450,86 +3460,17 @@ details[open] .detailMapSummary::before {
   .conceptOutbound5 {
     animation: none;
     stroke-dashoffset: 0;
+    opacity: 0.55;
+  }
+}
+
+/* モバイル: 背景地図の主張を少し抑え、フォーム周辺の可読性を担保 */
+@media (max-width: 640px) {
+  .heroBackdropMap {
+    opacity: 0.1;
+  }
+
+  .heroBackdropOverlay {
     opacity: 0.45;
-  }
-}
-
-.conceptCaption {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  text-align: left;
-}
-
-.conceptLine {
-  margin: 0;
-  font-size: clamp(0.92rem, 2.8vw, 1.1rem);
-  font-weight: 800;
-  color: #1a5898;
-  line-height: 1.35;
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.3em;
-}
-
-.conceptNationwide {
-  color: #1a5898;
-}
-
-.conceptMakuhari {
-  color: #c62828;
-  position: relative;
-}
-
-.conceptMakuhari::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -0.1em;
-  height: 2px;
-  background: #c62828;
-  opacity: 0.35;
-  border-radius: 1px;
-}
-
-.conceptArrow {
-  color: #DD6500;
-  font-weight: 900;
-}
-
-.conceptSub {
-  margin: 0;
-  font-size: clamp(0.76rem, 2.1vw, 0.88rem);
-  color: rgba(26, 26, 26, 0.72);
-  line-height: 1.55;
-}
-
-.conceptSub strong {
-  color: #DD6500;
-  font-weight: 800;
-}
-
-/* モバイル: 横並びが厳しくなる 480px 以下で縦積みに切り替え */
-@media (max-width: 480px) {
-  .conceptBanner {
-    grid-template-columns: 1fr;
-    gap: 0.65rem;
-    padding: 0.7rem 0.85rem;
-  }
-
-  .conceptMapLayer {
-    max-width: 17rem;
-    margin: 0 auto;
-  }
-
-  .conceptCaption {
-    text-align: center;
-    align-items: center;
-  }
-
-  .conceptLine {
-    justify-content: center;
   }
 }

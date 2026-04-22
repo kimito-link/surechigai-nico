@@ -64,30 +64,19 @@ export function YukkuriHero() {
 
   return (
     <section className={styles.hero} aria-label="ゆっくり解説ヒーロー">
+      {/* 背景: 日本列島（全国 → 幕張 → 全国）のコンセプトを視覚化する背景レイヤー */}
       <ChokaigiConceptBanner />
+
+      {/*
+       * UX: 主要アクション（X ID 入力 → ゆっくり解説）を最上部に置く。
+       * 以降のコンテンツは `.heroContent` で背景より前面に配置（z-index）。
+       * （izanami 記事 3-1「情報の優先順位」に準拠）
+       */}
+      <div className={styles.heroContent}>
       <p className={styles.authLessFirst}>{AUTH_LESS_FIRST_COPY}</p>
       <p className={styles.headline}>
         誰を紹介してもらう？
       </p>
-
-      {/* キャラクター3人 */}
-      <div className={`${styles.chars}${dialogue ? ` ${styles.charsWithBubble}` : ""}`}>
-        {CHARS.map(({ key, label, src, color }, i) => (
-          <div key={key} className={styles.charCard} style={{ animationDelay: `${i * 0.18}s` }}>
-            <div className={styles.charImgWrap}>
-              <Image src={src} alt={label} width={100} height={100} className={styles.charImg} />
-            </div>
-            <span className={styles.charLabel} style={{ background: color, color: "#0a0e1a" }}>
-              {label}
-            </span>
-            {dialogue && (
-              <div className={styles.charBubble}>
-                {dialogue[key]}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
 
       {/* 解説フォーム */}
       <form className={styles.form} onSubmit={handleYukkuri}>
@@ -134,6 +123,25 @@ export function YukkuriHero() {
           </p>
         )}
       </form>
+
+      {/* キャラクター3人（結果の吹き出し表示エリアを兼ねる） */}
+      <div className={`${styles.chars}${dialogue ? ` ${styles.charsWithBubble}` : ""}`}>
+        {CHARS.map(({ key, label, src, color }, i) => (
+          <div key={key} className={styles.charCard} style={{ animationDelay: `${i * 0.18}s` }}>
+            <div className={styles.charImgWrap}>
+              <Image src={src} alt={label} width={100} height={100} className={styles.charImg} />
+            </div>
+            <span className={styles.charLabel} style={{ background: color, color: "#0a0e1a" }}>
+              {label}
+            </span>
+            {dialogue && (
+              <div className={styles.charBubble}>
+                {dialogue[key]}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
 
       {/* 登録は入力欄と独立したCTA */}
       {isLoaded && !isSignedIn && (
@@ -214,6 +222,7 @@ export function YukkuriHero() {
           </div>
         </>
       )}
+      </div>
     </section>
   );
 }
