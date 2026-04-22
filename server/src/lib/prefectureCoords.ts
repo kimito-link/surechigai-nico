@@ -89,6 +89,46 @@ export function extractPrefecture(municipality: string | null | undefined): Pref
 }
 
 /**
+ * lat/lng から最寄りの都道府県を返す。逆ジオ（municipality 文字列）が欠損しているときの
+ * フォールバックとして使う。県庁所在地との単純な二乗距離で比較。
+ */
+export function nearestPrefectureByLatLng(
+  lat: number | null | undefined,
+  lng: number | null | undefined
+): PrefectureInfo | null {
+  if (lat == null || lng == null) return null;
+  const la = Number(lat);
+  const lo = Number(lng);
+  if (!Number.isFinite(la) || !Number.isFinite(lo)) return null;
+  let best: { pref: PrefectureInfo; dist: number } | null = null;
+  for (const p of PREFECTURES) {
+    const dLat = p.lat - la;
+    const dLng = p.lng - lo;
+    const dist = dLat * dLat + dLng * dLng;
+    if (best == null || dist < best.dist) {
+      best = { pref: p, dist };
+    }
+  }
+  return best ? best.pref : null;
+}
+
+/**
+ * 位置レコードを都道府県に分類するヘルパ。
+ *  1) municipality が "長野県…" のように県プレフィックスを持てばそれを採用
+ *  2) なければ lat/lng から最寄り県にフォールバック
+ * 逆ジオ補完が終わっていない古い行（municipality=NULL）も集計に乗せるために使う。
+ */
+export function classifyLocationToPrefecture(
+  municipality: string | null | undefined,
+  lat: number | null | undefined,
+  lng: number | null | undefined
+): PrefectureInfo | null {
+  const fromMuni = extractPrefecture(municipality);
+  if (fromMuni) return fromMuni;
+  return nearestPrefectureByLatLng(lat, lng);
+}
+
+/**
  * 日本本土の概算バウンディングボックス（沖縄は別扱い）。
  * 北海道最北端〜本州南端 + 九州南端までをカバー。
  */

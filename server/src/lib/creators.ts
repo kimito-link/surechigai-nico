@@ -1,7 +1,11 @@
 import "server-only";
 import type { RowDataPacket } from "mysql2";
 import pool from "@/lib/db";
-import { PREFECTURES, extractPrefecture, type PrefectureInfo } from "@/lib/prefectureCoords";
+import {
+  PREFECTURES,
+  classifyLocationToPrefecture,
+  type PrefectureInfo,
+} from "@/lib/prefectureCoords";
 
 export const LIVE_WINDOW_MINUTES = 30;
 
@@ -40,17 +44,22 @@ export const VALID_PREFECTURE_NAMES = new Set(PREFECTURES.map((p) => p.name));
 
 type PairRow = RowDataPacket & {
   user_id: number;
-  municipality: string;
+  municipality: string | null;
+  lat_grid: string | number | null;
+  lng_grid: string | number | null;
   last_active_at: Date | null;
 };
 
-type CreatorRow = RowDataPacket & {
+type PrefCreatorRow = RowDataPacket & {
   user_id: number;
   twitter_handle: string | null;
   nickname: string | null;
   avatar_url: string | null;
   last_active_at: Date | null;
-  last_seen_in_pref: Date | null;
+  municipality: string | null;
+  lat_grid: string | number | null;
+  lng_grid: string | number | null;
+  created_at: Date | null;
 };
 
 function buildEmptySummary(): PrefectureSummary[] {
@@ -64,17 +73,19 @@ function buildEmptySummary(): PrefectureSummary[] {
 
 export async function getPrefectureSummaries(): Promise<PrefectureListResult> {
   try {
-    // twitter_handle 未設定の参加者も一覧に含める（X 未連携でも都道府県に居た事実は残す）。
+    // twitter_handle 未設定の参加者も、逆ジオが未完了で municipality=NULL の行も含める。
+    // NULL の場合は lat_grid/lng_grid から最寄り都道府県にフォールバック（分類ミスは許容）。
     const [rows] = await pool.execute<PairRow[]>(
       `SELECT DISTINCT
          l.user_id,
          l.municipality,
+         l.lat_grid,
+         l.lng_grid,
          u.last_active_at
        FROM locations l
        INNER JOIN users u ON u.id = l.user_id
        WHERE u.is_deleted = FALSE
-         AND u.is_suspended = FALSE
-         AND l.municipality IS NOT NULL`
+         AND u.is_suspended = FALSE`
     );
 
     const now = Date.now();
@@ -87,7 +98,11 @@ export async function getPrefectureSummaries(): Promise<PrefectureListResult> {
     }
 
     for (const r of rows) {
-      const pref = extractPrefecture(r.municipality);
+      const pref = classifyLocationToPrefecture(
+        r.municipality,
+        r.lat_grid != null ? Number(r.lat_grid) : null,
+        r.lng_grid != null ? Number(r.lng_grid) : null
+      );
       if (!pref) continue;
       const bucket = byPref.get(pref.name);
       if (!bucket) continue;
@@ -139,55 +154,101 @@ export async function getCreatorsByPrefecture(
   }
 
   try {
-    // twitter_handle 未設定の参加者も含めて返す（X 未連携の方もニックネームで表示する）。
-    const [rows] = await pool.execute<CreatorRow[]>(
+    // 逆ジオ未完了 (municipality=NULL) の行も含めて取得し、JS 側で県分類する。
+    // municipality が LIKE "<県>%" に一致する行のみに絞ると、NULL 行が丸ごと漏れる。
+    const [rows] = await pool.execute<PrefCreatorRow[]>(
       `SELECT
          u.id AS user_id,
          u.twitter_handle,
          u.nickname,
          u.avatar_url,
          u.last_active_at,
-         MAX(l.created_at) AS last_seen_in_pref
+         l.municipality,
+         l.lat_grid,
+         l.lng_grid,
+         l.created_at
        FROM users u
        INNER JOIN locations l ON l.user_id = u.id
        WHERE u.is_deleted = FALSE
          AND u.is_suspended = FALSE
-         AND l.municipality LIKE ?
-       GROUP BY u.id
-       ORDER BY u.last_active_at DESC, last_seen_in_pref DESC`,
-      [`${prefectureName}%`]
+       ORDER BY u.last_active_at DESC, l.created_at DESC`
     );
 
-    const now = Date.now();
-    const creators: CreatorEntry[] = rows.map((r) => {
-      const lastActive = r.last_active_at
-        ? new Date(r.last_active_at).getTime()
-        : 0;
-      const minutesSinceActive =
-        lastActive > 0
-          ? Math.floor((now - lastActive) / 60000)
-          : Number.POSITIVE_INFINITY;
+    // ユーザーごとに「この県で最後に観測した時刻」と代表プロフィールを集約する。
+    type Agg = {
+      userId: number;
+      twitterHandle: string | null;
+      nickname: string;
+      avatarUrl: string | null;
+      lastActiveAt: Date | null;
+      lastSeenInPref: number; // epoch ms, 0 なら未確定
+    };
+    const byUser = new Map<number, Agg>();
+    for (const r of rows) {
+      const pref = classifyLocationToPrefecture(
+        r.municipality,
+        r.lat_grid != null ? Number(r.lat_grid) : null,
+        r.lng_grid != null ? Number(r.lng_grid) : null
+      );
+      if (!pref || pref.name !== prefectureName) continue;
+
+      const uid = Number(r.user_id);
+      const createdAtMs = r.created_at ? new Date(r.created_at).getTime() : 0;
+      const existing = byUser.get(uid);
+      if (existing) {
+        if (createdAtMs > existing.lastSeenInPref) {
+          existing.lastSeenInPref = createdAtMs;
+        }
+        continue;
+      }
       const trimmedHandle =
         typeof r.twitter_handle === "string"
           ? r.twitter_handle.trim().replace(/^@/, "")
           : "";
-      return {
-        userId: Number(r.user_id),
+      byUser.set(uid, {
+        userId: uid,
         twitterHandle: trimmedHandle ? trimmedHandle : null,
         nickname: r.nickname || "匿名さん",
         avatarUrl: r.avatar_url,
-        lastActiveAt: r.last_active_at
-          ? new Date(r.last_active_at).toISOString()
-          : null,
-        lastSeenInPrefAt: r.last_seen_in_pref
-          ? new Date(r.last_seen_in_pref).toISOString()
-          : null,
-        isLive: minutesSinceActive < LIVE_WINDOW_MINUTES,
-        minutesSinceActive: Number.isFinite(minutesSinceActive)
-          ? minutesSinceActive
-          : null,
-      };
-    });
+        lastActiveAt: r.last_active_at,
+        lastSeenInPref: createdAtMs,
+      });
+    }
+
+    const now = Date.now();
+    const creators: CreatorEntry[] = Array.from(byUser.values())
+      .sort((a, b) => {
+        const la = a.lastActiveAt ? new Date(a.lastActiveAt).getTime() : 0;
+        const lb = b.lastActiveAt ? new Date(b.lastActiveAt).getTime() : 0;
+        if (lb !== la) return lb - la;
+        return b.lastSeenInPref - a.lastSeenInPref;
+      })
+      .map((a) => {
+        const lastActive = a.lastActiveAt
+          ? new Date(a.lastActiveAt).getTime()
+          : 0;
+        const minutesSinceActive =
+          lastActive > 0
+            ? Math.floor((now - lastActive) / 60000)
+            : Number.POSITIVE_INFINITY;
+        return {
+          userId: a.userId,
+          twitterHandle: a.twitterHandle,
+          nickname: a.nickname,
+          avatarUrl: a.avatarUrl,
+          lastActiveAt: a.lastActiveAt
+            ? new Date(a.lastActiveAt).toISOString()
+            : null,
+          lastSeenInPrefAt:
+            a.lastSeenInPref > 0
+              ? new Date(a.lastSeenInPref).toISOString()
+              : null,
+          isLive: minutesSinceActive < LIVE_WINDOW_MINUTES,
+          minutesSinceActive: Number.isFinite(minutesSinceActive)
+            ? minutesSinceActive
+            : null,
+        };
+      });
 
     return {
       prefecture: prefectureName,

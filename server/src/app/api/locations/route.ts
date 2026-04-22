@@ -5,7 +5,7 @@ import { mapDbErrorToUserMessage } from "@/lib/mapDbError";
 import { reverseGeocodeToMunicipality } from "@/lib/geocoding";
 import { toGrid, toH3Cell, assertFiniteLatLng } from "@/lib/locationGeom";
 import { publishLiveMapEvent } from "@/lib/liveMapBus";
-import { PREFECTURES, extractPrefecture } from "@/lib/prefectureCoords";
+import { extractPrefecture, nearestPrefectureByLatLng } from "@/lib/prefectureCoords";
 import type { RowDataPacket } from "mysql2";
 
 export const runtime = "nodejs";
@@ -29,23 +29,6 @@ function normalizeMunicipality(value: unknown): string | null {
   return collapsed.slice(0, MUNICIPALITY_MAX);
 }
 
-/**
- * lat/lng から最寄りの都道府県名を返す最終フォールバック。
- * クライアント Geolonia + サーバ Nominatim が両方失敗しても
- * 「長野県」「福岡県」などの粒度の表示は維持できるようにする。
- */
-function nearestPrefectureName(lat: number, lng: number): string | null {
-  let best: { name: string; dist: number } | null = null;
-  for (const p of PREFECTURES) {
-    const dLat = p.lat - lat;
-    const dLng = p.lng - lng;
-    const dist = dLat * dLat + dLng * dLng;
-    if (best == null || dist < best.dist) {
-      best = { name: p.name, dist };
-    }
-  }
-  return best ? best.name : null;
-}
 
 export async function POST(req: NextRequest) {
   const authResult = await requireAuth(req);
@@ -165,7 +148,7 @@ export async function POST(req: NextRequest) {
         }
         if (!resolved || !extractPrefecture(resolved)) {
           // Nominatim が 5xx やタイムアウトした場合でも県レベルは担保する
-          resolved = nearestPrefectureName(lat, lng);
+          resolved = nearestPrefectureByLatLng(lat, lng)?.name ?? null;
         }
         if (resolved) {
           try {

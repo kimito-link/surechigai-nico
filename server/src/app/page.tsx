@@ -42,6 +42,12 @@ const AVATAR_FRAME: [string, string][] = [
 export default function Home() {
   return (
     <main className={styles.shell}>
+      {/* 最上部の統計バンド：どの画面サイズでもファーストビューに収まる高さに抑える */}
+      <div className={styles.heroStatsBand} aria-label="参加状況サマリー">
+        <Suspense fallback={null}>
+          <HeroStats />
+        </Suspense>
+      </div>
       <YukkuriHero />
       <header className={styles.hero}>
         <div className={styles.heroInner}>
@@ -60,9 +66,6 @@ export default function Home() {
             </span>
             <h1 className={styles.title}>すれちがいライト</h1>
             <p className={styles.lead}>{HOME_HERO_LEAD}</p>
-            <Suspense fallback={null}>
-              <HeroStats />
-            </Suspense>
             <PrefetchChokaigiWhenVisible>
               <div className={styles.ctaRow}>
                 <Link href="/chokaigi" className={styles.ctaPrimary}>

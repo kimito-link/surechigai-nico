@@ -142,6 +142,39 @@
   }
 }
 
+/* ページ最上部の統計バンド：ファーストビューで必ず見えるよう固定高さで圧縮表示 */
+.heroStatsBand {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  padding: 0.5rem clamp(0.5rem, 3vw, 1.25rem);
+  background: linear-gradient(180deg, rgba(255, 250, 240, 0.95), rgba(247, 241, 231, 0.9));
+  border-bottom: 1px solid rgba(88, 62, 28, 0.12);
+  backdrop-filter: saturate(1.1) blur(4px);
+  -webkit-backdrop-filter: saturate(1.1) blur(4px);
+}
+
+.heroStatsBand > * {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+/* バンド内では余白を詰めて、どのサイズでも 1 行 or 2 行に収める */
+.heroStatsBand .heroStatsRow {
+  margin: 0;
+  gap: 0.35rem 0.45rem;
+}
+
+.heroStatsBand .heroStatsChip {
+  padding: 0.35rem 0.65rem;
+  min-height: 2rem;
+  font-size: clamp(0.7rem, 1.7vw, 0.85rem);
+}
+
+.heroStatsBand .heroStatsChipNumber {
+  font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+}
+
 .heroStatsRow {
   display: flex;
   flex-wrap: wrap;
