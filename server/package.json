@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node -e \"try{require('fs').rmSync('.next',{recursive:true,force:true})}catch(e){}\" && next dev --port 3010",
+    "dev:3011": "node -e \"try{require('fs').rmSync('.next',{recursive:true,force:true})}catch(e){}\" && next dev --port 3011",
     "dev:clean": "node -e \"try{require('fs').rmSync('.next',{recursive:true,force:true})}catch(e){}\" && next dev --port 3010",
     "build": "next build",
     "start": "node scripts/bootstrap-db.js && next start --port 3010",

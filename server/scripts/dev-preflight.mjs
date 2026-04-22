@@ -73,17 +73,33 @@ console.log("");
 
 const nextBase = (process.env.YUKKURI_BASE || "http://127.0.0.1:3010").replace(/\/$/, "");
 console.log(`[Next プロキシ（任意・サーバー起動中なら）] ${nextBase}`);
-const proxy = await pingUrl("voicevox-api", `${nextBase}/api/voicevox/synthesize`, 5000);
-if (proxy.ok) {
-  try {
-    const r = await fetch(`${nextBase}/api/voicevox/synthesize`);
-    const j = await r.json();
-    console.log("  /api/voicevox/synthesize:", JSON.stringify(j));
-  } catch (e) {
-    console.log("  ⚠ JSON 解析失敗", e);
+try {
+  const r = await fetch(`${nextBase}/api/voicevox/synthesize`, {
+    signal: AbortSignal.timeout(8000),
+  });
+  const txt = await r.text();
+  if (r.ok) {
+    try {
+      const j = JSON.parse(txt);
+      console.log("  GET /api/voicevox/synthesize:", JSON.stringify(j));
+    } catch {
+      console.log("  ⚠ HTTP 200 だが JSON 以外:", txt.slice(0, 120));
+    }
+  } else {
+    console.log(`  ⚠ HTTP ${r.status}（このプロジェクトの next dev なら通常 200）`);
+    if (r.status === 500 || r.status === 404) {
+      console.log("     → ポートが別アプリを掴んでいる可能性があります。");
+      console.log("        npm run dev:3011 で別ポート起動、または YUKKURI_BASE=http://127.0.0.1:3011 npm run preflight");
+      console.log("        PowerShell 例: Get-NetTCPConnection -LocalPort 3010 | Select-Object OwningProcess");
+    } else {
+      console.log("     → npm run dev 実行後に再試行してください");
+    }
   }
-} else {
-  console.log(`  … 未起動か別ポートの可能性（npm run dev 後に再実行）: ${proxy.err || proxy.status}`);
+} catch (e) {
+  console.log(
+    "  … 接続できません（dev 未起動）:",
+    e instanceof Error ? e.message : e
+  );
 }
 console.log("");
 
