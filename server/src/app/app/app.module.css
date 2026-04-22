@@ -1345,3 +1345,57 @@
   max-width: 100% !important;
   margin: 0 auto !important;
 }
+
+.thanksCreditLinks {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(122, 74, 31, 0.25);
+}
+
+.thanksCreditLinksTitle {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #7a4a1f;
+  letter-spacing: 0.04em;
+}
+
+.thanksCreditLinksList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.thanksCreditLink {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: white;
+  border: 1px solid rgba(227, 140, 30, 0.25);
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.thanksCreditLink:hover {
+  background: #fff8ea;
+  border-color: rgba(227, 140, 30, 0.5);
+  transform: translateX(2px);
+}
+
+.thanksCreditLinkName {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.thanksCreditLinkDesc {
+  font-size: 11px;
+  color: #5c5248;
+  line-height: 1.5;
+}

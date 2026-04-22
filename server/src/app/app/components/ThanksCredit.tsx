@@ -76,6 +76,55 @@ export default function ThanksCredit() {
           <a href={TWEET_URL}>元ツイートを見る</a>
         </blockquote>
       </div>
+
+      <div className={styles.thanksCreditLinks}>
+        <p className={styles.thanksCreditLinksTitle}>
+          星野ロミさんの他のプロジェクト
+        </p>
+        <ul className={styles.thanksCreditLinksList}>
+          <li>
+            <a
+              href="https://socialxup.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.thanksCreditLink}
+            >
+              <span className={styles.thanksCreditLinkName}>SocialXup</span>
+              <span className={styles.thanksCreditLinkDesc}>
+                X ユーザー数推移ツール（フォロワー・フォロー数の推移追跡）
+              </span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://threads.socialxup.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.thanksCreditLink}
+            >
+              <span className={styles.thanksCreditLinkName}>
+                SocialXup for Threads
+              </span>
+              <span className={styles.thanksCreditLinkDesc}>
+                Threads 版ユーザー数推移ツール
+              </span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://mangamura.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.thanksCreditLink}
+            >
+              <span className={styles.thanksCreditLinkName}>mangamura.org</span>
+              <span className={styles.thanksCreditLinkDesc}>
+                漫画村 <span aria-label="おばけ">👻</span> ※もうないらしい
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
     </section>
   );
 }
