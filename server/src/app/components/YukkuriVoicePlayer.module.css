@@ -31,6 +31,33 @@
   cursor: wait;
 }
 
+.playBtnDisabled {
+  flex: 1 1 12rem;
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border: 1px dashed rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(240, 244, 255, 0.65);
+}
+
+.probing {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(184, 196, 216, 0.95);
+}
+
+.hintMuted {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: rgba(184, 196, 216, 0.9);
+}
+
 .stopBtn {
   min-height: 44px;
   padding: 0.45rem 1rem;
