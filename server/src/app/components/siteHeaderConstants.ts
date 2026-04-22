@@ -35,9 +35,19 @@ export const MOBILE_CHOKAIGI_SECTION_LINKS: readonly HeaderNavLink[] = [
     description: "協力者リンクページへ",
   },
   {
+    href: "/chokaigi#features-heading",
+    label: "機能まるごとガイド",
+    description: "できること総まとめ",
+  },
+  {
     href: "/chokaigi#yukkuri-dialogue-heading",
     label: "ゆっくり超解説",
     description: "3人の掛け合い",
+  },
+  {
+    href: "/chokaigi#venue-tour-3d-heading",
+    label: "3D 会場ツアー",
+    description: "全ホールを自動巡回",
   },
   {
     href: "/chokaigi#usage-heading",

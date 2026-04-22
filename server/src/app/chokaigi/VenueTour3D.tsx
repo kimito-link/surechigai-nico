@@ -94,8 +94,13 @@ export function VenueTour3D() {
   const visibleHalls = getVisibleHalls();
 
   return (
-    <section className={styles.tourSection}>
-      <h2 className={styles.sectionTitle}>会場を3Dで探索</h2>
+    <section
+      className={styles.tourSection}
+      aria-labelledby="venue-tour-3d-heading"
+    >
+      <h2 id="venue-tour-3d-heading" className={styles.sectionTitle}>
+        会場を3Dで探索
+      </h2>
       <p className={styles.sectionLead}>
         幕張メッセを歩くように、会場をバーチャル体験
       </p>
