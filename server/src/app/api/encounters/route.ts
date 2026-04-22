@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
         e.tier,
         u.id AS other_user_id,
         u.nickname AS other_nickname,
+        u.twitter_handle AS other_twitter_handle,
         u.avatar_config AS other_avatar_config,
         u.avatar_url AS other_avatar_url,
         CASE

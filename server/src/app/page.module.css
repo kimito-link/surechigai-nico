@@ -943,3 +943,63 @@
   font-size: 11px;
   color: #8a7d6e;
 }
+
+.liveStatsSurechigai {
+  margin: 16px 0 12px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, #fff6ea 0%, #fffaf0 100%);
+  border: 1px solid rgba(227, 140, 30, 0.35);
+  border-radius: 14px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(227, 140, 30, 0.12);
+}
+
+.liveStatsSurechigaiMain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.liveStatsSurechigaiLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #7a4a1f;
+  letter-spacing: 0.02em;
+}
+
+.liveStatsSurechigaiNumber {
+  font-size: 34px;
+  font-weight: 900;
+  color: #b8410a;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.liveStatsSurechigaiUnit {
+  font-size: 16px;
+  font-weight: 800;
+  color: #7a4a1f;
+}
+
+.liveStatsSurechigaiToday {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #5c3a1a;
+}
+
+.liveStatsSurechigaiToday strong {
+  color: #b8410a;
+  font-weight: 800;
+  font-size: 14px;
+  margin: 0 2px;
+}
+
+.liveStatsSurechigaiHint {
+  margin: 10px 0 0;
+  font-size: 11px;
+  color: #7a6a58;
+  font-weight: 500;
+}

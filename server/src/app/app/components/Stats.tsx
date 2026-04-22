@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getUuidToken } from "@/lib/clientAuth";
 import styles from "../app.module.css";
@@ -95,10 +96,11 @@ export default function Stats({
 
   return (
     <div className={styles.statsGrid}>
-      <div className={styles.statCard}>
+      <Link href="/app/history" className={`${styles.statCard} ${styles.statCardLink}`}>
         <div className={styles.statValue}>{stats?.encounterCount || 0}</div>
         <div className={styles.statLabel}>すれ違い数</div>
-      </div>
+        <div className={styles.statHint}>タップで図鑑を見る →</div>
+      </Link>
       <div className={styles.statCard}>
         <div className={styles.statValue}>{stats?.streak || 0}</div>
         <div className={styles.statLabel}>連続日数</div>

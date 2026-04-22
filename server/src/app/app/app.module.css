@@ -901,3 +901,394 @@
     transform: translateY(0);
   }
 }
+
+/* ============================================================
+   Stats card link (dashboard → history)
+   ============================================================ */
+.statCardLink {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.statCardLink:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.statHint {
+  margin-top: 6px;
+  font-size: 10px;
+  color: #255d9b;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+/* ============================================================
+   History (図鑑) page
+   ============================================================ */
+.historyHeader {
+  max-width: 900px;
+  margin: 0 auto 16px;
+  padding: 0 4px;
+}
+
+.historyBackLink {
+  display: inline-block;
+  font-size: 13px;
+  color: #255d9b;
+  text-decoration: none;
+  margin-bottom: 10px;
+}
+
+.historyBackLink:hover {
+  text-decoration: underline;
+}
+
+.historyTitle {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin: 0 0 6px;
+  letter-spacing: 0.02em;
+}
+
+.historyLead {
+  font-size: 13px;
+  color: #5c5248;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.historyFilters {
+  max-width: 900px;
+  margin: 0 auto 16px;
+  padding: 0 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.historyFilter {
+  padding: 6px 14px;
+  border: 1px solid rgba(37, 93, 155, 0.25);
+  border-radius: 20px;
+  background: white;
+  color: #1a4a73;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.historyFilter:hover {
+  background: rgba(37, 93, 155, 0.06);
+}
+
+.historyFilterActive {
+  background: #255d9b;
+  color: white;
+  border-color: #255d9b;
+}
+
+.historyFilterActive:hover {
+  background: #1a4a73;
+}
+
+.encounterGrid {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 720px) {
+  .encounterGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.historyEmpty {
+  max-width: 500px;
+  margin: 32px auto;
+  padding: 32px 24px;
+  background: white;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.historyEmptyLead {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 8px;
+}
+
+.historyEmptyHint {
+  font-size: 13px;
+  color: #5c5248;
+  margin: 0 0 20px;
+  line-height: 1.6;
+}
+
+.historyEmptyCta {
+  display: inline-block;
+  padding: 10px 22px;
+  background: #255d9b;
+  color: white;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.historyEmptyCta:hover {
+  background: #1a4a73;
+}
+
+.historyFooter {
+  max-width: 900px;
+  margin: 20px auto 32px;
+  text-align: center;
+}
+
+.historyLoading {
+  font-size: 13px;
+  color: #5c5248;
+}
+
+.historyLoadMore {
+  padding: 10px 28px;
+  background: white;
+  border: 1px solid rgba(37, 93, 155, 0.35);
+  border-radius: 20px;
+  color: #255d9b;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.historyLoadMore:hover {
+  background: rgba(37, 93, 155, 0.06);
+}
+
+.historyEnd {
+  font-size: 12px;
+  color: #8a7d6e;
+  margin: 0;
+}
+
+/* ============================================================
+   EncounterCard
+   ============================================================ */
+.encounterCard {
+  background: white;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.encounterCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.encounterCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.encounterAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f0e6d2;
+  flex-shrink: 0;
+}
+
+.encounterAvatarFallback {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #255d9b 0%, #1a4a73 100%);
+  color: white;
+  font-size: 22px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.encounterIdentity {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.encounterNickname {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.encounterTwitter {
+  font-size: 12px;
+  color: #1d9bf0;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.encounterTwitter:hover {
+  text-decoration: underline;
+}
+
+.encounterTwitterNone {
+  font-size: 11px;
+  color: #aaa;
+}
+
+.encounterTier {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.tierSurechigai {
+  background: #e3500a;
+  color: white;
+}
+
+.tierGokinjo {
+  background: #f5a623;
+  color: white;
+}
+
+.tierMachi {
+  background: #4a90e2;
+  color: white;
+}
+
+.tierRegion {
+  background: #7b9fc4;
+  color: white;
+}
+
+.tierSanpo {
+  background: linear-gradient(135deg, #9b7bc4 0%, #c47bba 100%);
+  color: white;
+}
+
+.encounterMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #5c5248;
+}
+
+.encounterArea {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.encounterTime {
+  flex-shrink: 0;
+  color: #8a7d6e;
+}
+
+.encounterHitokoto {
+  margin: 0;
+  padding: 8px 10px;
+  background: #fffaf0;
+  border-left: 3px solid #e3500a;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #2c2117;
+  line-height: 1.5;
+}
+
+.encounterSpotify {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: #f0f7f1;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.encounterSpotify:hover {
+  background: #e0efe1;
+}
+
+.encounterSpotifyArt {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.encounterSpotifyText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.encounterSpotifyTrack {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1a1a1a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.encounterSpotifyArtist {
+  font-size: 11px;
+  color: #5c5248;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.encounterFooter {
+  padding-top: 8px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.08);
+  font-size: 11px;
+  color: #8a7d6e;
+}
+
+.encounterCount {
+  font-weight: 500;
+}

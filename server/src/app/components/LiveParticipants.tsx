@@ -13,7 +13,14 @@ const MAX_AREAS = 15;
 type CountRow = RowDataPacket & { cnt: number };
 type AreaRow = RowDataPacket & { area: string; cnt: number };
 
-async function loadStats(): Promise<{ total: number; areas: Array<{ area: string; count: number }> }> {
+type LoadStatsResult = {
+  total: number;
+  areas: Array<{ area: string; count: number }>;
+  encounterTotal: number;
+  encounterToday: number;
+};
+
+async function loadStats(): Promise<LoadStatsResult> {
   try {
     const [countRows] = await pool.query<CountRow[]>(
       `SELECT COUNT(DISTINCT l.user_id) AS cnt
@@ -44,14 +51,33 @@ async function loadStats(): Promise<{ total: number; areas: Array<{ area: string
     );
     const areas = areaRows.map((r) => ({ area: String(r.area), count: Number(r.cnt) }));
 
-    return { total, areas };
+    // 累計すれちがい回数（全ユーザー・全期間） + 今日の分
+    // encounters テーブルが未作成/権限エラー時でも TOP が落ちないよう個別に try
+    let encounterTotal = 0;
+    let encounterToday = 0;
+    try {
+      const [totalRows] = await pool.query<CountRow[]>(
+        `SELECT COUNT(*) AS cnt FROM encounters`
+      );
+      encounterTotal = totalRows.length > 0 ? Number(totalRows[0].cnt) : 0;
+
+      const [todayRows] = await pool.query<CountRow[]>(
+        `SELECT COUNT(*) AS cnt FROM encounters
+         WHERE encountered_at >= CURDATE()`
+      );
+      encounterToday = todayRows.length > 0 ? Number(todayRows[0].cnt) : 0;
+    } catch {
+      /* encounters テーブル未整備・権限なしでも TOP は表示する */
+    }
+
+    return { total, areas, encounterTotal, encounterToday };
   } catch {
-    return { total: 0, areas: [] };
+    return { total: 0, areas: [], encounterTotal: 0, encounterToday: 0 };
   }
 }
 
 export default async function LiveParticipants() {
-  const { total, areas } = await loadStats();
+  const { total, areas, encounterTotal, encounterToday } = await loadStats();
 
   return (
     <div className={styles.liveStats}>
@@ -63,6 +89,26 @@ export default async function LiveParticipants() {
         <p className={styles.liveStatsTotal}>
           まもなく開始 — あなたが最初の参加者かもしれません
         </p>
+      )}
+
+      {encounterTotal > 0 && (
+        <div className={styles.liveStatsSurechigai}>
+          <div className={styles.liveStatsSurechigaiMain}>
+            <span className={styles.liveStatsSurechigaiLabel}>参加者全員の累計すれちがい</span>
+            <span className={styles.liveStatsSurechigaiNumber}>
+              {encounterTotal.toLocaleString("ja-JP")}
+            </span>
+            <span className={styles.liveStatsSurechigaiUnit}>回</span>
+          </div>
+          {encounterToday > 0 && (
+            <p className={styles.liveStatsSurechigaiToday}>
+              今日だけで<strong>{encounterToday.toLocaleString("ja-JP")}</strong>回のすれちがい
+            </p>
+          )}
+          <p className={styles.liveStatsSurechigaiHint}>
+            ログインすると、あなたのすれちがいが図鑑に蓄積されます
+          </p>
+        </div>
       )}
 
       {areas.length > 0 && (
