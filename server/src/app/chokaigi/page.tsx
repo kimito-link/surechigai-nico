@@ -135,6 +135,228 @@ export default function ChokaigiPage() {
 
         <YukkuriDialogue />
 
+        <section className={styles.section} aria-labelledby="features-heading">
+          <h2 id="features-heading">
+            すれちがいライトでできること（機能まるごとガイド）
+          </h2>
+          <p className={styles.sectionLead}>
+            超会議 2026 に向けて少しずつ積み上げてきた機能を、ひとまとめにまとめました。
+            「どんなアプリ？」「結局なにができるの？」と聞かれたら、このリストを見せるだけで大丈夫。
+          </p>
+          <CharacterTip
+            character="rink"
+            message="ひとつずつ全部ためしてみたくなっちゃうかも〜！気になる機能のカードをタップすると、その場所にジャンプできるよ。"
+          />
+
+          <div className={styles.featuresGrid}>
+            <Link href="/app" className={styles.featureCard}>
+              <span className={styles.featureIcon} aria-hidden="true">
+                📡
+              </span>
+              <div className={styles.featureBody}>
+                <h3 className={styles.featureTitle}>
+                  位置を送るだけで、すれ違える
+                </h3>
+                <p className={styles.featureDesc}>
+                  アプリを開いて「現在地を送信」をポンッと押すだけ。近くを歩いている参加者と自動でマッチングして、
+                  <strong>すれ違い／ご近所／同じ街／同じ地域／おさんぽ</strong> の 5 段階で記録されます。
+                </p>
+                <span className={styles.featureCta}>ダッシュボードへ →</span>
+              </div>
+            </Link>
+
+            <Link href="/creators" className={styles.featureCard}>
+              <span className={styles.featureIcon} aria-hidden="true">
+                🗾
+              </span>
+              <div className={styles.featureBody}>
+                <h3 className={styles.featureTitle}>
+                  47 都道府県別クリエイター一覧
+                </h3>
+                <p className={styles.featureDesc}>
+                  これまでに参加された方を、都道府県ごとにズラッと表示。
+                  転勤で複数県に滞在した方は <strong>どちらの県にも掲載</strong>。
+                  <strong>30 分以内に動いている人には LIVE バッジ</strong>。
+                </p>
+                <span className={styles.featureCta}>都道府県から探す →</span>
+              </div>
+            </Link>
+
+            <a href="#map-heading" className={styles.featureCard}>
+              <span className={styles.featureIcon} aria-hidden="true">
+                🗺️
+              </span>
+              <div className={styles.featureBody}>
+                <h3 className={styles.featureTitle}>
+                  3 種類の会場マップ
+                </h3>
+                <p className={styles.featureDesc}>
+                  ① ホールをタップして詳細がひらく <strong>インタラクティブマップ</strong>、
+                  ② 幕張メッセ<strong>公式 PDF マップ</strong>のダウンロード、
+                  ③ 文字で読める <strong>ホール別ガイド</strong>（Ctrl+F で検索可）。
+                </p>
+                <span className={styles.featureCta}>会場マップを見る →</span>
+              </div>
+            </a>
+
+            <a href="#creator-cross-search-heading" className={styles.featureCard}>
+              <span className={styles.featureIcon} aria-hidden="true">
+                🔍
+              </span>
+              <div className={styles.featureBody}>
+                <h3 className={styles.featureTitle}>
+                  CreatorCross 全件検索
+                </h3>
+                <p className={styles.featureDesc}>
+                  超会議 2026「CreatorCross」エリアの <strong>出展者 1,000 件超</strong>をその場で全文検索。
+                  名前・ホール・ブース番号・X ハンドルから、会いたいクリエイターを即座に発見。
+                </p>
+                <span className={styles.featureCta}>検索してみる →</span>
+              </div>
+            </a>
+
+            <a href="#yukkuri-dialogue-heading" className={styles.featureCard}>
+              <span className={styles.featureIcon} aria-hidden="true">
+                💬
+              </span>
+              <div className={styles.featureBody}>
+                <h3 className={styles.featureTitle}>
+                  ゆっくり超解説（3 人の掛け合い）
+                </h3>
+                <p className={styles.featureDesc}>
+                  <strong>りんく・こん太・たぬ姉</strong> の 3 人が、会場の回り方・ホールごとの見どころ・よくある質問までテンポよく解説。
+                  <strong>VOICEVOX 音声</strong>で読み上げにも対応。
+                </p>
+                <span className={styles.featureCta}>掛け合いを見る →</span>
+              </div>
+            </a>
+
+            <div className={styles.featureCard}>
+              <span className={styles.featureIcon} aria-hidden="true">
+                🤖
+              </span>
+              <div className={styles.featureBody}>
+                <h3 className={styles.featureTitle}>
+                  AI ゆっくり紹介カード
+                </h3>
+                <p className={styles.featureDesc}>
+                  ページ冒頭のフォームに X ID を入れるだけで、
+                  <strong>3 人があなた専用の紹介台本</strong>を生成。
+                  そのまま X でシェアできるカードにもなります。
+                </p>
+                <span className={styles.featureCtaStatic}>
+                  ↑ ページ冒頭のフォームから
+                </span>
+              </div>
+            </div>
+
+            <a href="#venue-tour-3d-heading" className={styles.featureCard}>
+              <span className={styles.featureIcon} aria-hidden="true">
+                🎢
+              </span>
+              <div className={styles.featureBody}>
+                <h3 className={styles.featureTitle}>
+                  3D 会場ツアー
+                </h3>
+                <p className={styles.featureDesc}>
+                  メイン 1〜8 + サブ 9〜11 の<strong>全 11 ホールを自動スクロール</strong>。
+                  各ホールでキャラ 3 人が見どころを案内。当日のイメージトレーニングにどうぞ。
+                </p>
+                <span className={styles.featureCta}>ツアーに乗る →</span>
+              </div>
+            </a>
+
+            <a href="#usage-heading" className={styles.featureCard}>
+              <span className={styles.featureIcon} aria-hidden="true">
+                📖
+              </span>
+              <div className={styles.featureBody}>
+                <h3 className={styles.featureTitle}>
+                  5 ステップの使いかたガイド
+                </h3>
+                <p className={styles.featureDesc}>
+                  サインイン → 位置送信 → マッチ成立 → X で連絡 → 超会議で合流。
+                  <strong>スマホのイラスト付き</strong>で、はじめての方でも迷わない導線に。
+                </p>
+                <span className={styles.featureCta}>使いかたを見る →</span>
+              </div>
+            </a>
+
+            <a href="#venue-heading" className={styles.featureCard}>
+              <span className={styles.featureIcon} aria-hidden="true">
+                🚶
+              </span>
+              <div className={styles.featureBody}>
+                <h3 className={styles.featureTitle}>
+                  会場の回り方（こん太のコツ）
+                </h3>
+                <p className={styles.featureDesc}>
+                  広大な幕張メッセを効率よく回るための
+                  <strong>ルート設計のコツ</strong>を、こん太が 3 つのポイントで解説。
+                  <strong>VenueWanderMini</strong> で回遊イメージも確認。
+                </p>
+                <span className={styles.featureCta}>回り方を読む →</span>
+              </div>
+            </a>
+
+            <a href="#after-event-heading" className={styles.featureCard}>
+              <span className={styles.featureIcon} aria-hidden="true">
+                🚀
+              </span>
+              <div className={styles.featureBody}>
+                <h3 className={styles.featureTitle}>
+                  超会議が終わったあとも、ずっと
+                </h3>
+                <p className={styles.featureDesc}>
+                  超会議 2026 は、あくまで始まり。
+                  <strong>全国のイベント・日常のすれ違いにも広げていく構想</strong>を、
+                  日本地図上でビジュアル化しています。
+                </p>
+                <span className={styles.featureCta}>構想を読む →</span>
+              </div>
+            </a>
+
+            <a href="#privacy-heading" className={styles.featureCard}>
+              <span className={styles.featureIcon} aria-hidden="true">
+                🔐
+              </span>
+              <div className={styles.featureBody}>
+                <h3 className={styles.featureTitle}>
+                  プライバシー最優先の設計
+                </h3>
+                <p className={styles.featureDesc}>
+                  他の参加者に見える位置は
+                  <strong>粗いエリア（500m グリッドなど）に丸めた範囲のみ</strong>。
+                  アプリ内 DM は設けず、やりとりは <strong>X アカウント同士</strong>で。
+                </p>
+                <span className={styles.featureCta}>方針を読む →</span>
+              </div>
+            </a>
+
+            <a href="#special-thanks-heading" className={styles.featureCard}>
+              <span className={styles.featureIcon} aria-hidden="true">
+                🙏
+              </span>
+              <div className={styles.featureBody}>
+                <h3 className={styles.featureTitle}>
+                  Special Thanks（偉大な方々に感謝）
+                </h3>
+                <p className={styles.featureDesc}>
+                  このアプリの原点・<strong>星野ロミさん</strong>を別枠カードで特別紹介。
+                  ロゴを手がけた Soletta さんをはじめ、協力者ひとりひとりをきちんと紹介します。
+                </p>
+                <span className={styles.featureCta}>クレジットを見る →</span>
+              </div>
+            </a>
+          </div>
+
+          <CharacterTip
+            character="tanunee"
+            message="機能は全部「超会議を楽しんでもらう」ための道具なのだー。気負わずに、好きなものだけつまんで使ってくれたらうれしいのだー。"
+            position="right"
+          />
+        </section>
+
         <ChokaigiExperienceSection />
 
         <VenueTour3D />

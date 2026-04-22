@@ -66,9 +66,10 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
   {
     id: "oki-harumi",
     name: "大木 ハルミ さん",
-    title: "アーティスト／シンガーソングライター",
+    title: "アーティスト／一緒にたくさんのゆっくり動画を作らせていただきました",
     intro: [
-      "企画の初期段階から温かく応援してくださった大木ハルミさん。世界観づくりの相談や、やさしい言葉選びのヒントをたくさんいただきました。",
+      "大木ハルミさんとは、これまで一緒にたくさんの『ゆっくり動画』を作らせていただきました。りんく・こん太・たぬ姉の掛け合いの “温度感” や、言葉の選び方のベースには、ハルミさんとの動画制作の中で育ったものがたくさんあります。",
+      "このアプリでもハルミさんとの制作で学んだ『やさしく伝える』姿勢を大切にしています。ロゴをクリックすると、ゆっくり 3 人がそのエピソードも少しおしゃべりしてくれます。",
     ],
     sites: [
       {
@@ -77,13 +78,15 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
         tagline: "Official Site（オフィシャル）",
       },
     ],
+    xHandles: [{ label: "@0308harumi", href: "https://x.com/0308harumi" }],
   },
   {
     id: "ahuran",
     name: "アフランカフェ",
-    title: "クリエイターたちが集う、やさしいカフェ",
+    title: "すごい良い出会いをくれる、伝説のカフェ",
     intro: [
-      "企画のひらめきや相談を、いつも心地よい席で受け止めてくださるカフェです。『人が人と出会う場』のイメージは、ここでの時間がベースになっています。",
+      "『クリエイターのシンセカイ』構想にまつわる大切な出会いのほとんどは、このカフェから生まれていると言ってもいいくらいです。アフランカフェはただのカフェではなく、人と人をふしぎな縁でつないでくれる、ちょっとした “伝説のカフェ” なのです。",
+      "このアプリの企画が形になっていく過程でも、アフランカフェでの時間と出会いがなければ、たどり着けなかった場所がたくさんあります。",
     ],
     sites: [
       {
@@ -92,20 +95,24 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
         tagline: "Ahuran Project / Cafe Official Site",
       },
     ],
-    xHandles: [{ label: "@oomayu12345", href: "https://x.com/oomayu12345" }],
+    xHandles: [
+      { label: "@ahuran", href: "https://x.com/ahuran" },
+      { label: "@oomayu12345", href: "https://x.com/oomayu12345" },
+    ],
   },
   {
     id: "oto1to1",
-    name: "oto1to1（おといちといち）",
-    title: "音楽とクリエイターをつなぐプラットフォーム",
+    name: "OTO（One To One／オーティーオー）— しなる先生",
+    title: "ダンスのプロ／佐藤さん（Soletta）との出会いをくれた方",
     intro: [
-      "世界観に寄り添う音まわりの相談に乗ってくださっています。『クリエイター同士がやさしく出会う』という姿勢は、oto1to1 さんの在り方からも多くを学びました。",
+      "OTO（One To One）さんは、ダンスのプロとして活動しているしなる先生。実は、ロゴを創ってくださった佐藤さん（Soletta／ソレッタ）と出会えたきっかけは、しなる先生からのご縁でした。",
+      "しなる先生がいなければ、このアプリのロゴも、いまの世界観も存在していません。ほんとうに、ありがとうございます。ゆっくり 3 人がしなる先生への感謝を少しだけ語らせてもらいます。",
     ],
     sites: [
       {
         label: "oto1to1 公式サイト",
         href: "https://oto1to1.com/",
-        tagline: "Official Site",
+        tagline: "One To One（オーティーオー）／しなる先生の活動",
       },
     ],
     xHandles: [{ label: "@OTO1to1", href: "https://x.com/OTO1to1" }],

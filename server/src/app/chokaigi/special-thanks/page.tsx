@@ -1,14 +1,18 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import styles from "../chokaigi.module.css";
-import { SPECIAL_THANKS_LINKS } from "../special-thanks-links";
+import {
+  SPECIAL_THANKS_PROFILES,
+  SPECIAL_THANKS_X_ONLY,
+} from "../special-thanks-links";
 import { THIRD_PARTY_CREDITS } from "../third-party-credits";
 import { RomiProfileCard } from "../RomiProfileCard";
+import { SpecialThanksProfileCard } from "../SpecialThanksProfileCard";
 
 export const metadata: Metadata = {
   title: "Special Thanks・クレジット | すれちがいライト",
   description:
-    "Special Thanks のリンク一覧と、本アプリで利用している第三者素材（地図・音声・ライブラリ等）のクレジット・帰属表示ページです。",
+    "Special Thanks のみなさま（佐藤ゆうかさん／Soletta、大木ハルミさん、アフランカフェ、oto1to1 ほか）の個別紹介と、本アプリで利用している第三者素材（地図・音声・ライブラリ等）のクレジット・帰属表示ページです。",
 };
 
 const CREDIT_CATEGORY_HEADINGS: Record<
@@ -22,12 +26,9 @@ const CREDIT_CATEGORY_HEADINGS: Record<
   other: "その他",
 };
 
-const isXAccountLink = (href: string) =>
-  href.startsWith("https://x.com/") || href.startsWith("http://x.com/");
-
 export default function SpecialThanksPage() {
-  const websiteLinks = SPECIAL_THANKS_LINKS.filter((link) => !isXAccountLink(link.href));
-  const idLinks = SPECIAL_THANKS_LINKS.filter((link) => isXAccountLink(link.href));
+  const highlightProfiles = SPECIAL_THANKS_PROFILES.filter((p) => p.highlight);
+  const normalProfiles = SPECIAL_THANKS_PROFILES.filter((p) => !p.highlight);
 
   const creditCategories = (
     Object.keys(CREDIT_CATEGORY_HEADINGS) as (keyof typeof CREDIT_CATEGORY_HEADINGS)[]
@@ -47,50 +48,86 @@ export default function SpecialThanksPage() {
             Special Thanks・クレジット
           </h1>
           <p className={styles.sectionLead}>
-            プログラムの提供と公開に感謝します。星野ロミさん、ありがとうございます。
+            本企画にご協力・応援いただいたみなさまを、ひとりずつご紹介します。
+            そして、このアプリのベースとなるプログラムを公開してくださった星野ロミさん、
+            ロゴを創ってくださった佐藤ゆうかさん（Soletta）、本当にありがとうございます。
           </p>
 
           <RomiProfileCard ribbonText="このアプリをつくる、きっかけをくださった方" />
 
-          <section className={styles.specialThanksGroup} aria-labelledby="special-thanks-web-heading">
-            <h2 id="special-thanks-web-heading" className={styles.specialThanksGroupHeading}>
-              WEBサイト
-            </h2>
-            <ul className={styles.footerThanksList}>
-              {websiteLinks.map((link) => (
-                <li key={link.href} className={styles.footerThanksItem}>
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.footerThanksLink}
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </section>
+          {highlightProfiles.length > 0 ? (
+            <section
+              className={styles.specialThanksGroup}
+              aria-labelledby="special-thanks-highlight-heading"
+            >
+              <h2
+                id="special-thanks-highlight-heading"
+                className={styles.specialThanksGroupHeading}
+              >
+                ロゴとブランドの原点
+              </h2>
+              <div className={styles.thanksHighlight}>
+                {highlightProfiles.map((profile) => (
+                  <SpecialThanksProfileCard
+                    key={profile.id}
+                    profile={profile}
+                    headingLevel="h3"
+                  />
+                ))}
+              </div>
+            </section>
+          ) : null}
 
-          <section className={styles.specialThanksGroup} aria-labelledby="special-thanks-id-heading">
-            <h2 id="special-thanks-id-heading" className={styles.specialThanksGroupHeading}>
-              X ID
-            </h2>
-            <ul className={styles.footerThanksList}>
-              {idLinks.map((link) => (
-                <li key={link.href} className={styles.footerThanksItem}>
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.footerThanksLink}
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </section>
+          {normalProfiles.length > 0 ? (
+            <section
+              className={styles.specialThanksGroup}
+              aria-labelledby="special-thanks-profiles-heading"
+            >
+              <h2
+                id="special-thanks-profiles-heading"
+                className={styles.specialThanksGroupHeading}
+              >
+                ご協力・応援いただいているみなさま
+              </h2>
+              <div className={styles.thanksProfileGrid}>
+                {normalProfiles.map((profile) => (
+                  <SpecialThanksProfileCard
+                    key={profile.id}
+                    profile={profile}
+                    headingLevel="h3"
+                  />
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {SPECIAL_THANKS_X_ONLY.length > 0 ? (
+            <section
+              className={styles.specialThanksGroup}
+              aria-labelledby="special-thanks-id-heading"
+            >
+              <h2
+                id="special-thanks-id-heading"
+                className={styles.specialThanksGroupHeading}
+              >
+                X でご応援いただいているみなさま
+              </h2>
+              <ul className={styles.footerThanksList}>
+                {SPECIAL_THANKS_X_ONLY.map((link) => (
+                  <li key={link.href} className={styles.footerThanksItem}>
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.footerThanksLink}
+                    >
+                      𝕏 {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
           <section
             className={styles.specialThanksGroup}

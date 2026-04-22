@@ -138,12 +138,120 @@ export const SOLETTA_DIALOGUE: YukkuriDialogue = {
   ctaLabel: "Soletta 公式サイトを開く",
 };
 
+/**
+ * 大木ハルミさん（アーティスト）とのエピソードを、
+ * 「一緒にたくさんのゆっくり動画を作らせていただいた」文脈で紹介。
+ */
+export const OKI_HARUMI_DIALOGUE: YukkuriDialogue = {
+  title: "🎤 大木ハルミさん — 一緒にゆっくり動画を作らせていただいた方",
+  lines: [
+    {
+      who: "rink",
+      text: "ぼくたちの “ゆっくり解説” には、じつはルーツがあるんだ。アーティストの大木ハルミさんとは、これまで一緒にたくさんのゆっくり動画を作らせていただいたんだよ。",
+    },
+    {
+      who: "konta",
+      text: "えっ、このテンションのベースって、その動画制作で育ってきたってこと〜！？",
+    },
+    {
+      who: "tanunee",
+      text: "そうなのだー。『むずかしい話をやさしく』『にぎやかなのに疲れない』っていうぼくらの間合いは、ハルミさんの世界観に寄り添う中で、ちょっとずつ形になってきたのだー。",
+    },
+    {
+      who: "rink",
+      text: "だからこのアプリでも、ハルミさんと一緒に磨いてきた『やさしく伝える』姿勢を大切にしてるんだ。",
+    },
+    {
+      who: "konta",
+      text: "ハルミさんの音楽や活動、めっちゃ応援したい〜！公式サイトからチェックしてみてね！",
+    },
+  ],
+  ctaLabel: "大木ハルミさん 公式サイトを開く",
+};
+
+/**
+ * アフランカフェ — 『伝説のカフェ』として、ここから多くの出会いが
+ * 生まれてきた文脈で紹介。
+ */
+export const AHURAN_DIALOGUE: YukkuriDialogue = {
+  title: "☕ アフランカフェ — すごい良い出会いをくれる、伝説のカフェ",
+  lines: [
+    {
+      who: "rink",
+      text: "このアプリの『クリエイターのシンセカイ』って、実は一軒のカフェからたくさんの出会いが広がって生まれてるんだよ。",
+    },
+    {
+      who: "konta",
+      text: "えっ、どこどこ〜！？",
+    },
+    {
+      who: "tanunee",
+      text: "『アフランカフェ』なのだー。ただのカフェじゃなくて、通うたびに人と人がふしぎに繋がっていく、ちょっとした “伝説のカフェ” なのだー。",
+    },
+    {
+      who: "rink",
+      text: "ほんとに、このアプリにまつわる大切な出会いのほとんどが、このカフェ発だったって言ってもいいくらい。人が交差する場所って、こういう空気感なんだなって毎回思う。",
+    },
+    {
+      who: "konta",
+      text: "『すれ違いを大切にしよう』って発想も、このカフェの雰囲気からインスピもらってるのかも〜。",
+    },
+    {
+      who: "tanunee",
+      text: "興味をもった人は、ぜひ公式サイトから覗いてみてほしいのだー。行ける距離なら、一度その空気を体験してほしい場所なのだー。",
+    },
+  ],
+  ctaLabel: "アフランカフェ 公式サイトを開く",
+};
+
+/**
+ * OTO（One To One／しなる先生）— ロゴ制作の佐藤さんと
+ * 出会えたきっかけを作ってくれた方への感謝の解説。
+ */
+export const OTO1TO1_DIALOGUE: YukkuriDialogue = {
+  title: "💃 OTO（One To One）— しなる先生への、感謝の解説",
+  lines: [
+    {
+      who: "rink",
+      text: "このアプリのロゴを創ってくださったのは、佐藤ゆうかさん（Soletta）。じゃあ、ぼくらがどうやって佐藤さんと出会えたのか、知ってる？",
+    },
+    {
+      who: "konta",
+      text: "えっ、知らない！どうやって！？",
+    },
+    {
+      who: "tanunee",
+      text: "OTO（One To One）さん、通称 “しなる先生” のおかげなのだー。ダンスのプロとして活動している、すてきな先生なのだー。",
+    },
+    {
+      who: "rink",
+      text: "しなる先生が佐藤さんとぼくらを繋いでくださったから、このアプリのロゴが生まれたし、世界観もここまで形にできたんだ。",
+    },
+    {
+      who: "konta",
+      text: "えぇ…しなる先生がいなかったら、このロゴもなかったってこと！？感謝しかないじゃん！",
+    },
+    {
+      who: "tanunee",
+      text: "ほんとうに、ありがとうございます。しなる先生の活動は公式サイトから見られるのだー。ダンスのレッスンも気になる人はぜひ覗いてみてほしいのだー。",
+    },
+    {
+      who: "rink",
+      text: "『縁が縁を呼ぶ』って、こういうことなんだなって思う。感謝を込めてご紹介です！",
+    },
+  ],
+  ctaLabel: "OTO（One To One）公式サイトを開く",
+};
+
 const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://socialxup.com/": SOCIALXUP_DIALOGUE,
   "https://threads.socialxup.com/": SOCIALXUP_THREADS_DIALOGUE,
   "https://mmake.net/": MMAKE_DIALOGUE,
   "https://mangamura.org/": MANGAMURA_DIALOGUE,
   "https://soletta.jp/": SOLETTA_DIALOGUE,
+  "https://ohalu.bitfan.id/": OKI_HARUMI_DIALOGUE,
+  "https://www.ahuranproject.com/": AHURAN_DIALOGUE,
+  "https://oto1to1.com/": OTO1TO1_DIALOGUE,
 };
 
 export function getYukkuriDialogue(href: string): YukkuriDialogue | undefined {
