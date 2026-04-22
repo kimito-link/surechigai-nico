@@ -7,6 +7,29 @@ export type YukkuriDialogue = { rink: string; konta: string; tanunee: string };
 /** サーバー maxDuration 300s + 余裕 */
 export const YUKKURI_EXPLAIN_TIMEOUT_MS = 360_000;
 
+/**
+ * サーバーが付与する `error_code` を保持するためのエラー型。
+ * UI 側で `err instanceof YukkuriExplainError` で分岐できるようにする。
+ */
+export class YukkuriExplainError extends Error {
+  readonly errorCode: string;
+  readonly httpStatus: number;
+  readonly cached: boolean;
+
+  constructor(opts: {
+    message: string;
+    errorCode: string;
+    httpStatus: number;
+    cached?: boolean;
+  }) {
+    super(opts.message);
+    this.name = "YukkuriExplainError";
+    this.errorCode = opts.errorCode;
+    this.httpStatus = opts.httpStatus;
+    this.cached = opts.cached ?? false;
+  }
+}
+
 export async function fetchYukkuriExplain(
   body: Record<string, unknown>,
   options?: { signal?: AbortSignal }
@@ -21,16 +44,22 @@ export async function fetchYukkuriExplain(
   });
   const data = (await res.json().catch(() => ({}))) as {
     error?: string;
+    error_code?: string;
+    cached?: boolean;
     rink?: string;
     konta?: string;
     tanunee?: string;
   };
   if (!res.ok) {
-    throw new Error(
-      typeof data.error === "string" && data.error.length > 0
-        ? data.error
-        : `HTTP ${res.status}`
-    );
+    throw new YukkuriExplainError({
+      message:
+        typeof data.error === "string" && data.error.length > 0
+          ? data.error
+          : `HTTP ${res.status}`,
+      errorCode: data.error_code ?? `E_YUKKURI_HTTP_${res.status}`,
+      httpStatus: res.status,
+      cached: Boolean(data.cached),
+    });
   }
   if (
     typeof data.rink === "string" &&
@@ -39,13 +68,40 @@ export async function fetchYukkuriExplain(
   ) {
     return { rink: data.rink, konta: data.konta, tanunee: data.tanunee };
   }
-  throw new Error("応答の形式が不正です");
+  throw new YukkuriExplainError({
+    message: "応答の形式が不正です",
+    errorCode: "E_YUKKURI_CLIENT_BAD_SHAPE",
+    httpStatus: res.status,
+  });
 }
 
+/**
+ * サーバーから返った `error_code` と `DOMException` / `Error` を人間向け文に変換する。
+ */
 export function yukkuriExplainUserMessage(err: unknown): string {
+  if (err instanceof YukkuriExplainError) {
+    switch (err.errorCode) {
+      case "E_YUKKURI_LLM_UPSTREAM_401":
+      case "E_YUKKURI_LLM_UPSTREAM_402":
+        return "解説 AI の設定に不具合があります。運営にお知らせいただけると助かります。";
+      case "E_YUKKURI_LLM_UPSTREAM_429":
+        return "解説 AI が混雑しています。30 秒ほど待ってからもう一度お試しください。";
+      case "E_YUKKURI_LLM_UPSTREAM_404":
+        return "解説 AI のモデル設定が古くなっているかもしれません。運営にお知らせください。";
+      case "E_YUKKURI_LLM_TIMEOUT":
+        return "生成に時間がかかりすぎました。もう一度試すと早く返ることがあります。";
+      case "E_YUKKURI_LLM_NOT_CONFIGURED":
+        return "解説 AI が未設定です。運営にお知らせください。";
+      case "E_YUKKURI_BAD_REQUEST":
+        return "リクエストの形式が不正でした。画面を再読み込みしてやり直してください。";
+      default:
+        if (err.message) return err.message;
+        return "解説の取得に失敗しました。もう一度お試しください。";
+    }
+  }
   if (typeof DOMException !== "undefined" && err instanceof DOMException) {
     if (err.name === "TimeoutError") {
-      return "応答に時間がかかりすぎました。ローカルLLMは初回が長いことがあります。もう一度お試しください。";
+      return "応答に時間がかかりすぎました。ローカル LLM は初回が長いことがあります。もう一度お試しください。";
     }
   }
   if (err instanceof Error) {
