@@ -55,6 +55,7 @@ export function YukkuriHero() {
 
   const raw = handle.trim().replace(/^@+/, "");
   const hasInput = raw.length > 0;
+  const isTalking = Boolean(dialogue);
 
   const handleYukkuri = (e: FormEvent) => {
     e.preventDefault();
@@ -125,9 +126,13 @@ export function YukkuriHero() {
       </form>
 
       {/* キャラクター3人 */}
-      <div className={styles.chars}>
+      <div className={`${styles.chars}${isTalking ? ` ${styles.charsTalking}` : ""}`}>
         {CHARS.map(({ key, label, src, color }, i) => (
-          <div key={key} className={styles.charCard} style={{ animationDelay: `${i * 0.18}s` }}>
+          <div
+            key={key}
+            className={`${styles.charCard}${isTalking ? ` ${styles[`charCardTalking${key}`]}` : ""}`}
+            style={{ animationDelay: `${i * 0.18}s` }}
+          >
             <div className={styles.charImgWrap}>
               <Image src={src} alt={label} width={100} height={100} className={styles.charImg} />
             </div>
@@ -137,6 +142,29 @@ export function YukkuriHero() {
           </div>
         ))}
       </div>
+
+      {dialogue && (
+        <section className={styles.stageCard} aria-label="ゆっくり会話ステージ">
+          <h3 className={styles.stageTitle}>@{raw} のゆっくり紹介</h3>
+          <div className={styles.stageBubbles}>
+            {CHARS.map(({ key, label, src, color }, index) => (
+              <div
+                key={`stage-${key}`}
+                className={`${styles.stageBubbleRow} ${index % 2 === 0 ? styles.stageBubbleLeft : styles.stageBubbleRight}`}
+                style={{ animationDelay: `${index * 0.34}s` }}
+              >
+                <div className={styles.stageSpeaker}>
+                  <Image src={src} alt={label} width={34} height={34} className={styles.stageAvatar} />
+                  <span className={styles.stageName} style={{ background: color, color: "#0a0e1a" }}>
+                    {label}
+                  </span>
+                </div>
+                <p className={styles.stageText}>{dialogue[key]}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {dialogue && (
         <section className={styles.introCard} aria-label="ゆっくり紹介カード">
