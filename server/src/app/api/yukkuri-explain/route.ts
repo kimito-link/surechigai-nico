@@ -849,15 +849,10 @@ export async function POST(req: NextRequest) {
         source: "fallback_no_ollama",
       });
     }
-    return NextResponse.json(
-      {
-        error:
-          cached.message ??
-          "解説 AI が混雑中です。少し待ってから再試行してください。",
-        error_code: cached.errorCode,
-        cached: true,
-      },
-      { status: 503 }
+    // 過去バージョンで保存された失敗キャッシュが残っている場合でも、
+    // 現在の Ollama 経路で再試行して体験を止めない。
+    console.warn(
+      `[yukkuri-explain] ignore_stale_fail_cache handle=${handle || "-"} code=${cached.errorCode}`
     );
   }
 
