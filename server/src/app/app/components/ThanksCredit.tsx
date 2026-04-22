@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import MangamuraPranksterLink from "@/app/components/MangamuraPranksterLink";
+import YukkuriIntroLink from "@/app/components/YukkuriIntroLink";
+import { getYukkuriDialogue } from "@/app/components/yukkuri-service-dialogues";
+import { ROMI_PROFILE } from "@/app/chokaigi/special-thanks-links";
 import styles from "../app.module.css";
 
 declare global {
@@ -56,17 +58,16 @@ export default function ThanksCredit() {
         🙏 このアプリが生まれたきっかけ
       </h3>
       <p className={styles.thanksCreditBody}>
-        このアプリは、星野ロミさん（
+        このアプリは、
         <a
           href="https://x.com/romi_hoshino"
           target="_blank"
           rel="noopener noreferrer"
           className={styles.thanksCreditHandle}
         >
-          @romi_hoshino
+          {ROMI_PROFILE.name}
         </a>
-        ）が
-        「3DS のすれちがい通信をスマホで復活させたい」と途中まで作ってくださったプログラムから生まれました。
+        （{ROMI_PROFILE.xHandles[0].label}）が「3DS のすれちがい通信をスマホで復活させたい」と途中まで作ってくださったプログラムから生まれました。
       </p>
       <p className={styles.thanksCreditBody}>
         「おさんぽ」機能（分身が他県へ旅するあの仕組み）も、星野さんのアイデアです。本当にありがとうございます。
@@ -80,77 +81,52 @@ export default function ThanksCredit() {
 
       <div className={styles.thanksCreditLinks}>
         <p className={styles.thanksCreditLinksTitle}>
-          ✨ 星野ロミさんがつくった、偉大なサービスたち ✨
+          ✨ 星野ロミさんが手掛けた、偉大なサービスたち ✨
         </p>
         <p className={styles.thanksCreditBody}>
-          星野ロミさんは、たくさんの人が使う <strong>すごいサービス</strong>
-          を自分の手でつくってきた、まさに<strong>天才プログラマー</strong>
-          。そんなお方が途中まで書いてくださったコードを、私たちが引き継がせていただいているんです…！
+          星野ロミさんは、たくさんの人が日常的に使う「すごいサービス」を自身の手で次々と作り上げてきた、
+          <strong>偉大な現役プログラマー</strong>
+          。そんなお方が途中まで書いてくださったコードを、私たちが引き継がせていただいています…！
         </p>
         <ul className={styles.thanksCreditLinksList}>
-          <li>
-            <a
-              href="https://socialxup.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.thanksCreditLink}
-            >
-              <span className={styles.thanksCreditLinkName}>
-                🌟 SocialXup（ほんとに便利！）
-              </span>
-              <span className={styles.thanksCreditLinkDesc}>
-                X のフォロワー・フォロー数の推移を追跡できる神ツール。
-                「あの人、いつからフォロワー増えたの？」が一瞬でわかります。
-              </span>
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://threads.socialxup.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.thanksCreditLink}
-            >
-              <span className={styles.thanksCreditLinkName}>
-                🌟 SocialXup for Threads（これも便利！）
-              </span>
-              <span className={styles.thanksCreditLinkDesc}>
-                Threads 版のユーザー数推移ツール。
-                Threads を伸ばしたい人は絶対ブックマーク推奨です。
-              </span>
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://mmake.net/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.thanksCreditLink}
-            >
-              <span className={styles.thanksCreditLinkName}>
-                🎓 まんがくらぶ（mmake.net）
-              </span>
-              <span className={styles.thanksCreditLinkDesc}>
-                あの星野ロミさんから<strong>直接プログラミングを学べる</strong>
-                初心者向けオンラインスクール。
-                <strong>天才の技術を学べるのだー！</strong>
-                コードを書いてサービスを立ち上げたい人は覗いてみる価値アリです。
-              </span>
-            </a>
-          </li>
-          <li>
-            <MangamuraPranksterLink
-              href="https://mangamura.org/"
-              className={styles.thanksCreditLink}
-            >
-              <span className={styles.thanksCreditLinkName}>
-                mangamura.org
-              </span>
-              <span className={styles.thanksCreditLinkDesc}>
-                漫画村 <span aria-label="おばけ">👻</span> ※もうないらしい
-              </span>
-            </MangamuraPranksterLink>
-          </li>
+          {ROMI_PROFILE.operatedSites.map((site) => {
+            const dialogue = getYukkuriDialogue(site.href);
+            const content = (
+              <>
+                <span className={styles.thanksCreditLinkName}>
+                  {site.label}
+                </span>
+                <span className={styles.thanksCreditLinkDesc}>
+                  {site.tagline}
+                </span>
+              </>
+            );
+            return (
+              <li key={site.href}>
+                {dialogue ? (
+                  <YukkuriIntroLink
+                    href={site.href}
+                    className={styles.thanksCreditLink}
+                    title={dialogue.title}
+                    lines={dialogue.lines}
+                    ctaLabel={dialogue.ctaLabel}
+                    ctaHref={dialogue.ctaHref}
+                  >
+                    {content}
+                  </YukkuriIntroLink>
+                ) : (
+                  <a
+                    href={site.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.thanksCreditLink}
+                  >
+                    {content}
+                  </a>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>

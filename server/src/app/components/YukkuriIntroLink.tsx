@@ -1,62 +1,54 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import styles from "./MangamuraPranksterLink.module.css";
+import styles from "./YukkuriIntroLink.module.css";
 
-type Line = {
-  who: "rink" | "konta" | "tanunee";
-  name: string;
-  avatar: string;
-  text: ReactNode;
-  side: "left" | "right";
+export type YukkuriSpeaker = "rink" | "konta" | "tanunee";
+
+export type YukkuriLine = {
+  who: YukkuriSpeaker;
+  text: string;
 };
 
-const LINES: Line[] = [
-  {
-    who: "rink",
+const META: Record<
+  YukkuriSpeaker,
+  { name: string; avatar: string; side: "left" | "right" }
+> = {
+  rink: {
     name: "りんく",
     avatar: "/chokaigi/yukkuri/rink.png",
-    text: "あれ…？ もうないみたい…",
     side: "left",
   },
-  {
-    who: "konta",
+  konta: {
     name: "こん太",
     avatar: "/chokaigi/yukkuri/konta.png",
-    text: "おいおい！ クリエイター応援サイトだぞ！",
     side: "right",
   },
-  {
-    who: "tanunee",
+  tanunee: {
     name: "たぬ姉",
     avatar: "/chokaigi/yukkuri/tanunee.png",
-    text: "ぜったい見ちゃダメだよー🙅‍♀️",
     side: "left",
   },
-  {
-    who: "rink",
-    name: "りんく",
-    avatar: "/chokaigi/yukkuri/rink.png",
-    text: (
-      <>
-        それとね…
-        <strong>漫画村は、ぜったいに作っちゃダメだからねー！</strong>🚨
-      </>
-    ),
-    side: "right",
-  },
-];
+};
 
 type Props = {
   href: string;
   className?: string;
   children: ReactNode;
+  title: string;
+  lines: ReadonlyArray<YukkuriLine>;
+  ctaLabel: string;
+  ctaHref?: string;
 };
 
-export default function MangamuraPranksterLink({
+export default function YukkuriIntroLink({
   href,
   className,
   children,
+  title,
+  lines,
+  ctaLabel,
+  ctaHref,
 }: Props) {
   const [open, setOpen] = useState(false);
 
@@ -73,6 +65,16 @@ export default function MangamuraPranksterLink({
       document.body.style.overflow = prevOverflow;
     };
   }, [open]);
+
+  const proceed = () => {
+    const target = ctaHref ?? href;
+    if (target.startsWith("/")) {
+      window.location.href = target;
+    } else {
+      window.open(target, "_blank", "noopener,noreferrer");
+      setOpen(false);
+    }
+  };
 
   return (
     <>
@@ -94,7 +96,7 @@ export default function MangamuraPranksterLink({
           className={styles.backdrop}
           role="dialog"
           aria-modal="true"
-          aria-label="漫画村リンクのご案内"
+          aria-label={title}
           onClick={() => setOpen(false)}
         >
           <div
@@ -109,34 +111,37 @@ export default function MangamuraPranksterLink({
             >
               ×
             </button>
-            <h3 className={styles.title}>🌸 クリエイター応援サイトのご案内 🌸</h3>
+            <h3 className={styles.title}>{title}</h3>
             <div className={styles.script}>
-              {LINES.map((line, i) => (
-                <div
-                  key={i}
-                  className={`${styles.row} ${
-                    line.side === "right" ? styles.rowReverse : ""
-                  }`}
-                >
-                  <div className={styles.avatarWrap}>
-                    <img
-                      src={line.avatar}
-                      alt={line.name}
-                      className={styles.avatar}
-                      loading="lazy"
-                    />
-                    <span className={styles.nameBadge}>{line.name}</span>
+              {lines.map((line, i) => {
+                const meta = META[line.who];
+                return (
+                  <div
+                    key={i}
+                    className={`${styles.row} ${
+                      meta.side === "right" ? styles.rowReverse : ""
+                    }`}
+                  >
+                    <div className={styles.avatarWrap}>
+                      <img
+                        src={meta.avatar}
+                        alt={meta.name}
+                        className={styles.avatar}
+                        loading="lazy"
+                      />
+                      <span className={styles.nameBadge}>{meta.name}</span>
+                    </div>
+                    <div className={styles.bubble}>{line.text}</div>
                   </div>
-                  <div className={styles.bubble}>{line.text}</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             <button
               type="button"
-              className={styles.closeButton}
-              onClick={() => setOpen(false)}
+              className={styles.ctaButton}
+              onClick={proceed}
             >
-              わかった、閉じる
+              {ctaLabel} →
             </button>
           </div>
         </div>

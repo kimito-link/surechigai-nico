@@ -137,7 +137,7 @@
   border-top: 1px solid rgba(227, 140, 30, 0.3);
 }
 
-.closeButton {
+.ctaButton {
   display: block;
   width: 100%;
   padding: 12px 20px;
@@ -151,7 +151,7 @@
   transition: background 0.15s ease;
 }
 
-.closeButton:hover {
+.ctaButton:hover {
   background: #b8410a;
 }
 

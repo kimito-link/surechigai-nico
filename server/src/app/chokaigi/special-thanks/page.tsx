@@ -3,9 +3,7 @@ import type { Metadata } from "next";
 import styles from "../chokaigi.module.css";
 import { SPECIAL_THANKS_LINKS } from "../special-thanks-links";
 import { THIRD_PARTY_CREDITS } from "../third-party-credits";
-import MangamuraPranksterLink from "@/app/components/MangamuraPranksterLink";
-
-const MANGAMURA_HREF = "https://mangamura.org/";
+import { RomiProfileCard } from "../RomiProfileCard";
 
 export const metadata: Metadata = {
   title: "Special Thanks・クレジット | すれちがいライト",
@@ -52,6 +50,8 @@ export default function SpecialThanksPage() {
             プログラムの提供と公開に感謝します。星野ロミさん、ありがとうございます。
           </p>
 
+          <RomiProfileCard ribbonText="このアプリをつくる、きっかけをくださった方" />
+
           <section className={styles.specialThanksGroup} aria-labelledby="special-thanks-web-heading">
             <h2 id="special-thanks-web-heading" className={styles.specialThanksGroupHeading}>
               WEBサイト
@@ -59,23 +59,14 @@ export default function SpecialThanksPage() {
             <ul className={styles.footerThanksList}>
               {websiteLinks.map((link) => (
                 <li key={link.href} className={styles.footerThanksItem}>
-                  {link.href === MANGAMURA_HREF ? (
-                    <MangamuraPranksterLink
-                      href={link.href}
-                      className={styles.footerThanksLink}
-                    >
-                      {link.label}
-                    </MangamuraPranksterLink>
-                  ) : (
-                    <a
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.footerThanksLink}
-                    >
-                      {link.label}
-                    </a>
-                  )}
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.footerThanksLink}
+                  >
+                    {link.label}
+                  </a>
                 </li>
               ))}
             </ul>

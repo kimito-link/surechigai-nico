@@ -55,6 +55,7 @@ import { CreatorCrossSearch } from "./CreatorCrossSearch";
 import { StarField } from "./StarField";
 import { YukkuriHero } from "./YukkuriHero";
 import { SPECIAL_THANKS_LINKS } from "./special-thanks-links";
+import { RomiProfileCard } from "./RomiProfileCard";
 
 const SPECIAL_THANKS_PREVIEW_COUNT = 6;
 const isXAccountLink = (href: string) =>
@@ -317,12 +318,14 @@ export default function ChokaigiPage() {
             <span aria-hidden="true"> · </span>
             <a href="/chokaigi">この企画LP（/chokaigi）</a>
           </p>
+          <RomiProfileCard />
+
           <section className={styles.footerThanks} aria-labelledby="special-thanks-heading">
             <h2 id="special-thanks-heading" className={styles.footerThanksHeading}>
               Special Thanks
             </h2>
             <p className={styles.footerThanksIntro}>
-              プログラムの提供と公開に感謝します。星野ロミさん、ありがとうございます。
+              本企画にご協力いただいたみなさまに感謝を込めて。
             </p>
             <ul className={styles.footerThanksList}>
               {SPECIAL_THANKS_PREVIEW_LINKS.map((link) => (
