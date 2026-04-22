@@ -279,16 +279,16 @@ export const OTO1TO1_DIALOGUE: YukkuriDialogue = {
 };
 
 /**
- * みぃさん（@bakusyokuM）— りんくの声を担当してくださっている
+ * みぃですさん（@bakusyokuM）— りんくの声を担当してくださっている
  * 多才クリエイター。才能・知性・声・ビジュアル・気配りが全部そろった
  * “すーぱーくりえいたー” として、熱量多めにご紹介。
  */
 export const MIIDESU_DIALOGUE: YukkuriDialogue = {
-  title: "🌟 みぃさん（@bakusyokuM） — りんくの声を担当する、すーぱーくりえいたー",
+  title: "🌟 みぃですさん（@bakusyokuM） — りんくの声を担当する、すーぱーくりえいたー",
   lines: [
     {
       who: "rink",
-      text: "実はね……ぼく『りんく』の声、みぃさん（@bakusyokuM）に担当してもらってるんだ！もうこの時点で感謝しかないんだけど、ちょっと聞いて！？",
+      text: "実はね……ぼく『りんく』の声、みぃですさん（@bakusyokuM）に担当してもらってるんだ！もうこの時点で感謝しかないんだけど、ちょっと聞いて！？",
     },
     {
       who: "konta",
@@ -319,7 +319,7 @@ export const MIIDESU_DIALOGUE: YukkuriDialogue = {
       text: "みんな、フォローしていろんな表現を楽しんでね〜！",
     },
   ],
-  ctaLabel: "みぃさんの X プロフィールを開く",
+  ctaLabel: "みぃですさんの X プロフィールを開く",
 };
 
 const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
