@@ -76,6 +76,12 @@ export default function LocationButton({
     0
   );
   const [alwaysAvailableReport, setAlwaysAvailableReport] = useState<string | null>(null);
+  const [lastSubmission, setLastSubmission] = useState<{
+    lat: number;
+    lng: number;
+    municipality: string | null;
+    at: number;
+  } | null>(null);
 
   const resolveUuid = useCallback(() => {
     if (authUuidProp !== undefined) return authUuidProp;
@@ -195,6 +201,12 @@ export default function LocationButton({
 
       console.log(`[位置送信成功] 座標: (${position.latitude}, ${position.longitude})`);
       setAiReport(null);
+      setLastSubmission({
+        lat: position.latitude,
+        lng: position.longitude,
+        municipality: reverseResult?.municipality ?? null,
+        at: Date.now(),
+      });
       await fetchLiveMap();
       // 地図更新後にメッセージを出す（自己位置が反映されたタイミングで表示）
       setMessage({ type: "success", text: "現在地を送信して地図に反映しました" });
@@ -365,13 +377,41 @@ export default function LocationButton({
       )}
       <AiErrorShare report={aiReport ?? alwaysAvailableReport} />
 
-      <div className={styles.liveMapWrap}>
-        <div className={styles.liveMapHeaderRow}>
-          <h4 className={styles.liveMapTitle}>超会議ライブマップ（β）</h4>
+      {/* 送信済み表示: ローカル state 優先。refresh 後は API の selfLocation にフォールバック */}
+      {(lastSubmission || mapPayload?.selfLocation) && (
+        <div className={styles.selfLocationCard}>
+          <span className={styles.selfLocationPin}>📍</span>
+          <span className={styles.selfLocationText}>
+            送信済み：{lastSubmission?.municipality ?? mapPayload?.selfLocation?.municipality ?? "位置取得済み"}
+          </span>
+          <span className={styles.selfLocationTime}>
+            {liveMapFormatAgo(lastSubmission?.at ?? mapPayload?.selfLocation?.updatedAtMs ?? Date.now())}
+          </span>
+        </div>
+      )}
+
+      {/* 全国参加者エリア一覧: マップ外に常時表示 */}
+      {mapPayload?.areaStats && mapPayload.areaStats.length > 0 && (
+        <div className={styles.areaStatsWrap}>
+          <h5 className={styles.areaStatsTitle}>全国の参加者（過去30分）</h5>
+          <ul className={styles.areaStatsList}>
+            {mapPayload.areaStats.map((stat) => (
+              <li key={stat.area} className={styles.areaStatItem}>
+                <span className={styles.areaStatName}>{stat.area}</span>
+                <span className={styles.areaStatCount}>{stat.count}人</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <details className={styles.liveMapWrap}>
+        <summary className={styles.liveMapHeaderRow}>
+          <h4 className={styles.liveMapTitle}>超会議会場マップ（β）</h4>
           <span className={styles.liveMapMeta}>
             {mapPayload ? `${points.length}人表示` : "読み込み中"}
           </span>
-        </div>
+        </summary>
 
         <p className={styles.liveMapNote}>
           {mapPayload?.note ?? "会場周辺の参加者位置を表示します"}
@@ -438,35 +478,7 @@ export default function LocationButton({
         ) : (
           <p className={styles.liveMapEmpty}>まだ会場付近の参加者データがありません</p>
         )}
-
-        {/* 自分が会場外にいる場合：自己位置カード */}
-        {mapPayload?.selfLocation && (
-          <div className={styles.selfLocationCard}>
-            <span className={styles.selfLocationPin}>📍</span>
-            <span className={styles.selfLocationText}>
-              あなたの現在地：{mapPayload.selfLocation.municipality ?? "位置取得済み"}
-            </span>
-            <span className={styles.selfLocationTime}>
-              {liveMapFormatAgo(mapPayload.selfLocation.updatedAtMs)}
-            </span>
-          </div>
-        )}
-
-        {/* 全国参加者エリア一覧 */}
-        {mapPayload?.areaStats && mapPayload.areaStats.length > 0 && (
-          <div className={styles.areaStatsWrap}>
-            <h5 className={styles.areaStatsTitle}>全国の参加者（過去30分）</h5>
-            <ul className={styles.areaStatsList}>
-              {mapPayload.areaStats.map((stat) => (
-                <li key={stat.area} className={styles.areaStatItem}>
-                  <span className={styles.areaStatName}>{stat.area}</span>
-                  <span className={styles.areaStatCount}>{stat.count}人</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
+      </details>
     </div>
   );
 }

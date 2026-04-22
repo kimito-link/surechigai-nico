@@ -299,12 +299,37 @@
   padding-top: 14px;
 }
 
+.liveMapWrap[open] .liveMapHeaderRow::after {
+  transform: rotate(180deg);
+}
+
 .liveMapHeaderRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   margin-bottom: 6px;
+  cursor: pointer;
+  list-style: none;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(37, 93, 155, 0.05);
+}
+
+.liveMapHeaderRow::-webkit-details-marker {
+  display: none;
+}
+
+.liveMapHeaderRow::after {
+  content: "▼";
+  font-size: 11px;
+  color: #255d9b;
+  transition: transform 0.15s ease;
+  margin-left: 4px;
+}
+
+.liveMapHeaderRow:hover {
+  background: rgba(37, 93, 155, 0.09);
 }
 
 .liveMapTitle {
