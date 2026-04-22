@@ -1292,3 +1292,56 @@
 .encounterCount {
   font-weight: 500;
 }
+
+/* ============================================================
+   ThanksCredit (星野ロミ さんへの謝辞 + 元ツイート埋め込み)
+   ============================================================ */
+.thanksCredit {
+  max-width: 600px;
+  margin: 24px auto 0;
+  padding: 20px 20px 16px;
+  background: linear-gradient(135deg, #fffaf0 0%, #fff5e6 100%);
+  border: 1px solid rgba(227, 140, 30, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(227, 140, 30, 0.1);
+}
+
+.thanksCreditTitle {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #7a4a1f;
+  letter-spacing: 0.02em;
+}
+
+.thanksCreditBody {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.75;
+  color: #3a2f24;
+}
+
+.thanksCreditBody:last-of-type {
+  margin-bottom: 14px;
+}
+
+.thanksCreditHandle {
+  color: #1d9bf0;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.thanksCreditHandle:hover {
+  text-decoration: underline;
+}
+
+.thanksCreditEmbed {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+}
+
+.thanksCreditEmbed :global(.twitter-tweet) {
+  max-width: 100% !important;
+  margin: 0 auto !important;
+}

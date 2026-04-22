@@ -7,6 +7,7 @@ import ProfileCard from "./components/ProfileCard";
 import LocationButton from "./components/LocationButton";
 import LocationButtonBoundary from "./components/LocationButtonBoundary";
 import Stats from "./components/Stats";
+import ThanksCredit from "./components/ThanksCredit";
 import styles from "./app.module.css";
 import { clearUuidToken, getUuidToken, setUuidToken } from "@/lib/clientAuth";
 import { AiErrorShare } from "@/app/components/AiErrorShare";
@@ -216,6 +217,7 @@ export default function AppPage() {
           />
         </LocationButtonBoundary>
         <Stats authUuid={resolvedUuid} statsReady={registerSettled} />
+        <ThanksCredit />
       </div>
     </main>
   );
