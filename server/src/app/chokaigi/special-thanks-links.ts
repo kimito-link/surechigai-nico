@@ -95,10 +95,7 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
         tagline: "Ahuran Project / Cafe Official Site",
       },
     ],
-    xHandles: [
-      { label: "@ahuran", href: "https://x.com/ahuran" },
-      { label: "@oomayu12345", href: "https://x.com/oomayu12345" },
-    ],
+    xHandles: [{ label: "@ahuran", href: "https://x.com/ahuran" }],
   },
   {
     id: "oto1to1",
@@ -218,6 +215,7 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
  * プロフィールカード化はせず、アットマーク一覧として表示します。
  */
 export const SPECIAL_THANKS_X_ONLY: ReadonlyArray<SpecialThanksXLink> = [
+  { label: "@oomayu12345", href: "https://x.com/oomayu12345" },
   { label: "@m20210411", href: "https://x.com/m20210411" },
   { label: "@flap_shizuku", href: "https://x.com/flap_shizuku" },
 ] as const;
