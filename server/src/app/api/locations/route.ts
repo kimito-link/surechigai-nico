@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
     if (userRows.length > 0 && userRows[0].location_paused_until) {
       const pausedUntil = new Date(userRows[0].location_paused_until);
       if (pausedUntil > new Date()) {
+        console.log(`[位置送信] user_id=${authResult.id}: 一時停止中 (until: ${pausedUntil.toISOString()})`);
         return Response.json({ ok: true, paused: true });
       }
       // 一時停止期間が過ぎたらクリア
@@ -84,6 +85,7 @@ export async function POST(req: NextRequest) {
       [authResult.id, pointWkt, latGrid, lngGrid, municipality]
     );
 
+    console.log(`[位置送信成功] user_id=${authResult.id}, lat=${lat}, lng=${lng}, grid=(${latGrid},${lngGrid}), municipality=${municipality}`);
     return Response.json({ ok: true });
   } catch (error) {
     console.error("位置情報保存エラー:", error);

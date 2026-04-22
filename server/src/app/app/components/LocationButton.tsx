@@ -265,11 +265,12 @@ export default function LocationButton({
       });
 
       if (!res.ok) {
-        throw new Error(
-          await readFetchErrorMessage(res, "位置情報の送信に失敗しました")
-        );
+        const errorMsg = await readFetchErrorMessage(res, "位置情報の送信に失敗しました");
+        console.error(`[位置送信エラー] ステータス: ${res.status}, メッセージ: ${errorMsg}`);
+        throw new Error(errorMsg);
       }
 
+      console.log(`[位置送信成功] 座標: (${position.latitude}, ${position.longitude})`);
       setMessage({ type: "success", text: "位置情報を送信しました（500mグリッドで共有）" });
       await fetchLiveMap();
     } catch (error) {
@@ -325,7 +326,7 @@ export default function LocationButton({
       <div className={styles.mapActionRow}>
         <button
           onClick={handleLocationSubmit}
-          disabled={isSending || authSyncing || !resolveUuid()}
+          disabled={isSending || authSyncing || !authUuidProp}
           className={styles.button}
         >
           {isSending ? "送信中..." : "現在地を送信"}
