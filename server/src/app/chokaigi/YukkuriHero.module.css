@@ -87,34 +87,39 @@
   50%       { transform: translateY(-10px); }
 }
 
-/* ==== 掛け合い中：ヘッダー固定バーのすぐ下に浮かせて、ファーストビューに収める ==== */
+/* ==== 掛け合い中：ヘッダー（+ TOP の stats band / /chokaigi の sticky X バー）のすぐ下に浮かせる ====
+ * - top:
+ *   TOP ページは --layout-sticky-x-h が 0px のままなので、stats band（約56px）の高さを
+ *   max() で担保して stats チップと被らない位置に置く。
+ *   /chokaigi は --layout-sticky-x-h = 52px なので max(52px, 56px) = 56px で 4px 程度の差に収まる。
+ * - 白い外枠パネルは撤去：ヘッダー (rgba 白 + blur) と視覚的に融合して
+ *   「ヘッダーにもぐりこむ」ように見えていたため、吹き出しだけが空中に並ぶ見た目にする。
+ */
 .charsTalking {
   position: fixed;
-  top: calc(var(--layout-header-h, 64px) + var(--layout-sticky-x-h, 52px) + 8px);
+  top: calc(var(--layout-header-h, 64px) + max(var(--layout-sticky-x-h, 0px), 56px) + 8px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 40;
   width: min(620px, calc(100vw - 14px));
-  max-height: calc(100dvh - var(--layout-header-h, 64px) - var(--layout-sticky-x-h, 52px) - 20px);
+  max-height: calc(100dvh - var(--layout-header-h, 64px) - max(var(--layout-sticky-x-h, 0px), 56px) - 28px);
   overflow-y: auto;
   gap: 0.45rem;
-  padding: 0.65rem clamp(0.55rem, 2.2vw, 0.9rem) 0.75rem;
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(14px) saturate(1.1);
-  -webkit-backdrop-filter: blur(14px) saturate(1.1);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  border-radius: 20px;
-  box-shadow:
-    0 18px 44px rgba(0, 0, 0, 0.18),
-    0 4px 14px rgba(0, 0, 0, 0.08);
+  padding: 0.4rem clamp(0.2rem, 1.2vw, 0.5rem) 0.6rem;
+  background: transparent;
+  border: none;
+  box-shadow: none;
   scrollbar-gutter: stable;
   animation: charsFloatIn 0.55s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
 
+/* アニメは「下からふわっと浮き上がる」方向に統一：
+ * 以前は translateY(-18px) で開始していたため、一瞬 ヘッダー (64px) の背後に入って
+ * 「もぐりこむ」挙動に見えていた。translateY(+18px) で header にかぶらずに着地する。 */
 @keyframes charsFloatIn {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(-18px) scale(0.94);
+    transform: translateX(-50%) translateY(18px) scale(0.94);
   }
   to {
     opacity: 1;
