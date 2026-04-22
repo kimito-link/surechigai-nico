@@ -41,7 +41,8 @@
       ]
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "supportsTablet": true
     },
     "plugins": [
       "expo-router",
