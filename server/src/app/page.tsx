@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import {
@@ -160,6 +161,22 @@ export default function Home() {
           <div className={styles.cardGrid}>
             {GUIDES.map((g) => (
               <article key={g.name} className={styles.detailCard}>
+                <a
+                  href={g.profileUrl}
+                  className={styles.detailCardAvatar}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${g.name}のキャラ紹介（kimito-link）へ`}
+                >
+                  <Image
+                    src={g.imageSrc}
+                    alt=""
+                    width={160}
+                    height={160}
+                    className={styles.detailCardAvatarImg}
+                    sizes="(max-width: 640px) 120px, 160px"
+                  />
+                </a>
                 <h3 className={styles.cardName}>{g.name}</h3>
                 <p className={styles.detailRole}>{g.role}</p>
                 <p className={styles.detailBody}>{g.body}</p>
