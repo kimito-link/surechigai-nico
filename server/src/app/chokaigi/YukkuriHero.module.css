@@ -87,76 +87,91 @@
   50%       { transform: translateY(-10px); }
 }
 
-/* ==== 掛け合い中：ヘッダー（+ TOP の stats band / /chokaigi の sticky X バー）のすぐ下に浮かせる ====
- * - top:
- *   TOP ページは --layout-sticky-x-h が 0px のままなので、stats band（約56px）の高さを
- *   max() で担保して stats チップと被らない位置に置く。
- *   /chokaigi は --layout-sticky-x-h = 52px なので max(52px, 56px) = 56px で 4px 程度の差に収まる。
- * - 白い外枠パネルは撤去：ヘッダー (rgba 白 + blur) と視覚的に融合して
- *   「ヘッダーにもぐりこむ」ように見えていたため、吹き出しだけが空中に並ぶ見た目にする。
- */
+/* ==== 解説中：ヘッダー直下からファーストビュー全域を覆う「モーダル」構成 ====
+ * 透過 + 狭いパネルだと「ボタンが透けて潜り込む」「他要素と視覚的に衝突する」ので、
+ * ヘッダーより下を丸ごと奪う（全画面モーダル）方式に変更。
+ * どの画面サイズでも吹き出し+アクションだけに集中できる見た目にする。 */
 .charsTalking {
   position: fixed;
-  top: calc(var(--layout-header-h, 64px) + max(var(--layout-sticky-x-h, 0px), 56px) + 8px);
-  left: 50%;
-  transform: translateX(-50%);
+  top: var(--layout-header-h, 64px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: none;
+  max-height: none;
   z-index: 40;
-  width: min(620px, calc(100vw - 14px));
-  max-height: calc(100dvh - var(--layout-header-h, 64px) - max(var(--layout-sticky-x-h, 0px), 56px) - 28px);
+  padding: clamp(0.9rem, 3.5vw, 1.8rem) clamp(0.75rem, 3vw, 1.75rem);
+  /* ベージュ系のベースに合わせたソリッド寄りの背景で下層を確実に隠す */
+  background: linear-gradient(180deg, #faf6eb 0%, #f3ead9 100%);
+  /* 子要素（吹き出し + talkingFooter）を縦並びで画面中央寄せ */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.55rem, 2vw, 1rem);
   overflow-y: auto;
-  gap: 0.45rem;
-  padding: 0.4rem clamp(0.2rem, 1.2vw, 0.5rem) 0.6rem;
-  background: transparent;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   border: none;
   box-shadow: none;
-  scrollbar-gutter: stable;
-  animation: charsFloatIn 0.55s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  transform: none;
+  animation: charsFloatIn 0.45s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+/* モーダル化後はキャラカード・フッターの幅を中央寄せ最大幅で制限して、
+ * 極端に横に伸びないようにする（PC で横長に間延びしない） */
+.charsTalking .charCard {
+  width: 100%;
+  max-width: 680px;
+  flex: 0 0 auto;
+}
+
+.charsTalking .talkingFooter {
+  width: 100%;
+  max-width: 680px;
 }
 
 /* アニメは「下からふわっと浮き上がる」方向に統一：
- * 以前は translateY(-18px) で開始していたため、一瞬 ヘッダー (64px) の背後に入って
- * 「もぐりこむ」挙動に見えていた。translateY(+18px) で header にかぶらずに着地する。 */
+ * translateX の 50% センタリングはもう使わないので、純粋な Y + scale のみ。 */
 @keyframes charsFloatIn {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(18px) scale(0.94);
+    transform: translateY(14px) scale(0.985);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
-/* ==== 解説中のフッター（ボイス + シェア行）をオーバーレイ内に収める ====
- *   .charsTalking は position:fixed で DOM flow から外れるため、従来ページ下に
- *   置いていた shareRow / registerCta が上に詰め上がって透けていた。
- *   そこで解説中のアクションは全てこの .talkingFooter に入れて、オーバーレイと
- *   一体になって表示・スクロールする。 */
+/* ==== 解説中のフッター（ボイス + シェア行）====
+ *   全画面モーダル内で、吹き出しの直下に中央寄せで並べる。 */
 .talkingFooter {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 0.45rem;
-  margin-top: 0.35rem;
-  padding: 0.55rem 0.25rem 0.3rem;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+  padding: 0.6rem 0 0;
   border-top: 1px dashed rgba(34, 34, 34, 0.14);
 }
 
 .charsTalking .shareRow {
-  gap: 0.45rem;
+  gap: 0.55rem;
   flex-wrap: wrap;
   justify-content: center;
 }
 
-/* 狭いオーバーレイ内でも各 CTA が押しやすい高さを維持 */
+/* モーダル内でも各 CTA が押しやすいサイズを維持 */
 .charsTalking .shareBtn,
 .charsTalking .btnResetExplain,
 .charsTalking .btnRegister {
-  height: 2.4rem;
-  font-size: 0.86rem;
-  padding: 0 0.95rem;
+  height: 2.5rem;
+  font-size: 0.88rem;
+  padding: 0 1.05rem;
   min-width: 0;
-  flex: 1 1 140px;
+  flex: 1 1 160px;
 }
 
 .charsTalking .charCard {
