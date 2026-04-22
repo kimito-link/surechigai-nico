@@ -6,6 +6,7 @@ import {
   yukkuriExplainUserMessage,
   type YukkuriDialogue,
 } from "@/lib/yukkuriExplainClient";
+import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
 import styles from "./chokaigi.module.css";
 
 type Dialogue = YukkuriDialogue;
@@ -71,14 +72,17 @@ export function XHandleYukkuri() {
       )}
 
       {dialogue && (
-        <div className={styles.yukkuriCreatorTalkDialogue}>
-          {CHARS.map(({ key, label, speaker }) => (
-            <div key={key} className={styles.yukkuriCreatorRow} data-speaker={speaker}>
-              <span className={styles.yukkuriCreatorLabel}>{label}</span>
-              <div className={styles.yukkuriCreatorBubble}>{dialogue[key]}</div>
-            </div>
-          ))}
-        </div>
+        <>
+          <div className={styles.yukkuriCreatorTalkDialogue}>
+            {CHARS.map(({ key, label, speaker }) => (
+              <div key={key} className={styles.yukkuriCreatorRow} data-speaker={speaker}>
+                <span className={styles.yukkuriCreatorLabel}>{label}</span>
+                <div className={styles.yukkuriCreatorBubble}>{dialogue[key]}</div>
+              </div>
+            ))}
+          </div>
+          <YukkuriVoicePlayer dialogue={dialogue} compact />
+        </>
       )}
     </div>
   );

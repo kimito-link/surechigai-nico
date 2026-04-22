@@ -21,6 +21,9 @@ function isUnprotectedApiPath(pathname: string): boolean {
   ) {
     return true;
   }
+  if (pathname.startsWith("/api/voicevox")) {
+    return true;
+  }
   return false;
 }
 

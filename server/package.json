@@ -18,7 +18,8 @@
     "test:e2e:monkey": "playwright test e2e/chokaigi-monkey.spec.ts",
     "test:e2e:ui": "playwright test --ui",
     "matcher": "npx tsx src/cron/matcher.ts",
-    "yukkuri:status": "node scripts/check-yukkuri-llm.mjs"
+    "yukkuri:status": "node scripts/check-yukkuri-llm.mjs",
+    "voicevox:status": "node scripts/check-voicevox.mjs"
   },
   "dependencies": {
     "@clerk/localizations": "^4.5.2",

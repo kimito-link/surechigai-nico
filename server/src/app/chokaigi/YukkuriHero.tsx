@@ -9,6 +9,7 @@ import {
   yukkuriExplainUserMessage,
   type YukkuriDialogue,
 } from "@/lib/yukkuriExplainClient";
+import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
 import styles from "./YukkuriHero.module.css";
 
 type Dialogue = YukkuriDialogue;
@@ -154,34 +155,37 @@ export function YukkuriHero() {
 
       {/* 結果後のシェア */}
       {dialogue && (
-        <div className={styles.shareRow}>
-          <a
-            href={buildTweetUrl(raw, dialogue)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.shareBtn}
-          >
-            Xでシェアする
-          </a>
-          {isLoaded && !isSignedIn && (
-            <button
-              type="button"
-              className={styles.btnRegister}
-              onClick={() => router.push("/sign-in")}
+        <>
+          <YukkuriVoicePlayer dialogue={dialogue} />
+          <div className={styles.shareRow}>
+            <a
+              href={buildTweetUrl(raw, dialogue)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.shareBtn}
             >
-              すれ違い通信に登録する
-            </button>
-          )}
-          {isLoaded && isSignedIn && (
-            <button
-              type="button"
-              className={styles.btnRegister}
-              onClick={() => router.push("/app")}
-            >
-              ダッシュボードへ
-            </button>
-          )}
-        </div>
+              Xでシェアする
+            </a>
+            {isLoaded && !isSignedIn && (
+              <button
+                type="button"
+                className={styles.btnRegister}
+                onClick={() => router.push("/sign-in")}
+              >
+                すれ違い通信に登録する
+              </button>
+            )}
+            {isLoaded && isSignedIn && (
+              <button
+                type="button"
+                className={styles.btnRegister}
+                onClick={() => router.push("/app")}
+              >
+                ダッシュボードへ
+              </button>
+            )}
+          </div>
+        </>
       )}
     </section>
   );

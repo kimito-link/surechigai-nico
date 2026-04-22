@@ -7,6 +7,7 @@ import {
   yukkuriExplainUserMessage,
   type YukkuriDialogue,
 } from "@/lib/yukkuriExplainClient";
+import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
 import styles from "./chokaigi.module.css";
 
 type Dialogue = YukkuriDialogue;
@@ -136,6 +137,7 @@ export function StickyXSearchBar() {
                     </div>
                   ))}
                 </div>
+                <YukkuriVoicePlayer dialogue={dialogue} compact />
                 <div className={styles.stickyXShareRow}>
                   <a
                     href={buildTweetUrl(rawHandle, dialogue)}
