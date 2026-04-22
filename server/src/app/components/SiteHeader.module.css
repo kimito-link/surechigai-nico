@@ -522,12 +522,14 @@
     display: none !important;
   }
 
+  /* authArea は常に表示（モバイルでも） */
   .authArea {
-    display: none !important;
+    margin-left: auto;
   }
 
   .hamburger {
     display: flex;
+    margin-left: 0.5rem;
   }
 
   .mobileNav {
