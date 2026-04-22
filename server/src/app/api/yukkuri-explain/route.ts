@@ -5,9 +5,10 @@ export const runtime = "nodejs";
 /** Vercel 等で長めの生成を許可（未対応ホストでは無視） */
 export const maxDuration = 300;
 
-const CACHE_TTL_OK = 3600; // 1時間キャッシュ（成功）
+const CACHE_TTL_OK = 24 * 60 * 60; // 24時間キャッシュ（成功）
 const CACHE_TTL_FAIL = 20; // 20秒キャッシュ（失敗）— 一時障害時の再試行余地を残す
-const CACHE_TTL_MEM_OK_MS = 10 * 60 * 1000; // 10分（インスタンス内）
+const CACHE_TTL_MEM_OK_MS = 2 * 60 * 60 * 1000; // 2時間（インスタンス内）
+const OPENROUTER_DISABLED = true; // 方針: OpenRouter を使わず Ollama のみで運用
 const OPENROUTER_GLOBAL_BACKOFF_KEY = "yukkuri:openrouter:backoff:global";
 const OPENROUTER_GLOBAL_BACKOFF_MAX_SEC = 180;
 const OPENROUTER_MODEL_COOLDOWN_MS = 120_000;
@@ -751,7 +752,6 @@ export async function GET() {
   const ollamaBase = process.env.OLLAMA_BASE_URL?.trim();
   const ollamaModel = process.env.OLLAMA_MODEL?.trim();
   const ollamaKey = process.env.OLLAMA_API_KEY?.trim();
-  const apiKey = process.env.OPENROUTER_API_KEY;
   const ollamaConfigured = Boolean(ollamaBase && ollamaModel);
 
   let ollamaReachable: boolean | null = null;
@@ -763,11 +763,8 @@ export async function GET() {
     ollamaSuspicious = process.env.NODE_ENV === "production" && localish;
   }
 
-  const openRouter = apiKey
-    ? {
-        configured: true as const,
-        ...(await checkOpenRouterModels(apiKey)),
-      }
+  const openRouter = OPENROUTER_DISABLED
+    ? { configured: false as const, disabled: true as const }
     : { configured: false as const };
 
   const now = Date.now();
@@ -782,6 +779,7 @@ export async function GET() {
 
   return NextResponse.json({
     yukkuriExplain: "ok",
+    provider: "ollama_only",
     ollama: ollamaConfigured
       ? { configured: true, model: ollamaModel, reachable: ollamaReachable, suspicious: ollamaSuspicious }
       : { configured: false },
@@ -799,7 +797,6 @@ export async function GET() {
 // ---------------- POST: 本体 ----------------
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.OPENROUTER_API_KEY;
   const ollamaBase = process.env.OLLAMA_BASE_URL?.trim();
   const ollamaModel = process.env.OLLAMA_MODEL?.trim();
   const ollamaKey = process.env.OLLAMA_API_KEY?.trim();
@@ -809,11 +806,10 @@ export async function POST(req: NextRequest) {
     : DEFAULT_OLLAMA_TIMEOUT_MS;
 
   const useOllama = Boolean(ollamaBase && ollamaModel);
-  if (!useOllama && !apiKey) {
+  if (!useOllama) {
     return NextResponse.json(
       {
-        error:
-          "解説 AI が未設定です（運営側にお知らせください）。",
+        error: "解説 AI が未設定です（Ollama を設定してください）。",
         error_code: "E_YUKKURI_LLM_NOT_CONFIGURED",
       },
       { status: 500 }
@@ -887,160 +883,26 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const now = Date.now();
-  const globalBackoffUntilRedis = await getGlobalBackoffUntilRedis();
-  const globalBackoffUntil = Math.max(globalBackoffUntilLocal, globalBackoffUntilRedis);
-  if (apiKey && now < globalBackoffUntil) {
-    const fallback = buildFallbackDialogue(body, profile);
-    if (handle) {
-      await setCached(handle, { ok: true, dialogue: fallback });
-    }
-    const waitSec = Math.max(1, Math.ceil((globalBackoffUntil - now) / 1000));
-    console.warn(
-      `[yukkuri-explain] global_backoff_skip wait=${waitSec}s handle=${handle || "-"}`
-    );
-    return NextResponse.json(
-      {
-        ...fallback,
-        degraded: true,
-        source: "fallback_backoff_global",
-      },
-      { headers: { "Retry-After": String(waitSec) } }
-    );
-  }
-
-  // OpenRouter モデル群
-  if (apiKey) {
-    let modelsLeft = MODELS.length;
-    for (const model of MODELS) {
-      const coolUntil = modelCooldownUntil.get(model) ?? 0;
-      if (Date.now() < coolUntil) {
-        failures.push({
-          ok: false,
-          model,
-          elapsedMs: 0,
-          errorCode: "E_YUKKURI_LLM_UPSTREAM_429",
-          status: 429,
-          errorMessage: `model cooldown active until ${new Date(coolUntil).toISOString()}`,
-        });
-        modelsLeft -= 1;
-        continue;
-      }
-      const rb = remainingBudget();
-      if (rb <= PER_MODEL_MIN_MS) {
-        console.warn(`[yukkuri-explain] budget exhausted before model=${model} remaining=${rb}ms`);
-        failures.push({
-          ok: false,
-          model,
-          elapsedMs: 0,
-          errorCode: "E_YUKKURI_LLM_TIMEOUT",
-        });
-        modelsLeft -= 1;
-        continue;
-      }
-      const per = Math.max(PER_MODEL_MIN_MS, Math.floor(rb / modelsLeft));
-      const r = await callOpenRouter(apiKey, model, userMessage, per);
-      modelsLeft -= 1;
-      if (r.ok) {
-        const dialogue = extractDialogue(r.text);
-        if (dialogue) {
-          await setCached(handle, { ok: true, dialogue });
-          resetGlobalBackoffStrike();
-          console.log(
-            `[yukkuri-explain] success model=${r.model} elapsed=${r.elapsedMs}ms handle=${handle || "-"}`
-          );
-          return NextResponse.json(dialogue);
-        }
-        failures.push({
-          ok: false,
-          model: r.model,
-          elapsedMs: r.elapsedMs,
-          errorCode: "E_YUKKURI_LLM_PARSE",
-        });
-        continue;
-      }
-      failures.push(r);
-      if (r.errorCode === "E_YUKKURI_LLM_UPSTREAM_429") {
-        modelCooldownUntil.set(model, Date.now() + OPENROUTER_MODEL_COOLDOWN_MS);
-        const backoffSec = nextGlobalBackoffSeconds();
-        await setGlobalBackoff(backoffSec);
-      }
-      // レート上限 / 認証系は継続しても無意味なので即失敗扱いに
-      if (
-        r.errorCode === "E_YUKKURI_LLM_UPSTREAM_401" ||
-        r.errorCode === "E_YUKKURI_LLM_UPSTREAM_402"
-      ) {
-        break;
-      }
-    }
-  } else if (failures.length === 0) {
-    // Ollama のみ設定で失敗した場合
-    failures.push({
-      ok: false,
-      model: ollamaModel || "ollama",
-      elapsedMs: 0,
-      errorCode: "E_YUKKURI_LLM_NETWORK",
-    });
-  }
-
-  // 混雑・一時障害時はフォールバック解説を返し、体験を止めない
-  const failedOnly = failures.filter(isFailedCallResult);
-  const has429 = failedOnly.some((f) => f.errorCode === "E_YUKKURI_LLM_UPSTREAM_429");
-  const hasAuthOrBillingError = failedOnly.some(
-    (f) =>
-      f.errorCode === "E_YUKKURI_LLM_UPSTREAM_401" ||
-      f.errorCode === "E_YUKKURI_LLM_UPSTREAM_402"
-  );
-  if (has429 && !hasAuthOrBillingError) {
+  if (failures.length > 0) {
     const fallback = buildFallbackDialogue(body, profile);
     if (handle) {
       await setCached(handle, { ok: true, dialogue: fallback });
     }
     console.warn(
-      `[yukkuri-explain] fallback_429 handle=${handle || "-"} failures=${JSON.stringify(
-        failedOnly.map((f) => ({ m: f.model, c: f.errorCode, s: f.status, e: f.elapsedMs }))
+      `[yukkuri-explain] fallback_ollama handle=${handle || "-"} failures=${JSON.stringify(
+        failures.map((f) => (f.ok ? null : { m: f.model, c: f.errorCode, s: f.status, e: f.elapsedMs }))
       )}`
     );
     return NextResponse.json({
       ...fallback,
       degraded: true,
-      source: "fallback_429",
+      source: "fallback_ollama",
     });
   }
 
-  const { status, body: errorBody } = buildUserFacingError(failures);
-  console.warn(
-    `[yukkuri-explain] all_failed handle=${handle || "-"} error_code=${errorBody.error_code} failures=${JSON.stringify(
-      failures.map((f) => (f.ok ? null : { m: f.model, c: f.errorCode, s: f.status, e: f.elapsedMs }))
-    )}`
+  // useOllama=true かつ failure なしでここに来るのは想定外
+  return NextResponse.json(
+    { error: "解説生成に失敗しました", error_code: "E_YUKKURI_UNEXPECTED" },
+    { status: 500 }
   );
-  // 負のキャッシュ（短期）
-  // 一時的な混在失敗はキャッシュせず、即再試行で復帰しやすくする
-  const cacheableFailureCodes = new Set([
-    "E_YUKKURI_LLM_UPSTREAM_401",
-    "E_YUKKURI_LLM_UPSTREAM_402",
-    "E_YUKKURI_LLM_UPSTREAM_404",
-    "E_YUKKURI_LLM_UPSTREAM_429",
-    "E_YUKKURI_LLM_TIMEOUT",
-    "E_YUKKURI_LLM_PARSE",
-  ]);
-  if (handle && cacheableFailureCodes.has(errorBody.error_code)) {
-    await setCached(handle, {
-      ok: false,
-      errorCode: errorBody.error_code,
-      message: errorBody.error,
-    });
-  }
-  const headers: Record<string, string> = {};
-  if (errorBody.error_code === "E_YUKKURI_LLM_UPSTREAM_429") {
-    headers["Retry-After"] = "30";
-  } else if (errorBody.error_code === "E_YUKKURI_LLM_TIMEOUT") {
-    headers["Retry-After"] = "15";
-  } else if (errorBody.error_code === "E_YUKKURI_LLM_UPSTREAM_5XX") {
-    headers["Retry-After"] = "20";
-  } else if (errorBody.error_code === "E_YUKKURI_LLM_NETWORK") {
-    headers["Retry-After"] = "10";
-  }
-
-  return NextResponse.json(errorBody, { status, headers });
 }
