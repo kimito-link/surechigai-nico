@@ -74,13 +74,21 @@ export function YukkuriHero() {
        * （izanami 記事 3-1「情報の優先順位」に準拠）
        */}
       <div className={styles.heroContent}>
-      <p className={styles.authLessFirst}>{AUTH_LESS_FIRST_COPY}</p>
-      <p className={styles.headline}>
-        誰を紹介してもらう？
-      </p>
+      {!isTalking && (
+        <>
+          <p className={styles.authLessFirst}>{AUTH_LESS_FIRST_COPY}</p>
+          <p className={styles.headline}>
+            誰を紹介してもらう？
+          </p>
+        </>
+      )}
 
-      {/* 解説フォーム */}
-      <form className={styles.form} onSubmit={handleYukkuri}>
+      {/* 解説フォーム — ダイアログが出たら上に飛んでいく */}
+      <form
+        className={`${styles.form} ${isTalking ? styles.formHidden : ""}`}
+        onSubmit={handleYukkuri}
+        aria-hidden={isTalking}
+      >
         <label className={styles.inputLabel}>
           紹介してほしい人のX IDを入力
         </label>
@@ -96,6 +104,7 @@ export function YukkuriHero() {
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}
+            tabIndex={isTalking ? -1 : 0}
           />
         </div>
 
@@ -103,6 +112,7 @@ export function YukkuriHero() {
           type="submit"
           className={styles.btnYukkuri}
           disabled={loading || !hasInput}
+          tabIndex={isTalking ? -1 : 0}
         >
           {loading ? "解説中…" : "ゆっくり解説してもらう"}
         </button>
@@ -211,6 +221,16 @@ export function YukkuriHero() {
             >
               Xでシェアする
             </a>
+            <button
+              type="button"
+              className={styles.btnResetExplain}
+              onClick={() => {
+                reset();
+                setHandle("");
+              }}
+            >
+              別の人を解説してもらう
+            </button>
             {isLoaded && !isSignedIn && (
               <button
                 type="button"
