@@ -17,6 +17,7 @@ import {
   type LiveMapPayload,
   type MapPoint,
 } from "@/lib/liveMapShared";
+import JapanMap from "./JapanMap";
 import styles from "../app.module.css";
 
 /** 端末・ブラウザの測位（Geolocation API）失敗を人が直せる文言に */
@@ -390,10 +391,18 @@ export default function LocationButton({
         </div>
       )}
 
-      {/* 全国参加者エリア一覧: マップ外に常時表示 */}
+      {/* 全国参加者マップ + エリアタグ */}
       {mapPayload?.areaStats && mapPayload.areaStats.length > 0 && (
         <div className={styles.areaStatsWrap}>
           <h5 className={styles.areaStatsTitle}>全国の参加者（過去30分）</h5>
+          <JapanMap
+            areaStats={mapPayload.areaStats}
+            selfMunicipality={
+              lastSubmission?.municipality ??
+              mapPayload?.selfLocation?.municipality ??
+              null
+            }
+          />
           <ul className={styles.areaStatsList}>
             {mapPayload.areaStats.map((stat) => (
               <li key={stat.area} className={styles.areaStatItem}>
