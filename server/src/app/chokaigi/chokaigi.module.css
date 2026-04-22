@@ -2348,6 +2348,18 @@ details[open] .detailMapSummary::before {
   margin: 0 0 1rem;
 }
 
+.specialThanksGroup {
+  margin-top: 1rem;
+}
+
+.specialThanksGroupHeading {
+  margin: 0 0 0.55rem;
+  color: #1a5898;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
 .specialThanksBackRow {
   margin-top: 1rem;
   display: flex;
