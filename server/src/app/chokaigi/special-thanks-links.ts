@@ -241,6 +241,7 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
  */
 export const SPECIAL_THANKS_X_ONLY: ReadonlyArray<SpecialThanksXLink> = [
   { label: "@flap_shizuku", href: "https://x.com/flap_shizuku" },
+  { label: "@yuripon7777", href: "https://x.com/yuripon7777" },
 ] as const;
 
 /**
