@@ -318,8 +318,9 @@ export default function LocationButton({
   );
 
   const listUsers = mapPayload?.users ?? [];
-  const alwaysAvailableReport = useMemo(
-    () =>
+  const [alwaysAvailableReport, setAlwaysAvailableReport] = useState<string | null>(null);
+  useEffect(() => {
+    setAlwaysAvailableReport(
       buildAiErrorReport({
         feature: "dashboard/location-debug-snapshot",
         userMessage: "エラー未発生時の状態スナップショット",
@@ -336,11 +337,11 @@ export default function LocationButton({
           currentMessageType: message?.type ?? null,
           currentMessageText: message?.text ?? null,
           visibleUsers: listUsers.length,
-          geolocationSupported: false,
+          geolocationSupported: Boolean(navigator?.geolocation),
         },
-      }),
-    [authSyncing, authSyncError, mapPayload, mapApiError, message, listUsers.length, resolveUuid]
-  );
+      })
+    );
+  }, [authSyncing, authSyncError, mapPayload, mapApiError, message, listUsers.length, resolveUuid]);
 
   return (
     <div className={styles.card}>

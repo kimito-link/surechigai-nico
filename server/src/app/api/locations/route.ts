@@ -92,12 +92,26 @@ export async function POST(req: NextRequest) {
 
     // MySQL 8.0 + SRID 4326 の軸順序は (lat, lng)
     const pointWkt = `POINT(${lat} ${lng})`;
-    const [insertResult] = await pool.execute(
-      `INSERT INTO locations (user_id, point, lat_grid, lng_grid, h3_r8, municipality)
-       VALUES (?, ST_GeomFromText(?, 4326), ?, ?, ?, ?)`,
-      [authResult.id, pointWkt, latGrid, lngGrid, h3, eagerMunicipality]
-    );
-    const insertedId = (insertResult as { insertId?: number }).insertId;
+    let rawInsert: unknown;
+    try {
+      [rawInsert] = await pool.execute(
+        `INSERT INTO locations (user_id, point, lat_grid, lng_grid, h3_r8, municipality)
+         VALUES (?, ST_GeomFromText(?, 4326), ?, ?, ?, ?)`,
+        [authResult.id, pointWkt, latGrid, lngGrid, h3, eagerMunicipality]
+      );
+    } catch (insertErr: unknown) {
+      // h3_r8 カラムが未作成（MySQL 1054）の場合は省いて再試行
+      if ((insertErr as { errno?: number }).errno === 1054) {
+        [rawInsert] = await pool.execute(
+          `INSERT INTO locations (user_id, point, lat_grid, lng_grid, municipality)
+           VALUES (?, ST_GeomFromText(?, 4326), ?, ?, ?)`,
+          [authResult.id, pointWkt, latGrid, lngGrid, eagerMunicipality]
+        );
+      } else {
+        throw insertErr;
+      }
+    }
+    const insertedId = (rawInsert as { insertId?: number }).insertId;
 
     // ライブマップ購読者へブロードキャスト（SSE）
     publishLiveMapEvent({
