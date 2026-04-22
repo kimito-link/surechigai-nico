@@ -638,6 +638,72 @@ export const SINSEINEU_DIALOGUE: YukkuriDialogue = {
   ctaLabel: "しんせいねうさんの X プロフィールを開く",
 };
 
+/**
+ * あぶそりゅーと☆せぶン 公式（@abuso2525）— 中高生ニコ生主を集めた
+ * 期間限定アイドルユニット。ニコニコ超会議 2026 のクリクロでも出演。
+ * 『けいおん最終回級の感動ステージ』/『ゆっくり解説台本をすでに
+ * 書いてある（まだ実現していない）』というエモーションを軸に紹介。
+ */
+export const ABUSO_DIALOGUE: YukkuriDialogue = {
+  title:
+    "💖 あぶそりゅーと☆せぶン（@abuso2525）— 中高生ニコ生主が集う、期間限定アイドルユニット",
+  lines: [
+    {
+      who: "rink",
+      text: "今日ご紹介するのは、中高生ニコ生主を集めた期間限定アイドルユニット、あぶそりゅーと☆せぶン（@abuso2525）だよ。メンバーは、❤ しらせ、❤ しらいっ、💚 しんせいねう、💙 ゆずち、💙 みぃです、の 5 人！",
+    },
+    {
+      who: "konta",
+      text: "名前のフォーメーションだけで、もう全員推せるやつにゃ〜！",
+    },
+    {
+      who: "tanunee",
+      text: "そしてね……このユニットのステージが、ほんとうに、感動だったのだー。",
+    },
+    {
+      who: "rink",
+      text: "うん、正直に言うと、最後のほうはぼく泣きそうになった。『けいおん！』の最終回、あの“天使にふれたよ！”のシーンの空気を、会場で浴びているような感覚だったんだ。",
+    },
+    {
+      who: "konta",
+      text: "わかるにゃ〜。曲そのものの尊さだけじゃなくて、『この 5 人がここで、この瞬間いっしょにステージに立っている』っていう事実がもう、なんか胸に来ちゃうやつにゃ〜。",
+    },
+    {
+      who: "tanunee",
+      text: "期間限定ユニットだからこそ、『今、ここ』の重みがあるのだー。ひとつひとつのライブが、最後の一ページかもしれない、そう思って見てしまうのだー。",
+    },
+    {
+      who: "rink",
+      text: "ダンスも歌もちゃんとクオリティが高くて、中高生の“これから感”みたいな眩しさも同時に光ってて。応援してる側も、ちょっと涙腺やられます。",
+    },
+    {
+      who: "konta",
+      text: "卒業ライブかなんか見たあとの、あの “しあわせ半分、さみしさ半分” な空気にゃね……。",
+    },
+    {
+      who: "tanunee",
+      text: "そしてね、ここで大事なお知らせがあるのだー。実は……このユニットを主役にした『ゆっくり解説』の台本、もう書いてあるのだー！",
+    },
+    {
+      who: "rink",
+      text: "そうなんです。あぶそりゅーと☆せぶンを、ゆっくり 3 人で全力紹介する動画。台本はあるんだけど、まだ作れていない——そんな状態。今日の時点では、まだ夢の中の企画。",
+    },
+    {
+      who: "konta",
+      text: "え、それもったいなさすぎるにゃ〜！ぜったい作ってほしいにゃ！！",
+    },
+    {
+      who: "tanunee",
+      text: "作れるかどうか、タイミングがあるのだー。でも、台本はたしかに存在しているし、ぼくらもずっと『実現させたいな』と思っているのだー。",
+    },
+    {
+      who: "rink",
+      text: "もしいつか公開できたら、そのときは一緒に全力で盛り上がってください！まずは @abuso2525 をフォローして、あぶそりゅーと☆せぶンの『今』を、みんなで見届けていきましょう！",
+    },
+  ],
+  ctaLabel: "あぶそりゅーと☆せぶン 公式の X を開く",
+};
+
 const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://socialxup.com/": SOCIALXUP_DIALOGUE,
   "https://threads.socialxup.com/": SOCIALXUP_THREADS_DIALOGUE,
@@ -653,6 +719,7 @@ const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://x.com/shirase_0404": SHIRASE_DIALOGUE,
   "https://x.com/yuzuchis_mammy": YUZUCHI_DIALOGUE,
   "https://x.com/sinseinaru": SINSEINEU_DIALOGUE,
+  "https://x.com/abuso2525": ABUSO_DIALOGUE,
 };
 
 export function getYukkuriDialogue(href: string): YukkuriDialogue | undefined {

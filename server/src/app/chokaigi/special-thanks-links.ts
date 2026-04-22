@@ -197,6 +197,20 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
       { label: "@sinseinaru", href: "https://x.com/sinseinaru" },
     ],
   },
+  {
+    id: "abuso-seven",
+    name: "あぶそりゅーと☆せぶン（@abuso2525）",
+    title:
+      "中高生ニコ生主を集めた期間限定アイドルユニット／ニコニコ超会議 2026 クリクロ出演",
+    intro: [
+      "❤ しらせ ❤ しらいっ 💚 しんせいねう 💙 ゆずち 💙 みぃです——中高生ニコ生主を集めた、期間限定アイドルユニット『あぶそりゅーと☆せぶン』公式アカウントです。",
+      "このユニットのステージは、本当に、感動でした。最後のほうはぼくらも正直、涙がにじみました。『けいおん！』の最終回で流れるあの空気——『ああ、今この瞬間、この 5 人がここで一緒にステージに立っているんだ』という尊さが、そのまま会場に満ちていく——そんな感覚。期間限定ユニットだからこその『今、ここ』の重みが、歌とダンスに乗って返ってくる、特別な時間でした。",
+      "そしてじつは——あぶそりゅーと☆せぶンを主役にした『ゆっくり解説』の台本、もう書いてあるんです。まだ動画としては形にできていなくて、今は夢の中の企画。でも台本は確かに存在していて、ぼくらもずっと『いつか実現させたい』と思っています。下の X バッジをクリックすると、ゆっくり 3 人がその想いも込めて、ユニットのすごさをたっぷり語ってくれます。",
+    ],
+    xHandles: [
+      { label: "@abuso2525", href: "https://x.com/abuso2525" },
+    ],
+  },
 ] as const;
 
 /**
@@ -204,7 +218,6 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
  * プロフィールカード化はせず、アットマーク一覧として表示します。
  */
 export const SPECIAL_THANKS_X_ONLY: ReadonlyArray<SpecialThanksXLink> = [
-  { label: "@abuso2525", href: "https://x.com/abuso2525" },
   { label: "@m20210411", href: "https://x.com/m20210411" },
   { label: "@flap_shizuku", href: "https://x.com/flap_shizuku" },
 ] as const;
