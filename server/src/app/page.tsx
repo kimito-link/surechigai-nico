@@ -14,6 +14,7 @@ import {
 } from "./chokaigi/lp-content";
 import { HomeVenueWander } from "./HomeVenueWander";
 import { PrefetchChokaigiWhenVisible } from "./components/PrefetchChokaigiRoutes";
+import LiveParticipants from "./components/LiveParticipants";
 import { CreatorCrossSearch } from "./chokaigi/CreatorCrossSearch";
 import { YukkuriHero } from "./chokaigi/YukkuriHero";
 import styles from "./page.module.css";
@@ -108,6 +109,17 @@ export default function Home() {
         </div>
         <HomeVenueWander />
       </header>
+
+      <section className={styles.section} aria-labelledby="live-participants-heading">
+        <div className={styles.sectionInner}>
+          <h2 id="live-participants-heading" className={styles.sectionTitle}>
+            いま参加中のひと
+          </h2>
+          <Suspense fallback={null}>
+            <LiveParticipants />
+          </Suspense>
+        </div>
+      </section>
 
       <section className={styles.section}>
         <div className={styles.sectionInner}>

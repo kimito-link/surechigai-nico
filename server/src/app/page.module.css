@@ -818,3 +818,63 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* ライブ参加者カウント（TOP） */
+.liveStats {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1rem 1.25rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(37, 93, 155, 0.18);
+  text-align: center;
+}
+
+.liveStatsTotal {
+  margin: 0 0 0.5rem;
+  font-size: clamp(0.95rem, 2.4vw, 1.05rem);
+  color: #3a2f24;
+}
+
+.liveStatsNumber {
+  margin: 0 0.15em;
+  font-size: clamp(1.6rem, 5vw, 2.1rem);
+  font-weight: 800;
+  color: #255d9b;
+}
+
+.liveStatsAreas {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.liveStatsArea {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(37, 93, 155, 0.07);
+  border: 1px solid rgba(37, 93, 155, 0.15);
+  font-size: 12px;
+}
+
+.liveStatsAreaName {
+  color: #2c2117;
+}
+
+.liveStatsAreaCount {
+  font-weight: 700;
+  color: #255d9b;
+}
+
+.liveStatsNote {
+  margin: 0.75rem 0 0;
+  font-size: 11px;
+  color: #8a7d6e;
+}
