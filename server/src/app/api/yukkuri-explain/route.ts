@@ -76,6 +76,12 @@ type CallResult =
       errorMessage?: string;
     };
 
+type FailedCallResult = Extract<CallResult, { ok: false }>;
+
+function isFailedCallResult(r: CallResult): r is FailedCallResult {
+  return !r.ok;
+}
+
 type CachedPayload =
   | { ok: true; dialogue: Dialogue }
   | { ok: false; errorCode: string; status?: number; message?: string };
@@ -145,6 +151,50 @@ type XProfile = {
   followersCount?: number;
   tweetCount?: number;
 };
+
+function compactText(input: string | undefined, max = 70): string {
+  if (!input) return "";
+  const squashed = input.replace(/\s+/g, " ").trim();
+  if (!squashed) return "";
+  return squashed.length > max ? `${squashed.slice(0, max)}…` : squashed;
+}
+
+function buildFallbackDialogue(
+  body: {
+    name?: string;
+    xHandle?: string;
+    booth?: string;
+    hallLabel?: string;
+    sub?: string;
+    intro?: string;
+  },
+  profile: XProfile | null
+): Dialogue {
+  const rawHandle = body.xHandle?.replace(/^@/, "") ?? "";
+  const handleText = rawHandle ? `@${rawHandle}` : "この方";
+  const displayName = compactText(profile?.name || body.name, 28) || handleText;
+  const profileText = compactText(profile?.description || body.intro, 60);
+  const boothText = compactText(body.booth, 32);
+  const placeText = compactText(body.hallLabel, 24);
+  const followerText =
+    profile?.followersCount != null
+      ? `フォロワーは約${profile.followersCount.toLocaleString()}人。`
+      : "";
+
+  const rink = `${displayName}さんだよ！今は混雑中だけど、気になるクリエイターとしてしっかりチェックしておこうね！`;
+  const konta = [
+    `${handleText} の紹介だよ。`,
+    profileText ? `プロフィールは「${profileText}」なんだよ！` : "",
+    followerText,
+    boothText ? `ブースは ${boothText}。` : "",
+    placeText ? `${placeText} 周辺も要チェックだね。` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const tanunee = `${displayName}さん、応援してるよ！詳しい紹介は少し時間をおいて再実行してね〜。交流はXでやさしくいこうね。`;
+
+  return { rink, konta, tanunee };
+}
 
 async function fetchXProfile(
   handle: string,
@@ -782,6 +832,36 @@ export async function POST(req: NextRequest) {
       model: ollamaModel || "ollama",
       elapsedMs: 0,
       errorCode: "E_YUKKURI_LLM_NETWORK",
+    });
+  }
+
+  // 混雑・一時障害時はフォールバック解説を返し、体験を止めない
+  const retryableCodes = new Set<LlmErrorCode>([
+    "E_YUKKURI_LLM_UPSTREAM_429",
+    "E_YUKKURI_LLM_TIMEOUT",
+    "E_YUKKURI_LLM_NETWORK",
+    "E_YUKKURI_LLM_UPSTREAM_5XX",
+    "E_YUKKURI_LLM_EMPTY_CHOICE",
+    "E_YUKKURI_LLM_PARSE",
+  ]);
+  const failedOnly = failures.filter(isFailedCallResult);
+  const has429 = failedOnly.some((f) => f.errorCode === "E_YUKKURI_LLM_UPSTREAM_429");
+  const allRetryable =
+    failedOnly.length > 0 && failedOnly.every((f) => retryableCodes.has(f.errorCode));
+  if (has429 && allRetryable) {
+    const fallback = buildFallbackDialogue(body, profile);
+    if (handle) {
+      await setCached(handle, { ok: true, dialogue: fallback });
+    }
+    console.warn(
+      `[yukkuri-explain] fallback_429 handle=${handle || "-"} failures=${JSON.stringify(
+        failedOnly.map((f) => ({ m: f.model, c: f.errorCode, s: f.status, e: f.elapsedMs }))
+      )}`
+    );
+    return NextResponse.json({
+      ...fallback,
+      degraded: true,
+      source: "fallback_429",
     });
   }
 
