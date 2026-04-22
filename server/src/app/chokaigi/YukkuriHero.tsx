@@ -4,9 +4,14 @@ import Image from "next/image";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
+import {
+  fetchYukkuriExplain,
+  yukkuriExplainUserMessage,
+  type YukkuriDialogue,
+} from "@/lib/yukkuriExplainClient";
 import styles from "./YukkuriHero.module.css";
 
-type Dialogue = { rink: string; konta: string; tanunee: string };
+type Dialogue = YukkuriDialogue;
 
 const CHARS = [
   { key: "rink"    as const, label: "りんく",  src: "/chokaigi/yukkuri/rink.png",    color: "#ff7eb3" },
@@ -49,15 +54,10 @@ export function YukkuriHero() {
     setError("");
     setDialogue(null);
     try {
-      const res = await fetch("/api/yukkuri-explain", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ xHandle: raw, name: `@${raw}` }),
-      });
-      if (!res.ok) throw new Error();
-      setDialogue(await res.json());
-    } catch {
-      setError("失敗しました。もう一度お試しください。");
+      const data = await fetchYukkuriExplain({ xHandle: raw, name: `@${raw}` });
+      setDialogue(data);
+    } catch (e) {
+      setError(yukkuriExplainUserMessage(e));
     } finally {
       setLoading(false);
     }

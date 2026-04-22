@@ -2,9 +2,14 @@
 
 import { useState, useRef, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import {
+  fetchYukkuriExplain,
+  yukkuriExplainUserMessage,
+  type YukkuriDialogue,
+} from "@/lib/yukkuriExplainClient";
 import styles from "./chokaigi.module.css";
 
-type Dialogue = { rink: string; konta: string; tanunee: string };
+type Dialogue = YukkuriDialogue;
 
 const CHARS: Array<{ key: keyof Dialogue; label: string; speaker: "rink" | "konta" | "tanunee" }> = [
   { key: "rink",    label: "りんく", speaker: "rink" },
@@ -49,16 +54,13 @@ export function StickyXSearchBar() {
     setError("");
     setDialogue(null);
     try {
-      const res = await fetch("/api/yukkuri-explain", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ xHandle: rawHandle, name: `@${rawHandle}` }),
+      const data = await fetchYukkuriExplain({
+        xHandle: rawHandle,
+        name: `@${rawHandle}`,
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: Dialogue = await res.json();
       setDialogue(data);
-    } catch {
-      setError("失敗しました。もう一度お試しください。");
+    } catch (e) {
+      setError(yukkuriExplainUserMessage(e));
     } finally {
       setLoading(false);
     }

@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import {
+  fetchYukkuriExplain,
+  yukkuriExplainUserMessage,
+  type YukkuriDialogue,
+} from "@/lib/yukkuriExplainClient";
 import styles from "./chokaigi.module.css";
 
-type Dialogue = { rink: string; konta: string; tanunee: string };
+type Dialogue = YukkuriDialogue;
 
 type CreatorInfo = {
   name: string;
@@ -29,16 +34,10 @@ export function YukkuriCreatorTalk({ creator }: { creator: CreatorInfo }) {
     setError("");
     setDialogue(null);
     try {
-      const res = await fetch("/api/yukkuri-explain", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(creator),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: Dialogue = await res.json();
+      const data = await fetchYukkuriExplain({ ...creator });
       setDialogue(data);
-    } catch {
-      setError("解説の取得に失敗しました。もう一度お試しください。");
+    } catch (e) {
+      setError(yukkuriExplainUserMessage(e));
     } finally {
       setLoading(false);
     }

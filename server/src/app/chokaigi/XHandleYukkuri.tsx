@@ -1,9 +1,14 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import {
+  fetchYukkuriExplain,
+  yukkuriExplainUserMessage,
+  type YukkuriDialogue,
+} from "@/lib/yukkuriExplainClient";
 import styles from "./chokaigi.module.css";
 
-type Dialogue = { rink: string; konta: string; tanunee: string };
+type Dialogue = YukkuriDialogue;
 
 const CHARS: Array<{ key: keyof Dialogue; label: string; speaker: "rink" | "konta" | "tanunee" }> = [
   { key: "rink",    label: "りんく", speaker: "rink" },
@@ -25,16 +30,10 @@ export function XHandleYukkuri() {
     setError("");
     setDialogue(null);
     try {
-      const res = await fetch("/api/yukkuri-explain", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ xHandle: raw, name: `@${raw}` }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: Dialogue = await res.json();
+      const data = await fetchYukkuriExplain({ xHandle: raw, name: `@${raw}` });
       setDialogue(data);
-    } catch {
-      setError("解説の取得に失敗しました。もう一度お試しください。");
+    } catch (e) {
+      setError(yukkuriExplainUserMessage(e));
     } finally {
       setLoading(false);
     }
