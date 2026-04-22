@@ -38,29 +38,48 @@
   letter-spacing: -0.01em;
 }
 
-/* ===== キャラクター3人 ===== */
+/* ===== キャラクター3人（縦積み＋左右交互のジグザグ） ===== */
 .chars {
   display: flex;
-  justify-content: center;
-  gap: clamp(1rem, 4vw, 2.5rem);
-  flex-wrap: nowrap;
-  padding-top: 0;
+  flex-direction: column;
+  gap: clamp(0.55rem, 2vw, 0.95rem);
   width: 100%;
-  max-width: 860px;
-  min-height: 260px;
-  align-items: flex-end;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 clamp(0.25rem, 2vw, 0.75rem);
+  align-items: stretch;
 }
 
 .charCard {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: clamp(0.5rem, 2.2vw, 0.95rem);
+  width: 100%;
   animation: floatUp 3s ease-in-out infinite;
   position: relative;
   transition: transform 360ms ease, opacity 260ms ease;
-  flex: 1 1 0;
-  max-width: 260px;
+}
+
+/* 偶数（0, 2）: アバター左 → セリフ右 */
+.charCardForward {
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+/* 奇数（1）: アバター右 → セリフ左 */
+.charCardReverse {
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+}
+
+/* アバター + ラベルをひとつの列として固定幅で扱う */
+.charAvatarColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  flex: 0 0 auto;
 }
 
 @keyframes floatUp {
@@ -69,40 +88,34 @@
 }
 
 .charsTalking {
-  justify-content: space-between;
-  gap: clamp(0.4rem, 2vw, 1.2rem);
+  /* 縦積みではジグザグが既に十分なのでこちら側の調整は最小限 */
 }
 
 .charCardTalkingrink {
-  animation: floatUp 3s ease-in-out infinite, driftLeft 1.2s ease-out both;
+  animation: floatUp 3s ease-in-out infinite, driftFromLeft 1.2s ease-out both;
 }
 
 .charCardTalkingkonta {
-  animation: floatUp 3s ease-in-out infinite, driftCenter 1.2s ease-out both;
+  animation: floatUp 3s ease-in-out infinite, driftFromRight 1.2s ease-out both;
 }
 
 .charCardTalkingtanunee {
-  animation: floatUp 3s ease-in-out infinite, driftRight 1.2s ease-out both;
+  animation: floatUp 3s ease-in-out infinite, driftFromLeft 1.2s ease-out both;
 }
 
-@keyframes driftLeft {
-  from { transform: translateX(38px) translateY(0); }
-  to { transform: translateX(0) translateY(0); }
+@keyframes driftFromLeft {
+  from { transform: translateX(-24px) translateY(0); opacity: 0.6; }
+  to { transform: translateX(0) translateY(0); opacity: 1; }
 }
 
-@keyframes driftCenter {
-  from { transform: translateY(18px) scale(0.96); }
-  to { transform: translateY(0) scale(1); }
-}
-
-@keyframes driftRight {
-  from { transform: translateX(-38px) translateY(0); }
-  to { transform: translateX(0) translateY(0); }
+@keyframes driftFromRight {
+  from { transform: translateX(24px) translateY(0); opacity: 0.6; }
+  to { transform: translateX(0) translateY(0); opacity: 1; }
 }
 
 .charImgWrap {
-  width: 100px;
-  height: 100px;
+  width: clamp(72px, 14vw, 96px);
+  height: clamp(72px, 14vw, 96px);
   filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
 }
 
@@ -121,18 +134,20 @@
 }
 
 .charBubble {
-  margin: 0 0 0.22rem;
+  margin: 0;
   position: relative;
   background: #fff;
   border: 1px solid rgba(34, 34, 34, 0.2);
   border-radius: 14px;
-  padding: 0.46rem 0.58rem;
-  font-size: 0.88rem;
+  padding: 0.55rem 0.75rem;
+  font-size: clamp(0.82rem, 2vw, 0.92rem);
   line-height: 1.5;
   color: #222;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
   text-align: left;
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
   opacity: 0;
   animation: stageBubbleIn 460ms ease forwards;
 }
@@ -143,10 +158,32 @@
   width: 12px;
   height: 12px;
   background: #fff;
-  border-right: 1px solid rgba(34, 34, 34, 0.2);
+  bottom: auto;
+  top: 50%;
+}
+
+/* セリフがアバターの右側にある（アバター左） → ポインターは吹き出し左側 */
+.charBubbleForward {
+  transform-origin: left center;
+}
+
+.charBubbleForward::after {
+  left: -6px;
+  transform: translateY(-50%) rotate(45deg);
+  border-left: 1px solid rgba(34, 34, 34, 0.2);
   border-bottom: 1px solid rgba(34, 34, 34, 0.2);
-  transform: rotate(45deg);
-  bottom: -6px;
+}
+
+/* セリフがアバターの左側にある（アバター右） → ポインターは吹き出し右側 */
+.charBubbleReverse {
+  transform-origin: right center;
+}
+
+.charBubbleReverse::after {
+  right: -6px;
+  transform: translateY(-50%) rotate(45deg);
+  border-right: 1px solid rgba(34, 34, 34, 0.2);
+  border-top: 1px solid rgba(34, 34, 34, 0.2);
 }
 
 .charCardSpeak0 .charBubble {
@@ -161,28 +198,11 @@
   animation-delay: 0.48s;
 }
 
-.charBubble0 {
-  transform-origin: left bottom;
-}
-
-.charBubble0::after {
-  left: 20px;
-}
-
-.charBubble1 {
-  transform-origin: center bottom;
-}
-
-.charBubble1::after {
-  left: calc(50% - 7px);
-}
-
+/* 個別の微調整スロット（残しておく：将来の差分表現用） */
+.charBubble0,
+.charBubble1,
 .charBubble2 {
-  transform-origin: right bottom;
-}
-
-.charBubble2::after {
-  right: 20px;
+  /* no-op — 方向は charBubbleForward / charBubbleReverse で制御 */
 }
 
 @keyframes stageBubbleIn {
@@ -495,14 +515,14 @@
 
 @media (max-width: 480px) {
   .chars {
-    min-height: 230px;
     gap: 0.5rem;
   }
-  .charImgWrap { width: 72px; height: 72px; }
+  .charCard { gap: 0.5rem; }
+  .charImgWrap { width: 68px; height: 68px; }
   .charBubble {
-    font-size: 0.78rem;
-    line-height: 1.38;
-    padding: 0.4rem 0.48rem;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    padding: 0.45rem 0.6rem;
   }
   .btnYukkuri, .btnRegister { min-width: 0; width: 100%; }
   .shareRow { flex-direction: column; align-items: stretch; }
@@ -510,10 +530,12 @@
 }
 
 @media (max-width: 360px) {
-  .chars { gap: 0.35rem; }
-  .charImgWrap { width: 60px; height: 60px; }
+  .chars { gap: 0.4rem; }
+  .charCard { gap: 0.4rem; }
+  .charImgWrap { width: 58px; height: 58px; }
   .charBubble {
-    font-size: 0.72rem;
-    line-height: 1.32;
+    font-size: 0.74rem;
+    line-height: 1.34;
+    padding: 0.38rem 0.5rem;
   }
 }

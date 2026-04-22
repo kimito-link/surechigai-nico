@@ -125,27 +125,32 @@ export function YukkuriHero() {
         )}
       </form>
 
-      {/* キャラクター3人 */}
+      {/* キャラクター3人 — 縦積み＋左右交互（ジグザグ）レイアウト */}
       <div className={`${styles.chars}${isTalking ? ` ${styles.charsTalking}` : ""}`}>
-        {CHARS.map(({ key, label, src, color }, i) => (
-          <div
-            key={key}
-            className={`${styles.charCard}${isTalking ? ` ${styles[`charCardTalking${key}`]}` : ""} ${isTalking ? styles[`charCardSpeak${i}`] : ""}`}
-            style={{ animationDelay: `${i * 0.18}s` }}
-          >
-            {dialogue && (
-              <p className={`${styles.charBubble} ${styles[`charBubble${i}`]}`}>
-                {dialogue[key]}
-              </p>
-            )}
-            <div className={styles.charImgWrap}>
-              <Image src={src} alt={label} width={100} height={100} className={styles.charImg} />
+        {CHARS.map(({ key, label, src, color }, i) => {
+          const isReverse = i % 2 === 1; // 0=左, 1=右, 2=左
+          return (
+            <div
+              key={key}
+              className={`${styles.charCard} ${isReverse ? styles.charCardReverse : styles.charCardForward}${isTalking ? ` ${styles[`charCardTalking${key}`]}` : ""} ${isTalking ? styles[`charCardSpeak${i}`] : ""}`}
+              style={{ animationDelay: `${i * 0.18}s` }}
+            >
+              <div className={styles.charAvatarColumn}>
+                <div className={styles.charImgWrap}>
+                  <Image src={src} alt={label} width={100} height={100} className={styles.charImg} />
+                </div>
+                <span className={styles.charLabel} style={{ background: color, color: "#0a0e1a" }}>
+                  {label}
+                </span>
+              </div>
+              {dialogue && (
+                <p className={`${styles.charBubble} ${styles[`charBubble${i}`]} ${isReverse ? styles.charBubbleReverse : styles.charBubbleForward}`}>
+                  {dialogue[key]}
+                </p>
+              )}
             </div>
-            <span className={styles.charLabel} style={{ background: color, color: "#0a0e1a" }}>
-              {label}
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* 登録は入力欄と独立したCTA */}
