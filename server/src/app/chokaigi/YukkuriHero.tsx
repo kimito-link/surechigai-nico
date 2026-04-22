@@ -124,8 +124,8 @@ export function YukkuriHero() {
         )}
       </form>
 
-      {/* キャラクター3人（結果の吹き出し表示エリアを兼ねる） */}
-      <div className={`${styles.chars}${dialogue ? ` ${styles.charsWithBubble}` : ""}`}>
+      {/* キャラクター3人 */}
+      <div className={styles.chars}>
         {CHARS.map(({ key, label, src, color }, i) => (
           <div key={key} className={styles.charCard} style={{ animationDelay: `${i * 0.18}s` }}>
             <div className={styles.charImgWrap}>
@@ -134,14 +134,29 @@ export function YukkuriHero() {
             <span className={styles.charLabel} style={{ background: color, color: "#0a0e1a" }}>
               {label}
             </span>
-            {dialogue && (
-              <div className={styles.charBubble}>
-                {dialogue[key]}
-              </div>
-            )}
           </div>
         ))}
       </div>
+
+      {dialogue && (
+        <section className={styles.introCard} aria-label="ゆっくり紹介カード">
+          <p className={styles.introCardLead}>Special Thanks 風の紹介表示</p>
+          <h3 className={styles.introCardTitle}>@{raw} のゆっくり紹介</h3>
+          <div className={styles.introCardRows}>
+            {CHARS.map(({ key, label, src, color }) => (
+              <div key={key} className={styles.introCardRow}>
+                <div className={styles.introCardSpeaker}>
+                  <Image src={src} alt={label} width={40} height={40} className={styles.introCardAvatar} />
+                  <span className={styles.introCardName} style={{ background: color, color: "#0a0e1a" }}>
+                    {label}
+                  </span>
+                </div>
+                <p className={styles.introCardText}>{dialogue[key]}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 登録は入力欄と独立したCTA */}
       {isLoaded && !isSignedIn && (

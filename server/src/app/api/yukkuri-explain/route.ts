@@ -805,17 +805,6 @@ export async function POST(req: NextRequest) {
     ? Math.max(1000, Number.parseInt(ollamaTimeoutRaw, 10) || DEFAULT_OLLAMA_TIMEOUT_MS)
     : DEFAULT_OLLAMA_TIMEOUT_MS;
 
-  const useOllama = Boolean(ollamaBase && ollamaModel);
-  if (!useOllama) {
-    return NextResponse.json(
-      {
-        error: "解説 AI が未設定です（Ollama を設定してください）。",
-        error_code: "E_YUKKURI_LLM_NOT_CONFIGURED",
-      },
-      { status: 500 }
-    );
-  }
-
   let body: {
     name?: string;
     xHandle?: string;
@@ -833,6 +822,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const useOllama = Boolean(ollamaBase && ollamaModel);
   const handle = body.xHandle?.replace(/^@/, "") ?? "";
 
   // キャッシュ確認（成功 / 失敗いずれもヒットさせてレート浪費を防ぐ）
@@ -840,6 +830,17 @@ export async function POST(req: NextRequest) {
   if (cached) {
     if (cached.ok) {
       return NextResponse.json(cached.dialogue);
+    }
+    if (!useOllama) {
+      const fallback = buildFallbackDialogue(body, null);
+      if (handle) {
+        await setCached(handle, { ok: true, dialogue: fallback });
+      }
+      return NextResponse.json({
+        ...fallback,
+        degraded: true,
+        source: "fallback_no_ollama",
+      });
     }
     return NextResponse.json(
       {
@@ -856,6 +857,20 @@ export async function POST(req: NextRequest) {
   // X プロフィール
   const bearerToken = process.env.TWITTER_BEARER_TOKEN;
   const profile = bearerToken && handle ? await fetchXProfile(handle, bearerToken) : null;
+
+  // Ollama 未設定でも、会場ではフォールバック解説を返して体験を止めない
+  if (!useOllama) {
+    const fallback = buildFallbackDialogue(body, profile);
+    if (handle) {
+      await setCached(handle, { ok: true, dialogue: fallback });
+    }
+    return NextResponse.json({
+      ...fallback,
+      degraded: true,
+      source: "fallback_no_ollama",
+    });
+  }
+
   const userMessage = buildUserMessage(body, profile);
 
   const failures: CallResult[] = [];

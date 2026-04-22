@@ -35,11 +35,6 @@
   gap: clamp(1rem, 4vw, 2.5rem);
   flex-wrap: wrap;
   padding-top: 0;
-  transition: padding-top 0.25s ease;
-}
-
-.charsWithBubble {
-  padding-top: clamp(80px, 22vw, 120px);
 }
 
 .charCard {
@@ -76,40 +71,78 @@
   font-weight: 700;
 }
 
-.charBubble {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  background: #fff;
-  border: 1.5px solid rgba(26,88,152,0.2);
-  border-radius: 1rem;
-  padding: 0.55rem 0.85rem;
-  font-size: 0.78rem;
-  line-height: 1.5;
-  white-space: normal;
-  width: clamp(90px, 28vw, 160px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+/* Special Thanks 風の紹介カード */
+.introCard {
+  width: 100%;
+  max-width: 760px;
+  background: #fffdf8;
+  border: 1.5px solid rgba(40, 32, 24, 0.14);
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(40, 32, 24, 0.08);
+  padding: 0.95rem 0.95rem 1rem;
   text-align: left;
-  animation: bubbleIn 0.25s ease;
-  z-index: 10;
-  word-break: break-all;
-  overflow-wrap: break-word;
 }
 
-.charBubble::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-top-color: #fff;
+.introCardLead {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #7a6a58;
 }
 
-@keyframes bubbleIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+.introCardTitle {
+  margin: 0.22rem 0 0.7rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #2c2117;
+}
+
+.introCardRows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.introCardRow {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.7rem;
+  align-items: start;
+}
+
+.introCardSpeaker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.introCardAvatar {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+}
+
+.introCardName {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.introCardText {
+  margin: 0;
+  background: #fff;
+  border: 1px solid rgba(40, 32, 24, 0.14);
+  border-radius: 12px;
+  padding: 0.55rem 0.72rem;
+  font-size: 0.84rem;
+  line-height: 1.65;
+  color: #3e332a;
+  word-break: break-word;
 }
 
 /* ===== フォーム ===== */
@@ -336,7 +369,16 @@
 
 @media (max-width: 480px) {
   .charImgWrap { width: 72px; height: 72px; }
-  .charBubble  { font-size: 0.68rem; padding: 0.4rem 0.6rem; }
+  .introCard {
+    padding: 0.85rem 0.8rem 0.9rem;
+  }
+  .introCardTitle {
+    font-size: 0.95rem;
+  }
+  .introCardRow {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
   .btnYukkuri, .btnRegister { min-width: 0; width: 100%; }
   .shareRow { flex-direction: column; align-items: stretch; }
   .shareBtn { justify-content: center; }
@@ -345,5 +387,4 @@
 @media (max-width: 360px) {
   .chars { gap: 0.5rem; }
   .charImgWrap { width: 60px; height: 60px; }
-  .charBubble { font-size: 0.62rem; padding: 0.3rem 0.5rem; width: clamp(70px, 30vw, 110px); }
 }

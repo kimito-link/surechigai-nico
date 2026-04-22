@@ -10,6 +10,18 @@ import {
   YUKKURI_DIALOGUE_TITLE,
 } from "../src/app/chokaigi/lp-content";
 
+async function gotoChokaigiWithRetry(page: import("@playwright/test").Page) {
+  let lastStatus: number | undefined;
+  for (let i = 0; i < 3; i += 1) {
+    const res = await page.goto("/chokaigi", { waitUntil: "domcontentloaded" });
+    lastStatus = res?.status();
+    if (lastStatus === 200) return 200;
+    if (lastStatus !== 404) break;
+    await page.waitForTimeout(800);
+  }
+  return lastStatus;
+}
+
 /**
  * スモーク: 各ビューポートで「開いて主要ブロックが見える」までを最短で検証
  */
@@ -17,8 +29,8 @@ test.describe("chokaigi スモーク", () => {
   test("200・ヒーロー〜ゆっくり〜会場〜マップの骨格が見える", async ({
     page,
   }) => {
-    const res = await page.goto("/chokaigi", { waitUntil: "domcontentloaded" });
-    expect(res?.status()).toBe(200);
+    const status = await gotoChokaigiWithRetry(page);
+    expect(status).toBe(200);
 
     await expect(page.locator("h1")).toHaveText(HERO_HEADING);
 

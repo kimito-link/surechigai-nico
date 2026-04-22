@@ -2,6 +2,7 @@
 
 import styles from "./chokaigi.module.css";
 import { JapanMapSilhouette } from "./JapanMapSilhouette";
+import { JAPAN_LOCATOR_TITLE } from "./lp-content";
 
 /**
  * 超会議が終わったら全国に散らばるけど、みんな同じ方向を見ている
@@ -17,6 +18,7 @@ export function JapanVenueLocator() {
       className={styles.scatterWrap}
       aria-label="超会議で出会ったみんなが、全国へ散らばっていくイメージ"
     >
+      <h3 className={styles.mapSubheading}>{JAPAN_LOCATOR_TITLE}</h3>
       <div className={styles.scatterMap}>
         <div className={styles.scatterBase}>
           <JapanMapSilhouette variant="scatter" />

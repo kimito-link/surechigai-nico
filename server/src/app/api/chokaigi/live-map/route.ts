@@ -11,7 +11,6 @@ const VENUE = {
   lng: 140.03459,
 };
 
-const ACTIVE_WINDOW_MINUTES = 30;
 const RADIUS_METERS = 5000;
 const MAX_USERS = 200;
 
@@ -64,7 +63,6 @@ export async function GET(req: NextRequest) {
        INNER JOIN (
          SELECT user_id, MAX(created_at) AS max_created_at
          FROM locations
-         WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${ACTIVE_WINDOW_MINUTES} MINUTE)
          GROUP BY user_id
        ) latest_times
          ON l.user_id = latest_times.user_id
@@ -125,7 +123,6 @@ export async function GET(req: NextRequest) {
                   CAST(UNIX_TIMESTAMP(l.created_at) * 1000 AS UNSIGNED) AS created_at_ms
            FROM locations l
            WHERE l.user_id = ?
-             AND l.created_at >= DATE_SUB(NOW(), INTERVAL ${ACTIVE_WINDOW_MINUTES} MINUTE)
            ORDER BY l.created_at DESC
            LIMIT 1`,
           [authUser.id]
@@ -145,6 +142,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 全国参加者エリア統計（市区町村ごとの人数）
+    // 時間窓は設けない：ユーザーごとの最新位置のみを集計して累計として常時表示する。
     type AreaRow = RowDataPacket & { area: string; cnt: number };
     let areaStats: Array<{ area: string; count: number }> = [];
     try {
@@ -154,7 +152,6 @@ export async function GET(req: NextRequest) {
          INNER JOIN (
            SELECT user_id, MAX(created_at) AS max_created_at
            FROM locations
-           WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${ACTIVE_WINDOW_MINUTES} MINUTE)
            GROUP BY user_id
          ) latest ON l.user_id = latest.user_id AND l.created_at = latest.max_created_at
          INNER JOIN users u ON u.id = l.user_id
@@ -184,19 +181,20 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("会場ライブマップ取得エラー:", error);
-    const debug =
-      process.env.NODE_ENV === "production"
-        ? undefined
-        : error instanceof Error
-          ? error.message
-          : String(error);
     return Response.json(
       {
-        ok: false,
-        error: "会場ライブマップの取得に失敗しました",
-        ...(debug ? { debug } : {}),
+        ok: true,
+        degraded: true,
+        venue: VENUE,
+        radiusMeters: RADIUS_METERS,
+        users: [],
+        selfLocation: null,
+        areaStats: [],
+        generatedAtMs: Date.now(),
+        publicMode: !authUser,
+        note: "ライブマップを準備中です。しばらくしてから再読み込みしてください。",
       },
-      { status: 503 }
+      { status: 200 }
     );
   }
 }

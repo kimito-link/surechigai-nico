@@ -47,7 +47,7 @@ export default defineConfig({
   webServer: {
     command: `npx next dev --port ${PORT}`,
     url: `${baseURL}/chokaigi`,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120_000,
     stdout: "pipe",
     stderr: "pipe",
