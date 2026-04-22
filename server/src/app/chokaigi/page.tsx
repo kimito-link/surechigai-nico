@@ -54,15 +54,19 @@ import { VenueLiveMap } from "./VenueLiveMap";
 import { CreatorCrossSearch } from "./CreatorCrossSearch";
 import { StarField } from "./StarField";
 import { YukkuriHero } from "./YukkuriHero";
-import { SPECIAL_THANKS_LINKS } from "./special-thanks-links";
+import {
+  SPECIAL_THANKS_PROFILES,
+  SPECIAL_THANKS_X_ONLY,
+} from "./special-thanks-links";
 import { RomiProfileCard } from "./RomiProfileCard";
+import { SpecialThanksProfileCard } from "./SpecialThanksProfileCard";
 
-const SPECIAL_THANKS_PREVIEW_COUNT = 6;
-const isXAccountLink = (href: string) =>
-  href.startsWith("https://x.com/") || href.startsWith("http://x.com/");
-const SPECIAL_THANKS_PREVIEW_LINKS = SPECIAL_THANKS_LINKS.filter(
-  (link) => !isXAccountLink(link.href)
-).slice(0, SPECIAL_THANKS_PREVIEW_COUNT);
+const SPECIAL_THANKS_HIGHLIGHT_PROFILES = SPECIAL_THANKS_PROFILES.filter(
+  (profile) => profile.highlight
+);
+const SPECIAL_THANKS_NORMAL_PROFILES = SPECIAL_THANKS_PROFILES.filter(
+  (profile) => !profile.highlight
+);
 
 export default function ChokaigiPage() {
   return (
@@ -75,6 +79,20 @@ export default function ChokaigiPage() {
         <div className={styles.unofficialBar} role="note">
           このページは有志による非公式アプリ企画です。ニコニコ超会議の公式サイトではありません。
         </div>
+
+        <Link href="/creators" className={styles.firstViewCreatorsBanner}>
+          <span className={styles.firstViewCreatorsBannerIcon} aria-hidden="true">
+            🗾
+          </span>
+          <span className={styles.firstViewCreatorsBannerText}>
+            <span className={styles.firstViewCreatorsBannerTitle}>
+              47 都道府県別クリエイター一覧
+            </span>
+            <span className={styles.firstViewCreatorsBannerLead}>
+              いま全国のどこに参加者がいる？ 県ごとのクリエイターがズラッと見られます →
+            </span>
+          </span>
+        </Link>
 
         <header className={styles.hero}>
           <div className={styles.heroBand}>
@@ -325,39 +343,59 @@ export default function ChokaigiPage() {
               Special Thanks
             </h2>
             <p className={styles.footerThanksIntro}>
-              本企画にご協力いただいたみなさまに感謝を込めて。
+              本企画にご協力いただいたみなさまを、ひとりずつご紹介します。
             </p>
-            <ul className={styles.footerThanksList}>
-              {SPECIAL_THANKS_PREVIEW_LINKS.map((link) => (
-                <li key={link.href} className={styles.footerThanksItem}>
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.footerThanksLink}
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            {SPECIAL_THANKS_LINKS.length > SPECIAL_THANKS_PREVIEW_COUNT ? (
-              <div className={styles.footerThanksMore}>
-                <p className={styles.footerThanksMoreText}>
-                  他 {SPECIAL_THANKS_LINKS.length - SPECIAL_THANKS_PREVIEW_LINKS.length} 件
-                </p>
-                <Link
-                  href="/chokaigi/special-thanks"
-                  className={styles.footerThanksMoreButton}
-                >
-                  Special Thanks・クレジット一覧を見る
-                </Link>
-                <p className={styles.footerThanksMoreSubText}>
-                  Xアカウント、および地図・VOICEVOX 等の外部素材クレジットは
-                  一覧ページにまとめています。
-                </p>
+
+            {SPECIAL_THANKS_HIGHLIGHT_PROFILES.length > 0 ? (
+              <div className={styles.thanksHighlight}>
+                {SPECIAL_THANKS_HIGHLIGHT_PROFILES.map((profile) => (
+                  <SpecialThanksProfileCard key={profile.id} profile={profile} />
+                ))}
               </div>
             ) : null}
+
+            {SPECIAL_THANKS_NORMAL_PROFILES.length > 0 ? (
+              <div className={styles.thanksProfileGrid}>
+                {SPECIAL_THANKS_NORMAL_PROFILES.map((profile) => (
+                  <SpecialThanksProfileCard key={profile.id} profile={profile} />
+                ))}
+              </div>
+            ) : null}
+
+            {SPECIAL_THANKS_X_ONLY.length > 0 ? (
+              <div className={styles.thanksXOnly}>
+                <h3 className={styles.thanksXOnlyHeading}>
+                  X でご応援いただいているみなさま
+                </h3>
+                <ul className={styles.footerThanksList}>
+                  {SPECIAL_THANKS_X_ONLY.map((link) => (
+                    <li key={link.href} className={styles.footerThanksItem}>
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.footerThanksLink}
+                      >
+                        𝕏 {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            <div className={styles.footerThanksMore}>
+              <Link
+                href="/chokaigi/special-thanks"
+                className={styles.footerThanksMoreButton}
+              >
+                Special Thanks・クレジット一覧を見る
+              </Link>
+              <p className={styles.footerThanksMoreSubText}>
+                地図・VOICEVOX 等の外部素材・ライブラリのクレジットも
+                こちらのページにまとめています。
+              </p>
+            </div>
           </section>
           <div className={styles.footerBrand}>
             <Image

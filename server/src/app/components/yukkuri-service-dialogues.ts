@@ -86,11 +86,64 @@ export const MANGAMURA_DIALOGUE: YukkuriDialogue = {
   ctaHref: MANGAMURA_PUNCHLINE_PATH,
 };
 
+/**
+ * Soletta（佐藤ゆうかさん）のゆっくり解説。
+ * 『ロゴから、クリエイターのシンセカイが始まった』という起点の物語を
+ * 少し長めに 7 発話で展開する。他ツールの解説より厚めなのは意図的。
+ */
+export const SOLETTA_DIALOGUE: YukkuriDialogue = {
+  title: "🎨 Soletta（ソレッタ）— ロゴから始まった、クリエイターのシンセカイ",
+  lines: [
+    {
+      who: "rink",
+      text: "みんなにちゃんと紹介したい方がいるんだ。このアプリのロゴを創ってくれた、大阪・高槻の佐藤ゆうかさん。屋号は Soletta（ソレッタ）さんだよ。",
+    },
+    {
+      who: "konta",
+      text: "えっ、あのロゴ、プロのデザイナーさんに創ってもらってたの！？どうりで、見てるとなんかホッとする温度感なんだよね〜。",
+    },
+    {
+      who: "tanunee",
+      text: "佐藤さんはね、ただ『見た目』をキレイに整える人じゃなくて、『想い』と『らしさ』を一緒にデザインしてくれる伴走デザイナーさんなのだー。",
+    },
+    {
+      who: "rink",
+      text: "40 項目もあるヒアリングシートで、頭の中のふわふわしたイメージを、ひとつずつ言葉にしていくんだよ。『本当に届けたい人は誰？』『どう感じてほしい？』って。",
+    },
+    {
+      who: "konta",
+      text: "ほえぇ…。『すれちがいライト』も最初、『クリエイター同士がやさしくつながる、星屑みたいな光』っていうぼんやりしたコンセプトだったって聞いた！",
+    },
+    {
+      who: "tanunee",
+      text: "そこから佐藤さんが、コンセプト設計 → ストーリー → ロゴ、って順番に一緒に組み立ててくれたのだー。ロゴが決まった瞬間、世界観の軸が定まって、色やキャラの空気感までスルスル整っていったのだー。",
+    },
+    {
+      who: "rink",
+      text: "だから、『クリエイターのシンセカイ』の入口は、ほんとに佐藤さんのロゴから始まったんだ。ぼくたち 3 人の立ち絵も、このロゴと同じ世界の住人なんだよ。",
+    },
+    {
+      who: "konta",
+      text: "これは紹介せずにいられない…！ロゴやブランド、ホームページの相談したい人は、ぜひ Soletta さんに話してみてほしい〜！",
+    },
+    {
+      who: "tanunee",
+      text: "北摂エリアが拠点だけど、オンラインでの相談もOKなのだー。『何から始めればいいか分からない』段階から一緒に整理してくれるから、最初のひと言のハードルがとっても低いのだー。",
+    },
+    {
+      who: "rink",
+      text: "このアプリを好きになってくれたみんなに、このロゴを創ってくれた佐藤さんのことも、ぜひ知ってほしい。ボタンから公式サイトを見にいけるよ！",
+    },
+  ],
+  ctaLabel: "Soletta 公式サイトを開く",
+};
+
 const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://socialxup.com/": SOCIALXUP_DIALOGUE,
   "https://threads.socialxup.com/": SOCIALXUP_THREADS_DIALOGUE,
   "https://mmake.net/": MMAKE_DIALOGUE,
   "https://mangamura.org/": MANGAMURA_DIALOGUE,
+  "https://soletta.jp/": SOLETTA_DIALOGUE,
 };
 
 export function getYukkuriDialogue(href: string): YukkuriDialogue | undefined {

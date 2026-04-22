@@ -18,6 +18,7 @@ import {
   type LiveMapPayload,
   type MapPoint,
 } from "@/lib/liveMapShared";
+import Link from "next/link";
 import JapanMap from "./JapanMap";
 import styles from "../app.module.css";
 
@@ -628,6 +629,19 @@ export default function LocationButton({
               null
             }
           />
+          <Link href="/creators" className={styles.creatorsDirectoryCta}>
+            <span className={styles.creatorsDirectoryCtaIcon} aria-hidden="true">
+              🗾
+            </span>
+            <span className={styles.creatorsDirectoryCtaText}>
+              <span className={styles.creatorsDirectoryCtaTitle}>
+                47都道府県別クリエイター一覧
+              </span>
+              <span className={styles.creatorsDirectoryCtaLead}>
+                過去に参加された方も含めて、都道府県ごとに全員ズラッと見る →
+              </span>
+            </span>
+          </Link>
           <ul className={styles.areaStatsList}>
             {mapPayload.areaStats.map((stat) => (
               <li key={stat.area} className={styles.areaStatItem}>

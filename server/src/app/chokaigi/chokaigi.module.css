@@ -426,6 +426,76 @@
   font-weight: 600;
 }
 
+.firstViewCreatorsBanner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 14px auto;
+  padding: 14px 18px;
+  max-width: 720px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border: 2px solid #fdba74;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  z-index: 3;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 12px rgba(227, 80, 10, 0.1);
+}
+
+.firstViewCreatorsBanner:hover,
+.firstViewCreatorsBanner:focus-visible {
+  border-color: #e3500a;
+  box-shadow: 0 6px 18px rgba(227, 80, 10, 0.22);
+  transform: translateY(-1px);
+}
+
+.firstViewCreatorsBannerIcon {
+  font-size: 36px;
+  flex-shrink: 0;
+}
+
+.firstViewCreatorsBannerText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.firstViewCreatorsBannerTitle {
+  font-size: 15px;
+  font-weight: 900;
+  color: #7a4a1f;
+  letter-spacing: 0.02em;
+}
+
+.firstViewCreatorsBannerLead {
+  font-size: 12.5px;
+  color: #8a6a3f;
+  line-height: 1.55;
+}
+
+@media (max-width: 479px) {
+  .firstViewCreatorsBanner {
+    margin: 10px 12px;
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .firstViewCreatorsBannerIcon {
+    font-size: 28px;
+  }
+
+  .firstViewCreatorsBannerTitle {
+    font-size: 14px;
+  }
+
+  .firstViewCreatorsBannerLead {
+    font-size: 11.5px;
+  }
+}
+
 .topSearchArea {
   margin-bottom: clamp(0.95rem, 2.8vw, 1.4rem);
 }
@@ -2222,11 +2292,48 @@ details[open] .detailMapSummary::before {
 
 .footerThanks {
   margin: 0 0 1rem;
-  padding: 0.95rem 1rem;
+  padding: 1.1rem 1rem 1.2rem;
   border-radius: 0.95rem;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(240, 232, 215, 0.6));
   border: 1px solid rgba(26, 88, 152, 0.14);
   box-shadow: 0 6px 18px rgba(26, 88, 152, 0.06);
+}
+
+/* 佐藤さん（Soletta）用のハイライトプロフィールを単独配置するラッパ */
+.thanksHighlight {
+  margin: 0.85rem 0 1.1rem;
+}
+
+/* 大木ハルミさん／アフランカフェ／oto1to1 など、ハイライト以外の
+ * 協力者をグリッドに並べる。モバイルは 1 列、タブレット以上で 2 列。 */
+.thanksProfileGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+  margin: 0 0 1.1rem;
+}
+
+@media (min-width: 720px) {
+  .thanksProfileGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* X アカウントのみでご応援くださっている方々を、チップ型の一覧として添える */
+.thanksXOnly {
+  margin: 0 0 0.9rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 0.85rem;
+  background: rgba(26, 88, 152, 0.05);
+  border: 1px dashed rgba(26, 88, 152, 0.22);
+}
+
+.thanksXOnlyHeading {
+  margin: 0 0 0.55rem;
+  color: #1a5898;
+  font-size: clamp(0.88rem, 2vw, 0.95rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
 .footerThanksHeading {

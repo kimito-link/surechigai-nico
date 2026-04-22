@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo } from "react";
 import {
   extractPrefecture,
@@ -104,28 +105,35 @@ export default function JapanMap({ areaStats, selfMunicipality }: Props) {
         {mainPins.map((pin) => {
           const scale = 0.7 + 0.6 * (pin.count / maxCount);
           return (
-            <div
+            <Link
               key={pin.pref.name}
+              href={`/creators/${encodeURIComponent(pin.pref.name)}`}
               className={`${styles.japanMapPin} ${pin.isSelf ? styles.japanMapPinMe : ""}`}
               style={{
                 left: `${pin.leftPct}%`,
                 top: `${pin.topPct}%`,
                 transform: `translate(-50%, -50%) scale(${scale})`,
               }}
-              title={`${pin.pref.name} ${pin.count}人${pin.isSelf ? "（あなた）" : ""}`}
+              title={`${pin.pref.name} ${pin.count}人${pin.isSelf ? "（あなた）" : ""} — タップで参加者一覧`}
+              aria-label={`${pin.pref.name} の参加者一覧を見る`}
             >
               <span className={styles.japanMapPinCount}>{pin.count}</span>
               <span className={styles.japanMapPinLabel}>{pin.pref.name}</span>
-            </div>
+            </Link>
           );
         })}
       </div>
 
       {okinawaPin && (
-        <div className={styles.japanMapOkinawa}>
+        <Link
+          href={`/creators/${encodeURIComponent(okinawaPin.pref.name)}`}
+          className={styles.japanMapOkinawa}
+          title="沖縄県の参加者一覧"
+          aria-label="沖縄県の参加者一覧を見る"
+        >
           <span className={styles.japanMapPinCount}>{okinawaPin.count}</span>
           <span className={styles.japanMapPinLabel}>沖縄県</span>
-        </div>
+        </Link>
       )}
 
       <p className={styles.japanMapSummary}>

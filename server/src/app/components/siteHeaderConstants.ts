@@ -15,6 +15,11 @@ export const MOBILE_PRIMARY_LINKS: readonly HeaderNavLink[] = [
   { href: "/", label: "ホーム", description: "トップページ" },
   { href: "/chokaigi", label: "超会議LP", description: "企画ページ全体" },
   {
+    href: "/creators",
+    label: "都道府県別クリエイター",
+    description: "47 都道府県の参加者一覧",
+  },
+  {
     href: "/chokaigi/special-thanks",
     label: "サンクス一覧ページ",
     description: "Special Thanks の全リンク",
