@@ -347,10 +347,11 @@ export default function ChokaigiPage() {
                   href="/chokaigi/special-thanks"
                   className={styles.footerThanksMoreButton}
                 >
-                  Special Thanks 一覧を見る
+                  Special Thanks・クレジット一覧を見る
                 </Link>
                 <p className={styles.footerThanksMoreSubText}>
-                  Xアカウントは一覧ページにまとめています。
+                  Xアカウント、および地図・VOICEVOX 等の外部素材クレジットは
+                  一覧ページにまとめています。
                 </p>
               </div>
             ) : null}

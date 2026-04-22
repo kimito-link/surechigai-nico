@@ -3391,6 +3391,22 @@ details[open] .detailMapSummary::before {
 }
 
 /*
+ * 幕張メッセ（超会議会場）のシルエット。
+ * ピンとは別タイミング（やや遅め）の呼吸で、建物＝ランドマーク感を出す。
+ * 位置はピンのすぐ上なので transform-origin は揃える。
+ */
+.chokaigiMesse {
+  transform-origin: 730px 465px;
+  animation: chokaigiMesseBreath 4.8s ease-in-out infinite;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
+}
+
+@keyframes chokaigiMesseBreath {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.72; }
+  50%      { transform: translateY(-1.2px) scale(1.02); opacity: 0.88; }
+}
+
+/*
  * 呼吸アニメ（集まる → 散らばる → また集まる）
  * 1 ループ 8s のうち、前半 4s で inbound（全国→幕張）、
  * 後半 4s で outbound（幕張→全国）が描かれる。
@@ -3448,6 +3464,7 @@ details[open] .detailMapSummary::before {
 
 @media (prefers-reduced-motion: reduce) {
   .conceptPinLarge,
+  .chokaigiMesse,
   .conceptInbound1,
   .conceptInbound2,
   .conceptInbound3,
@@ -3473,4 +3490,91 @@ details[open] .detailMapSummary::before {
   .heroBackdropOverlay {
     opacity: 0.45;
   }
+}
+
+/* ========================================
+   クレジット（special-thanks ページ内）
+   ======================================== */
+
+.creditsIntro {
+  margin: 0.25rem 0 0.9rem;
+  font-size: clamp(0.82rem, 2vw, 0.92rem);
+  color: #5a4a3a;
+  line-height: 1.6;
+}
+
+.creditsGroup {
+  margin-top: 1.1rem;
+}
+
+.creditsGroupHeading {
+  margin: 0 0 0.4rem;
+  font-size: clamp(0.95rem, 2.4vw, 1.05rem);
+  font-weight: 700;
+  color: #1a5898;
+  border-left: 3px solid #DD6500;
+  padding-left: 0.55rem;
+}
+
+.creditsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.creditsItem {
+  padding: 0.7rem 0.85rem;
+  border-radius: 0.6rem;
+  background: rgba(244, 237, 224, 0.55);
+  border: 1px solid rgba(26, 88, 152, 0.1);
+}
+
+.creditsItemHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem 0.75rem;
+  margin-bottom: 0.3rem;
+}
+
+.creditsItemTitle {
+  font-weight: 700;
+  color: #1a5898;
+  text-decoration: none;
+  font-size: clamp(0.88rem, 2.2vw, 0.98rem);
+}
+
+a.creditsItemTitle:hover {
+  text-decoration: underline;
+}
+
+.creditsLicense {
+  font-size: clamp(0.72rem, 1.85vw, 0.82rem);
+  color: #7a6a5a;
+  background: rgba(26, 88, 152, 0.08);
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+}
+
+.creditsLicense a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.creditsUsage {
+  margin: 0.15rem 0 0;
+  font-size: clamp(0.76rem, 1.95vw, 0.85rem);
+  color: #5a4a3a;
+  line-height: 1.55;
+}
+
+.creditsNote {
+  margin: 0.3rem 0 0;
+  font-size: clamp(0.72rem, 1.85vw, 0.8rem);
+  color: #8a7060;
+  line-height: 1.5;
+  font-style: italic;
 }

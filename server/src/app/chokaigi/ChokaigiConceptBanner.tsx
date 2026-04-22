@@ -86,6 +86,64 @@ export function ChokaigiConceptBanner() {
           ))}
         </g>
 
+        {/*
+         * 幕張メッセ（超会議会場）のシルエット。
+         * 東ホールに代表される 4 連三角屋根 + 基礎 を簡略化したロゴ的シェイプ。
+         * 幕張ピンのすぐ上に配置することで「ここが超会議の会場」という場所性を補強する。
+         */}
+        <g className={styles.chokaigiMesse} opacity="0.72">
+          {/* 基礎（ホール本体） */}
+          <rect
+            x={MAKUHARI.x - 46}
+            y={MAKUHARI.y - 14}
+            width="92"
+            height="10"
+            fill="#1a5898"
+            rx="1.5"
+          />
+          {/* 4連の三角屋根 */}
+          <polygon
+            points={`${MAKUHARI.x - 46},${MAKUHARI.y - 14} ${MAKUHARI.x - 34},${MAKUHARI.y - 36} ${MAKUHARI.x - 22},${MAKUHARI.y - 14}`}
+            fill="#1a5898"
+          />
+          <polygon
+            points={`${MAKUHARI.x - 24},${MAKUHARI.y - 14} ${MAKUHARI.x - 12},${MAKUHARI.y - 38} ${MAKUHARI.x},${MAKUHARI.y - 14}`}
+            fill="#1a5898"
+          />
+          <polygon
+            points={`${MAKUHARI.x - 2},${MAKUHARI.y - 14} ${MAKUHARI.x + 10},${MAKUHARI.y - 38} ${MAKUHARI.x + 22},${MAKUHARI.y - 14}`}
+            fill="#1a5898"
+          />
+          <polygon
+            points={`${MAKUHARI.x + 20},${MAKUHARI.y - 14} ${MAKUHARI.x + 32},${MAKUHARI.y - 36} ${MAKUHARI.x + 44},${MAKUHARI.y - 14}`}
+            fill="#1a5898"
+          />
+          {/* 屋根のハイライト（立体感） */}
+          <g fill="#DD6500" opacity="0.45">
+            <polygon
+              points={`${MAKUHARI.x - 34},${MAKUHARI.y - 36} ${MAKUHARI.x - 30},${MAKUHARI.y - 31} ${MAKUHARI.x - 30},${MAKUHARI.y - 14} ${MAKUHARI.x - 34},${MAKUHARI.y - 14}`}
+            />
+            <polygon
+              points={`${MAKUHARI.x - 12},${MAKUHARI.y - 38} ${MAKUHARI.x - 8},${MAKUHARI.y - 32} ${MAKUHARI.x - 8},${MAKUHARI.y - 14} ${MAKUHARI.x - 12},${MAKUHARI.y - 14}`}
+            />
+            <polygon
+              points={`${MAKUHARI.x + 10},${MAKUHARI.y - 38} ${MAKUHARI.x + 14},${MAKUHARI.y - 32} ${MAKUHARI.x + 14},${MAKUHARI.y - 14} ${MAKUHARI.x + 10},${MAKUHARI.y - 14}`}
+            />
+            <polygon
+              points={`${MAKUHARI.x + 32},${MAKUHARI.y - 36} ${MAKUHARI.x + 36},${MAKUHARI.y - 31} ${MAKUHARI.x + 36},${MAKUHARI.y - 14} ${MAKUHARI.x + 32},${MAKUHARI.y - 14}`}
+            />
+          </g>
+          {/* 地面ライン */}
+          <rect
+            x={MAKUHARI.x - 50}
+            y={MAKUHARI.y - 3}
+            width="100"
+            height="2"
+            fill="#5d4037"
+            opacity="0.4"
+          />
+        </g>
+
         {/* 幕張ピン（呼吸） */}
         <g className={styles.conceptPinLarge}>
           <circle
