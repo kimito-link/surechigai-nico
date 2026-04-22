@@ -191,7 +191,7 @@ export function YukkuriHero() {
       {/* 結果後のシェア */}
       {dialogue && (
         <>
-          <YukkuriVoicePlayer dialogue={dialogue} />
+          <YukkuriVoicePlayer dialogue={dialogue} autoPlayOnReady />
           <div className={styles.shareRow}>
             <a
               href={buildTweetUrl(raw, dialogue)}

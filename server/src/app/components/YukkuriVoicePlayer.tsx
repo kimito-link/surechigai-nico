@@ -16,14 +16,17 @@ type Props = {
   dialogue: YukkuriDialogue | null;
   /** 狭いパネル向け（1 列ボタン） */
   compact?: boolean;
+  /** 解説表示後に自動で読み上げを試す */
+  autoPlayOnReady?: boolean;
 };
 
-export function YukkuriVoicePlayer({ dialogue, compact }: Props) {
+export function YukkuriVoicePlayer({ dialogue, compact, autoPlayOnReady = false }: Props) {
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState("");
   const [gate, setGate] = useState<VoicevoxGate>("unknown");
   const abortRef = useRef<AbortController | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const autoPlayedKeyRef = useRef<string>("");
 
   useEffect(() => {
     if (!dialogue) {
@@ -107,14 +110,27 @@ export function YukkuriVoicePlayer({ dialogue, compact }: Props) {
       }
     } catch (e) {
       if (ac.signal.aborted) return;
-      const msg =
-        e instanceof Error ? e.message : "音声の合成・再生に失敗しました";
+      const msg = (() => {
+        if (e instanceof DOMException && e.name === "NotAllowedError") {
+          return "自動再生がブラウザ制限でブロックされました。再生ボタンを押してください。";
+        }
+        if (e instanceof Error) return e.message;
+        return "音声の合成・再生に失敗しました";
+      })();
       setHint(msg);
     } finally {
       if (abortRef.current === ac) abortRef.current = null;
       setBusy(false);
     }
   }, [dialogue, stop]);
+
+  useEffect(() => {
+    if (!autoPlayOnReady || !dialogue || gate !== "ready" || busy) return;
+    const key = `${dialogue.rink}__${dialogue.konta}__${dialogue.tanunee}`;
+    if (autoPlayedKeyRef.current === key) return;
+    autoPlayedKeyRef.current = key;
+    void play();
+  }, [autoPlayOnReady, dialogue, gate, busy, play]);
 
   if (!dialogue) return null;
 
