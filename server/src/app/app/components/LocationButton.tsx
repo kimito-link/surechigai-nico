@@ -280,8 +280,7 @@ export default function LocationButton({
           currentMessageType: message?.type ?? null,
           currentMessageText: message?.text ?? null,
           visibleUsers: listUsers.length,
-          geolocationSupported:
-            typeof navigator !== "undefined" && Boolean(navigator.geolocation),
+          geolocationSupported: false,
         },
       }),
     [authSyncing, authSyncError, mapPayload, mapApiError, message, listUsers.length, resolveUuid]
