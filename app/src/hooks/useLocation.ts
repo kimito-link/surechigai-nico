@@ -68,8 +68,10 @@ export function useLocation() {
       const status = await checkPermissionStatus();
       setPermissionStatus(status);
 
-      if (status === "granted") {
-        await startBackgroundTask();
+      if (status === "granted" || status === "foreground_only") {
+        if (status === "granted") {
+          await startBackgroundTask();
+        }
 
         // フォアグラウンドで一回送信
         try {
@@ -77,7 +79,9 @@ export function useLocation() {
             accuracy: Location.Accuracy.Balanced,
           });
           await sendLocation(loc.coords.latitude, loc.coords.longitude);
-        } catch {}
+        } catch (e) {
+          console.error("初期位置送信エラー:", e);
+        }
       }
     } catch (e) {
       console.error("権限チェックエラー:", e);

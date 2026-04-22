@@ -14,8 +14,13 @@ export default function PermissionLocationScreen() {
       if (state === "active" && waitingForReturn.current) {
         waitingForReturn.current = false;
         (async () => {
-          await SecureStore.setItemAsync("permissions_done", "true");
-          router.replace("/(tabs)");
+          // 実際の権限状態を確認
+          const fg = await Location.getForegroundPermissionsAsync();
+          if (fg.status === "granted" || fg.status === "foreground_only") {
+            await SecureStore.setItemAsync("permissions_done", "true");
+            router.replace("/(tabs)");
+          }
+          // 拒否された場合は permission 画面に留まる（再度許可を促す）
         })();
       }
     });
@@ -24,6 +29,12 @@ export default function PermissionLocationScreen() {
 
   const handleAllow = async () => {
     const fg = await Location.requestForegroundPermissionsAsync();
+
+    // 実際に許可されたかチェック
+    if (fg.status !== "granted" && fg.status !== "foreground_only") {
+      // 拒否された場合は次回再度促す（permissions_done を保存しない）
+      return;
+    }
 
     if (fg.status === "granted") {
       await Location.requestBackgroundPermissionsAsync();
