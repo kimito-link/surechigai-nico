@@ -315,12 +315,12 @@
   position: fixed;
   top: var(--layout-header-h, 64px);
   right: 0;
-  width: min(300px, 85vw);
+  width: min(360px, 92vw);
   max-height: calc(100vh - 64px);
   background: #fff;
   border-left: 1px solid rgba(88, 62, 28, 0.1);
   box-shadow: -4px 0 24px rgba(40, 32, 24, 0.15);
-  padding: 0.5rem 0 1rem;
+  padding: 0.35rem 0 1rem;
   transform: translateX(100%);
   transition: transform 0.3s ease-out;
   overflow-y: auto;
@@ -334,10 +334,12 @@
 }
 
 .mobileNavLink {
-  display: block;
-  padding: 1rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 700;
   color: #3a2f24;
   text-decoration: none;
   border-bottom: 1px solid rgba(88, 62, 28, 0.06);
@@ -347,6 +349,87 @@
 .mobileNavLink:hover {
   background: rgba(37, 93, 155, 0.05);
   color: #255d9b;
+}
+
+.mobileNavLinkActive {
+  background: rgba(37, 93, 155, 0.08);
+  color: #1a4a7a;
+}
+
+.mobileNavLinkLabel {
+  display: block;
+}
+
+.mobileNavLinkDescription {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #6f645a;
+}
+
+.mobileNavSection {
+  padding: 0.55rem 0.9rem 0.35rem;
+}
+
+.mobileNavSection + .mobileNavSection {
+  border-top: 1px solid rgba(88, 62, 28, 0.08);
+}
+
+.mobileNavSectionHeading {
+  margin: 0 0 0.45rem;
+  padding: 0 0.35rem;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #255d9b;
+  text-transform: uppercase;
+}
+
+.mobileNavSectionHint {
+  margin: 0 0 0.5rem;
+  padding: 0 0.35rem;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: #786b60;
+}
+
+.mobileNavChipGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.mobileNavChipLink {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-height: 3.2rem;
+  padding: 0.5rem 0.55rem;
+  border-radius: 0.65rem;
+  text-decoration: none;
+  background: rgba(37, 93, 155, 0.05);
+  border: 1px solid rgba(37, 93, 155, 0.2);
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.mobileNavChipLink:hover {
+  background: rgba(37, 93, 155, 0.11);
+  border-color: rgba(37, 93, 155, 0.34);
+  transform: translateY(-1px);
+}
+
+.mobileNavChipLabel {
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #1a4a7a;
+}
+
+.mobileNavChipDescription {
+  font-size: 0.66rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #6f645a;
 }
 
 /* モバイル ユーザー情報 */
@@ -400,7 +483,8 @@
 }
 
 .mobileAuthArea {
-  padding: 1rem 1.5rem 0.5rem;
+  padding: 0.95rem 1rem 0.5rem;
+  border-top: 1px solid rgba(88, 62, 28, 0.08);
 }
 
 .mobileAuthButtons {
@@ -550,6 +634,12 @@
   .mobileNavOpen ~ .overlay,
   .overlay {
     display: block;
+  }
+}
+
+@media (max-width: 420px) {
+  .mobileNavChipGrid {
+    grid-template-columns: 1fr;
   }
 }
 

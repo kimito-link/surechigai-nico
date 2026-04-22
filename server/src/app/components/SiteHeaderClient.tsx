@@ -3,7 +3,10 @@
 import { useState, useEffect, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { SITE_NAV_LINKS } from "./siteHeaderConstants";
+import {
+  MOBILE_CHOKAIGI_SECTION_LINKS,
+  MOBILE_PRIMARY_LINKS,
+} from "./siteHeaderConstants";
 import { SiteHeaderAuthBar, SiteHeaderAuthMobile } from "./SiteHeaderAuth";
 import styles from "./SiteHeader.module.css";
 
@@ -58,6 +61,11 @@ export function SiteHeaderClient({ pathname, logo, desktopNav }: SiteHeaderClien
   }, [menuOpen]);
 
   const closeMenu = () => setMenuOpen(false);
+  const isPathActive = (href: string) => {
+    const targetPath = href.split("#")[0] ?? href;
+    if (targetPath === "/") return pathname === "/";
+    return pathname.startsWith(targetPath);
+  };
 
   const handleCreatorQuickSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -115,16 +123,49 @@ export function SiteHeaderClient({ pathname, logo, desktopNav }: SiteHeaderClien
         aria-label="モバイルメニュー"
         aria-hidden={!menuOpen}
       >
-        {SITE_NAV_LINKS.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={styles.mobileNavLink}
-            onClick={closeMenu}
-          >
-            {link.label}
-          </Link>
-        ))}
+        <section className={styles.mobileNavSection} aria-labelledby="mobile-nav-pages-heading">
+          <h2 id="mobile-nav-pages-heading" className={styles.mobileNavSectionHeading}>
+            ページ
+          </h2>
+          {MOBILE_PRIMARY_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`${styles.mobileNavLink} ${isPathActive(link.href) ? styles.mobileNavLinkActive : ""}`}
+              onClick={closeMenu}
+              aria-current={isPathActive(link.href) ? "page" : undefined}
+            >
+              <span className={styles.mobileNavLinkLabel}>{link.label}</span>
+              {link.description ? (
+                <span className={styles.mobileNavLinkDescription}>{link.description}</span>
+              ) : null}
+            </Link>
+          ))}
+        </section>
+
+        <section className={styles.mobileNavSection} aria-labelledby="mobile-nav-content-heading">
+          <h2 id="mobile-nav-content-heading" className={styles.mobileNavSectionHeading}>
+            超会議コンテンツ
+          </h2>
+          <p className={styles.mobileNavSectionHint}>
+            どの画面からでも、LP内の目的セクションに直接移動できます。
+          </p>
+          <div className={styles.mobileNavChipGrid}>
+            {MOBILE_CHOKAIGI_SECTION_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={styles.mobileNavChipLink}
+                onClick={closeMenu}
+              >
+                <span className={styles.mobileNavChipLabel}>{link.label}</span>
+                {link.description ? (
+                  <span className={styles.mobileNavChipDescription}>{link.description}</span>
+                ) : null}
+              </Link>
+            ))}
+          </div>
+        </section>
 
         <SiteHeaderAuthMobile isAppPath={isAppPath} closeMenu={closeMenu} />
       </nav>
