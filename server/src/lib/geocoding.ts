@@ -15,57 +15,6 @@ async function throttle() {
   lastRequestTime = Date.now();
 }
 
-export async function reverseGeocode(lat: number, lng: number): Promise<string> {
-  try {
-    await throttle();
-
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=16&accept-language=ja`,
-      {
-        headers: {
-          "User-Agent": "surechigai-app/0.1.0",
-        },
-      }
-    );
-
-    if (!res.ok) return "不明なエリア";
-
-    const data = await res.json();
-    const addr = data.address;
-
-    // 町名レベル（道玄坂 / 神南 / 恵比寿 等）+ 区名
-    // 丁目は除去してざっくりした地名にする
-    const town =
-      addr.suburb ||        // 道玄坂二丁目 / 神南一丁目 等
-      addr.neighbourhood ||
-      addr.quarter ||
-      null;
-
-    const district =
-      addr.city_district || // 渋谷区 / 新宿区 等
-      addr.city ||          // 横浜市 等
-      addr.town ||
-      null;
-
-    if (!town && !district) return "不明なエリア";
-
-    // 丁目を除去（「道玄坂二丁目」→「道玄坂」）
-    const cleanTown = town?.replace(/[一二三四五六七八九十\d]+丁目$/, "") || null;
-
-    if (cleanTown && district) {
-      return `${cleanTown}(${district})`;
-    }
-    return (cleanTown || district) + "エリア";
-  } catch (e) {
-    console.error("逆ジオコーディングエラー:", e);
-    return "不明なエリア";
-  }
-}
-
-/**
- * 緯度経度から市区町村名を取得
- * 例: "渋谷区", "横浜市西区", "札幌市中央区"
- */
 /**
  * 緯度経度からエリア名+都道府県を一括取得(API呼び出し1回)
  */
