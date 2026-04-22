@@ -440,6 +440,73 @@ export const SHIRAICCHAN_DIALOGUE: YukkuriDialogue = {
   ctaLabel: "しらいっさんの X プロフィールを開く",
 };
 
+/**
+ * しらせさん（@shirase_0404）— あぶそりゅーと☆せぶん（@abuso2525）の
+ * ピンク担当。ニコ生発の『いんたーねっとあいどる』ユニットメンバーで、
+ * 現役の高校 2 年生アイドル。今川ギララさん（@Tottokotokobusi）との
+ * 放送内ジョーク『しらせちゃんはあんぱい』の文脈込みで推し、
+ * 『踊コレ』のステージもかわいくてかっこいい！ というファン目線の紹介。
+ */
+export const SHIRASE_DIALOGUE: YukkuriDialogue = {
+  title:
+    "🌸 しらせさん（@shirase_0404） — あぶそりゅーと☆せぶんのピンク担当、とびきりかわいい現役アイドル",
+  lines: [
+    {
+      who: "rink",
+      text: "今日はね、ぼくらがずっと紹介したかった女の子を紹介させて。あぶそりゅーと☆せぶん（@abuso2525）のピンク担当、しらせちゃん（@shirase_0404）だよ！",
+    },
+    {
+      who: "konta",
+      text: "あぶそりゅーと☆せぶん……！？ なんかもう名前の時点でパワーがすごいにゃ〜！",
+    },
+    {
+      who: "tanunee",
+      text: "ニコ生発の『いんたーねっとあいどる』ユニットなのだー。しらせちゃんは 17 歳、現役の高校 2 年生アイドルなのだー。",
+    },
+    {
+      who: "rink",
+      text: "プロフのサムネを見てもらうと一発でわかるんだけど、ほんっとにかわいい。笑顔がきらきらで、ふわっと柔らかくて、『正統派の女の子アイドル』ってこういう子のことを言うんだな〜って感じ。",
+    },
+    {
+      who: "konta",
+      text: "うわ〜これは応援したくなっちゃうやつにゃ〜……！",
+    },
+    {
+      who: "tanunee",
+      text: "そしてここがポイントなのだー。前に紹介した今川ギララさん（@Tottokotokobusi）とも、放送でよく絡んでいるのだー。",
+    },
+    {
+      who: "rink",
+      text: "今川さんなんて、しらせちゃんのことを『しらせちゃんは あんぱい（=安心して見てられる）だよ〜』とか言って、ちょっとイジりまじりに可愛がってるんだよね（笑）",
+    },
+    {
+      who: "konta",
+      text: "あ、あんぱい！？ アイドルに贈る言葉としては攻めすぎてるにゃ〜（笑）",
+    },
+    {
+      who: "tanunee",
+      text: "でもこれは完全にジョークなのだー。今川さんは『ラジオ級』の話し手だから、文脈の中で聞くと不思議と愛がこもっているのだー。しらせちゃんも『ちがうんです〜！！！』ってかわいく返してくれるのだー。",
+    },
+    {
+      who: "rink",
+      text: "だからね、しらせちゃんを“ちゃんと沼る”には、今川さんの配信を通しで見てみるのがおすすめ！切り抜きだけじゃなくて、文脈ごと追っかけると、このふたりの掛け合いが何倍もおもしろくなるんだ。",
+    },
+    {
+      who: "konta",
+      text: "これはもう『推し文脈』ってやつだにゃ〜。",
+    },
+    {
+      who: "tanunee",
+      text: "そしてしらせちゃん自身も、『踊コレ』のステージで堂々と踊っているのだー。ステージ上のしらせちゃんは、かわいいだけじゃなくて、ちゃんと“かっこいい”のだー。",
+    },
+    {
+      who: "rink",
+      text: "これはぜ〜ったい見てほしい！！『踊コレ』のしらせちゃん、ぼくらも 1 ファンとして全力応援させてもらってます！みんなも @shirase_0404 をフォローして、一緒に推していこう〜！",
+    },
+  ],
+  ctaLabel: "しらせさんの X プロフィールを開く",
+};
+
 const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://socialxup.com/": SOCIALXUP_DIALOGUE,
   "https://threads.socialxup.com/": SOCIALXUP_THREADS_DIALOGUE,
@@ -452,6 +519,7 @@ const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://x.com/bakusyokuM": MIIDESU_DIALOGUE,
   "https://x.com/Tottokotokobusi": IMAGAWA_DIALOGUE,
   "https://x.com/ewbcwj_lv": SHIRAICCHAN_DIALOGUE,
+  "https://x.com/shirase_0404": SHIRASE_DIALOGUE,
 };
 
 export function getYukkuriDialogue(href: string): YukkuriDialogue | undefined {

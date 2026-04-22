@@ -155,6 +155,20 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
     ],
     xHandles: [{ label: "@bakusyokuM", href: "https://x.com/bakusyokuM" }],
   },
+  {
+    id: "shirase",
+    name: "しらせ さん（@shirase_0404）",
+    title:
+      "あぶそりゅーと☆せぶん ピンク担当／ニコ生発『いんたーねっとあいどる』（17 歳 高校 2 年生）",
+    intro: [
+      "あぶそりゅーと☆せぶん（@abuso2525）のピンク担当、しらせちゃん。プロフィールのサムネを見ていただくと一発で伝わるとおり、とびきりかわいい現役の女の子アイドルです。笑顔がきらきらしていて、正統派の『ふわっと柔らかい女の子アイドル』感があって、見ているだけで画面が明るくなります。",
+      "そしてしらせちゃんは、前にご紹介した 今川ギララさん（@Tottokotokobusi）の放送にもよく絡んでいる存在。今川さんからは『しらせちゃんは あんぱい（安心して見てられる）だよ〜』なんて、ちょっとイジりまじりに可愛がられています。もちろん完全にジョークで、今川さんの “ラジオ級” のトーク文脈の中で聴くと、むしろ不思議と愛がこもって聞こえてくる——そんな掛け合い。しらせちゃんも『ちがうんです〜！！！』とかわいく返してくれるので、ふたりのやり取りはぜひ今川さんの配信を通しで見て、“文脈ごと” 沼ってほしいところ。",
+      "そしてもうひとつ。しらせちゃん自身も『踊コレ』のステージで堂々と踊っていて、かわいいだけじゃなく、ちゃんと “かっこいい”。ぼくらも 1 ファンとして、しらせちゃんの踊コレを全力応援しています。下の X バッジをクリックすると、ゆっくり 3 人がそのあたりの “推し文脈” も熱めに語ってくれます。",
+    ],
+    xHandles: [
+      { label: "@shirase_0404", href: "https://x.com/shirase_0404" },
+    ],
+  },
 ] as const;
 
 /**
@@ -163,7 +177,6 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
  */
 export const SPECIAL_THANKS_X_ONLY: ReadonlyArray<SpecialThanksXLink> = [
   { label: "@abuso2525", href: "https://x.com/abuso2525" },
-  { label: "@shirase_0404", href: "https://x.com/shirase_0404" },
   { label: "@sinseinaru", href: "https://x.com/sinseinaru" },
   { label: "@yuzuchis_mammy", href: "https://x.com/yuzuchis_mammy" },
   { label: "@m20210411", href: "https://x.com/m20210411" },
