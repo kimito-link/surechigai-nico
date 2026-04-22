@@ -20,6 +20,18 @@ export const SPECIAL_THANKS_LINKS = [
     href: "https://oto1to1.com/",
   },
   {
+    label: "SocialXup（X ユーザー数推移ツール）",
+    href: "https://socialxup.com/",
+  },
+  {
+    label: "SocialXup for Threads",
+    href: "https://threads.socialxup.com/",
+  },
+  {
+    label: "漫画村 👻 ※もうないらしい",
+    href: "https://mangamura.org/",
+  },
+  {
     label: "@OTO1to1",
     href: "https://x.com/OTO1to1",
   },
