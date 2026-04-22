@@ -836,19 +836,14 @@ export async function POST(req: NextRequest) {
   }
 
   // 混雑・一時障害時はフォールバック解説を返し、体験を止めない
-  const retryableCodes = new Set<LlmErrorCode>([
-    "E_YUKKURI_LLM_UPSTREAM_429",
-    "E_YUKKURI_LLM_TIMEOUT",
-    "E_YUKKURI_LLM_NETWORK",
-    "E_YUKKURI_LLM_UPSTREAM_5XX",
-    "E_YUKKURI_LLM_EMPTY_CHOICE",
-    "E_YUKKURI_LLM_PARSE",
-  ]);
   const failedOnly = failures.filter(isFailedCallResult);
   const has429 = failedOnly.some((f) => f.errorCode === "E_YUKKURI_LLM_UPSTREAM_429");
-  const allRetryable =
-    failedOnly.length > 0 && failedOnly.every((f) => retryableCodes.has(f.errorCode));
-  if (has429 && allRetryable) {
+  const hasAuthOrBillingError = failedOnly.some(
+    (f) =>
+      f.errorCode === "E_YUKKURI_LLM_UPSTREAM_401" ||
+      f.errorCode === "E_YUKKURI_LLM_UPSTREAM_402"
+  );
+  if (has429 && !hasAuthOrBillingError) {
     const fallback = buildFallbackDialogue(body, profile);
     if (handle) {
       await setCached(handle, { ok: true, dialogue: fallback });
