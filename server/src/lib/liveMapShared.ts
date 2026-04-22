@@ -11,6 +11,11 @@ export type LiveMapUser = {
   isMe: boolean;
 };
 
+export type AreaStat = {
+  area: string;
+  count: number;
+};
+
 export type LiveMapPayload = {
   venue: {
     name: string;
@@ -20,6 +25,15 @@ export type LiveMapPayload = {
   radiusMeters: number;
   note: string;
   users: LiveMapUser[];
+  /** 自分が会場マップ範囲外にいる場合の自己位置（認証時のみ） */
+  selfLocation?: {
+    lat: number;
+    lng: number;
+    municipality: string | null;
+    updatedAtMs: number;
+  } | null;
+  /** 全国参加者の市区町村別カウント */
+  areaStats?: AreaStat[];
   generatedAtMs: number;
   /** 会場マップ（chokaigi）のみ API が返す場合あり */
   publicMode?: boolean;

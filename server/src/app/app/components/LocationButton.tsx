@@ -457,6 +457,34 @@ export default function LocationButton({
         ) : (
           <p className={styles.liveMapEmpty}>まだ会場付近の参加者データがありません</p>
         )}
+
+        {/* 自分が会場外にいる場合：自己位置カード */}
+        {mapPayload?.selfLocation && (
+          <div className={styles.selfLocationCard}>
+            <span className={styles.selfLocationPin}>📍</span>
+            <span className={styles.selfLocationText}>
+              あなたの現在地：{mapPayload.selfLocation.municipality ?? "位置取得済み"}
+            </span>
+            <span className={styles.selfLocationTime}>
+              {liveMapFormatAgo(mapPayload.selfLocation.updatedAtMs)}
+            </span>
+          </div>
+        )}
+
+        {/* 全国参加者エリア一覧 */}
+        {mapPayload?.areaStats && mapPayload.areaStats.length > 0 && (
+          <div className={styles.areaStatsWrap}>
+            <h5 className={styles.areaStatsTitle}>全国の参加者（過去30分）</h5>
+            <ul className={styles.areaStatsList}>
+              {mapPayload.areaStats.map((stat) => (
+                <li key={stat.area} className={styles.areaStatItem}>
+                  <span className={styles.areaStatName}>{stat.area}</span>
+                  <span className={styles.areaStatCount}>{stat.count}人</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

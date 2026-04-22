@@ -110,11 +110,72 @@ export async function GET(req: NextRequest) {
       };
     });
 
+    // 自分が会場マップ範囲外の場合のみ自分の最新位置を別途取得
+    type SelfRow = RowDataPacket & {
+      lat_grid: string | number;
+      lng_grid: string | number;
+      municipality: string | null;
+      created_at_ms: string | number;
+    };
+    let selfLocation: { lat: number; lng: number; municipality: string | null; updatedAtMs: number } | null = null;
+    if (authUser && !users.some((u) => u.id === authUser.id)) {
+      try {
+        const [selfRows] = await pool.query<SelfRow[]>(
+          `SELECT l.lat_grid, l.lng_grid, l.municipality,
+                  CAST(UNIX_TIMESTAMP(l.created_at) * 1000 AS UNSIGNED) AS created_at_ms
+           FROM locations l
+           WHERE l.user_id = ?
+             AND l.created_at >= DATE_SUB(NOW(), INTERVAL ${ACTIVE_WINDOW_MINUTES} MINUTE)
+           ORDER BY l.created_at DESC
+           LIMIT 1`,
+          [authUser.id]
+        );
+        if (selfRows.length > 0) {
+          const r = selfRows[0];
+          selfLocation = {
+            lat: Number(r.lat_grid),
+            lng: Number(r.lng_grid),
+            municipality: r.municipality,
+            updatedAtMs: Number(r.created_at_ms),
+          };
+        }
+      } catch {
+        /* 自己位置取得失敗は非致命的 */
+      }
+    }
+
+    // 全国参加者エリア統計（市区町村ごとの人数）
+    type AreaRow = RowDataPacket & { area: string; cnt: number };
+    let areaStats: Array<{ area: string; count: number }> = [];
+    try {
+      const [areaRows] = await pool.query<AreaRow[]>(
+        `SELECT l.municipality AS area, COUNT(DISTINCT l.user_id) AS cnt
+         FROM locations l
+         INNER JOIN (
+           SELECT user_id, MAX(created_at) AS max_created_at
+           FROM locations
+           WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${ACTIVE_WINDOW_MINUTES} MINUTE)
+           GROUP BY user_id
+         ) latest ON l.user_id = latest.user_id AND l.created_at = latest.max_created_at
+         INNER JOIN users u ON u.id = l.user_id
+         WHERE u.is_deleted = FALSE AND u.is_suspended = FALSE
+           AND l.municipality IS NOT NULL
+         GROUP BY l.municipality
+         ORDER BY cnt DESC
+         LIMIT 15`
+      );
+      areaStats = areaRows.map((r) => ({ area: String(r.area), count: Number(r.cnt) }));
+    } catch {
+      /* エリア統計取得失敗は非致命的 */
+    }
+
     return Response.json({
       ok: true,
       venue: VENUE,
       radiusMeters: RADIUS_METERS,
       users,
+      selfLocation,
+      areaStats,
       generatedAtMs: Date.now(),
       publicMode: !authUser,
       note: authUser
