@@ -57,6 +57,11 @@ import { YukkuriHero } from "./YukkuriHero";
 import { SPECIAL_THANKS_LINKS } from "./special-thanks-links";
 
 const SPECIAL_THANKS_PREVIEW_COUNT = 6;
+const isXAccountLink = (href: string) =>
+  href.startsWith("https://x.com/") || href.startsWith("http://x.com/");
+const SPECIAL_THANKS_PREVIEW_LINKS = SPECIAL_THANKS_LINKS.filter(
+  (link) => !isXAccountLink(link.href)
+).slice(0, SPECIAL_THANKS_PREVIEW_COUNT);
 
 export default function ChokaigiPage() {
   return (
@@ -320,7 +325,7 @@ export default function ChokaigiPage() {
               プログラムの提供と公開に感謝します。星野ロミさん、ありがとうございます。
             </p>
             <ul className={styles.footerThanksList}>
-              {SPECIAL_THANKS_LINKS.slice(0, SPECIAL_THANKS_PREVIEW_COUNT).map((link) => (
+              {SPECIAL_THANKS_PREVIEW_LINKS.map((link) => (
                 <li key={link.href} className={styles.footerThanksItem}>
                   <a
                     href={link.href}
@@ -336,7 +341,7 @@ export default function ChokaigiPage() {
             {SPECIAL_THANKS_LINKS.length > SPECIAL_THANKS_PREVIEW_COUNT ? (
               <div className={styles.footerThanksMore}>
                 <p className={styles.footerThanksMoreText}>
-                  他 {SPECIAL_THANKS_LINKS.length - SPECIAL_THANKS_PREVIEW_COUNT} 件
+                  他 {SPECIAL_THANKS_LINKS.length - SPECIAL_THANKS_PREVIEW_LINKS.length} 件
                 </p>
                 <Link
                   href="/chokaigi/special-thanks"
@@ -344,6 +349,9 @@ export default function ChokaigiPage() {
                 >
                   Special Thanks 一覧を見る
                 </Link>
+                <p className={styles.footerThanksMoreSubText}>
+                  Xアカウントは一覧ページにまとめています。
+                </p>
               </div>
             ) : null}
           </section>

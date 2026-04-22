@@ -2303,6 +2303,15 @@ details[open] .detailMapSummary::before {
   font-weight: 700;
 }
 
+.footerThanksMoreSubText {
+  margin: 0;
+  width: 100%;
+  color: #6a5840;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
 .footerThanksMoreButton {
   display: inline-flex;
   align-items: center;
@@ -2314,6 +2323,15 @@ details[open] .detailMapSummary::before {
   font-weight: 800;
   text-decoration: none;
   transition: filter 0.18s ease, transform 0.18s ease;
+}
+
+.footer a.footerThanksMoreButton,
+.footer a.footerThanksMoreButton:visited,
+.footer a.footerThanksMoreButton:hover,
+.footer a.footerThanksMoreButton:active {
+  color: #fff;
+  text-decoration: none;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
 
 .footerThanksMoreButton:hover {
