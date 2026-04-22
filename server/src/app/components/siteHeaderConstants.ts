@@ -16,14 +16,19 @@ export const MOBILE_PRIMARY_LINKS: readonly HeaderNavLink[] = [
   { href: "/chokaigi", label: "超会議LP", description: "企画ページ全体" },
   {
     href: "/chokaigi/special-thanks",
-    label: "Special Thanks 一覧",
-    description: "協力者リンク一覧",
+    label: "サンクス一覧ページ",
+    description: "Special Thanks の全リンク",
   },
   { href: "/app", label: "ダッシュボード", description: "位置送信・ライブマップ" },
 ] as const;
 
 /** ハンバーガー内: 超会議LPの全コンテンツ直リンク */
 export const MOBILE_CHOKAIGI_SECTION_LINKS: readonly HeaderNavLink[] = [
+  {
+    href: "/chokaigi/special-thanks#special-thanks-list-heading",
+    label: "サンクス一覧（全件）",
+    description: "協力者リンクページへ",
+  },
   {
     href: "/chokaigi#yukkuri-dialogue-heading",
     label: "ゆっくり超解説",

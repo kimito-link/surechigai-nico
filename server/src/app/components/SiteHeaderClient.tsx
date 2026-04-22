@@ -125,7 +125,7 @@ export function SiteHeaderClient({ pathname, logo, desktopNav }: SiteHeaderClien
       >
         <section className={styles.mobileNavSection} aria-labelledby="mobile-nav-pages-heading">
           <h2 id="mobile-nav-pages-heading" className={styles.mobileNavSectionHeading}>
-            ページ
+            ページ移動
           </h2>
           {MOBILE_PRIMARY_LINKS.map((link) => (
             <Link
@@ -145,7 +145,7 @@ export function SiteHeaderClient({ pathname, logo, desktopNav }: SiteHeaderClien
 
         <section className={styles.mobileNavSection} aria-labelledby="mobile-nav-content-heading">
           <h2 id="mobile-nav-content-heading" className={styles.mobileNavSectionHeading}>
-            超会議コンテンツ
+            LP内セクション
           </h2>
           <p className={styles.mobileNavSectionHint}>
             どの画面からでも、LP内の目的セクションに直接移動できます。
