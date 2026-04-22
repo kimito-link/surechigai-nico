@@ -16,9 +16,7 @@ function getDevHost(): string {
 }
 
 export const DEV_HOST = getDevHost();
-export const SERVER_BASE = __DEV__
-  ? `http://${DEV_HOST}:3002`
-  : "https://surechigai-nico.link";
+export const SERVER_BASE = "https://surechigai-nico.link";
 
 const API_BASE = `${SERVER_BASE}/api`;
 
