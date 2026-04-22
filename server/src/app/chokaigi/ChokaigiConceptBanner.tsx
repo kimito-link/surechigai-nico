@@ -38,7 +38,19 @@ type LineSpec = {
   avatarSrc: string;
   /** アバター外周リングの色（アカウント性を色でも示す） */
   ringColor: string;
+  /** X アカウントのハンドル（@は含めない。URL とラベル生成に使用） */
+  accountHandle: string;
+  /** 日本語表示名（tooltip / aria-label 用） */
+  accountLabel: string;
 };
+
+/**
+ * X (旧 Twitter) のプロフィール URL を生成する。
+ * `twitter.com` → `x.com` に転送されるため、新ドメインを使用。
+ */
+function xAccountUrl(handle: string): string {
+  return `https://x.com/${handle}`;
+}
 
 // 日本各地 → 幕張 への入射軌跡（各地方の代表点から）。
 // 終点 (MAKUHARI) は変更があれば一括で反映される。
@@ -50,6 +62,8 @@ const INBOUND_LINES: readonly LineSpec[] = [
     travelerClass: styles.accountTraveler1,
     avatarSrc: "/chokaigi/avatars/streamerfunch.png",
     ringColor: "#1a5898",
+    accountHandle: "streamerfunch",
+    accountLabel: "君斗りんく＠クリエイター応援",
   },
   {
     id: "inbPath-kyushu",
@@ -58,6 +72,8 @@ const INBOUND_LINES: readonly LineSpec[] = [
     travelerClass: styles.accountTraveler2,
     avatarSrc: "/chokaigi/avatars/yukkuritanunee.png",
     ringColor: "#DD6500",
+    accountHandle: "yukkuritanunee",
+    accountLabel: "たぬ姉",
   },
   {
     id: "inbPath-chugoku",
@@ -66,6 +82,8 @@ const INBOUND_LINES: readonly LineSpec[] = [
     travelerClass: styles.accountTraveler3,
     avatarSrc: "/chokaigi/avatars/yukkurilink.png",
     ringColor: "#e91e63",
+    accountHandle: "yukkurilink",
+    accountLabel: "ゆっくりりんく",
   },
   {
     id: "inbPath-kinki",
@@ -74,6 +92,8 @@ const INBOUND_LINES: readonly LineSpec[] = [
     travelerClass: styles.accountTraveler4,
     avatarSrc: "/chokaigi/avatars/yukkurikonta.png",
     ringColor: "#ff9800",
+    accountHandle: "yukkurikonta",
+    accountLabel: "こん太",
   },
   {
     id: "inbPath-hokkaido",
@@ -82,6 +102,8 @@ const INBOUND_LINES: readonly LineSpec[] = [
     travelerClass: styles.accountTraveler5,
     avatarSrc: "/chokaigi/avatars/idolfunch.png",
     ringColor: "#00897b",
+    accountHandle: "idolfunch",
+    accountLabel: "君斗りんく＠動員ちゃれんじ",
   },
 ];
 
@@ -120,9 +142,13 @@ const AVATAR_R = 20;
 
 export function ChokaigiConceptBanner() {
   return (
-    <div className={styles.heroBackdrop} aria-hidden="true">
-      {/* 正確な日本列島シルエット */}
-      <div className={styles.heroBackdropMap}>
+    // 以前はコンテナ全体に aria-hidden="true" を付けていたが、内部に
+    // 実在 X アカウントへリンクする <a> 要素（軌跡上のアバター）を
+    // 追加したため、aria-hidden を外してキーボード／AT アクセスを確保する。
+    // 装飾要素は個別に aria-hidden="true" を付け、ランドマーク的ノイズを抑制。
+    <div className={styles.heroBackdrop}>
+      {/* 正確な日本列島シルエット（装飾） */}
+      <div className={styles.heroBackdropMap} aria-hidden="true">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/chokaigi/japan-outline.svg"
@@ -133,12 +159,16 @@ export function ChokaigiConceptBanner() {
         />
       </div>
 
-      {/* 集まる／散らばる軌跡と幕張の会場、群衆、アバター移動を重ねる */}
+      {/* 集まる／散らばる軌跡と幕張の会場、群衆、アバター移動を重ねる。
+          SVG 全体の意味ラベルだけ aria-label で与え、内部の <a> 要素は
+          個別に aria-label を持つ（role="img" にすると子要素が読み上げ対象外
+          になるため付けない）。 */}
       <svg
         className={styles.heroBackdropOverlay}
         viewBox="0 0 1024 1024"
         xmlns="http://www.w3.org/2000/svg"
         preserveAspectRatio="xMidYMid meet"
+        aria-label="全国の X アカウントが幕張に集まってくる演出"
       >
         <defs>
           {/* 集まる軌跡を mpath で参照するため、defs に id 付きで定義 */}
@@ -212,44 +242,63 @@ export function ChokaigiConceptBanner() {
         <g className={styles.accountTravelers}>
           {INBOUND_LINES.map((line, i) => {
             const delay = i * 0.25;
+            const accountUrl = xAccountUrl(line.accountHandle);
+            const labelText = `${line.accountLabel}（@${line.accountHandle}）を X で開く`;
             return (
               <g key={`traveler-${line.id}`} className={line.travelerClass}>
                 {/*
-                 * 内側のスケール用 <g>。親 <g> は animateMotion で移動だけを担当し、
-                 * このネスト <g> が CSS keyframes (accountAvatarPop) でスケール変化を
-                 * 行うことで「移動の transform」と「スケールの transform」が
-                 * 衝突せずに合成される。animation-delay は親の animateMotion begin と
-                 * 同一にして、到着タイミングとスケールピークを同期させる。
+                 * SVG <a> は href を指定することで HTML アンカーと同等に動作する。
+                 * - target="_blank" + rel="noopener noreferrer" で新規タブ & セキュリティ確保
+                 * - <title> が hover 時のネイティブツールチップ
+                 * - aria-label は読み上げ対応（親 div は aria-hidden のため
+                 *   読み上げ経路には乗らないが、将来 aria-hidden を外すケースに備える）
+                 * - CSS `.accountTravelers a` で pointer-events を復活させてクリック可能化
                  */}
-                <g
-                  className={styles.accountAvatarPop}
-                  style={{ animationDelay: `${delay}s` }}
+                <a
+                  href={accountUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={labelText}
+                  className={styles.accountTravelerLink}
                 >
-                  <image
-                    href={line.avatarSrc}
-                    x={-AVATAR_R + 1.2}
-                    y={-AVATAR_R + 1.2}
-                    width={(AVATAR_R - 1.2) * 2}
-                    height={(AVATAR_R - 1.2) * 2}
-                    clipPath="url(#avatarClip)"
-                    preserveAspectRatio="xMidYMid slice"
-                  />
-                  {/* 白枠（読みやすさ） */}
-                  <circle
-                    r={AVATAR_R - 0.6}
-                    fill="none"
-                    stroke="#fff"
-                    strokeWidth="1.8"
-                  />
-                  {/* アカウント色の外リング */}
-                  <circle
-                    r={AVATAR_R + 0.6}
-                    fill="none"
-                    stroke={line.ringColor}
-                    strokeWidth="1.6"
-                    opacity="0.85"
-                  />
-                </g>
+                  <title>{labelText}</title>
+                  {/*
+                   * 内側のスケール用 <g>。親 <g> は animateMotion で移動だけを担当し、
+                   * このネスト <g> が CSS keyframes (accountAvatarPop) でスケール変化を
+                   * 行うことで「移動の transform」と「スケールの transform」が
+                   * 衝突せずに合成される。animation-delay は親の animateMotion begin と
+                   * 同一にして、到着タイミングとスケールピークを同期させる。
+                   */}
+                  <g
+                    className={styles.accountAvatarPop}
+                    style={{ animationDelay: `${delay}s` }}
+                  >
+                    <image
+                      href={line.avatarSrc}
+                      x={-AVATAR_R + 1.2}
+                      y={-AVATAR_R + 1.2}
+                      width={(AVATAR_R - 1.2) * 2}
+                      height={(AVATAR_R - 1.2) * 2}
+                      clipPath="url(#avatarClip)"
+                      preserveAspectRatio="xMidYMid slice"
+                    />
+                    {/* 白枠（読みやすさ） */}
+                    <circle
+                      r={AVATAR_R - 0.6}
+                      fill="none"
+                      stroke="#fff"
+                      strokeWidth="1.8"
+                    />
+                    {/* アカウント色の外リング */}
+                    <circle
+                      r={AVATAR_R + 0.6}
+                      fill="none"
+                      stroke={line.ringColor}
+                      strokeWidth="1.6"
+                      opacity="0.85"
+                    />
+                  </g>
+                </a>
                 <animateMotion
                   dur="8s"
                   begin={`${delay}s`}

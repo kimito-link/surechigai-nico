@@ -3468,7 +3468,36 @@ details[open] .detailMapSummary::before {
  * デフォルトの opacity は SVG 側の <animate> で 0→1 に立ち上がる。
  */
 .accountTravelers {
+  /*
+   * 軌跡そのものや装飾 <g> はクリック対象にしない。
+   * 個別の <a> タグ (accountTravelerLink) だけ pointer-events: auto を
+   * 復活させて、アバター本体をクリック可能エリアとする。
+   */
   pointer-events: none;
+}
+
+/*
+ * 実在の X アカウントへリンクするアバター本体。
+ * - cursor: pointer でクリック可能性を視覚的に示す
+ * - hover/focus で少し明るくしてフィードバック
+ * - focus-visible はキーボード操作時のアウトライン
+ * - outline-offset はアバターの外側リングと干渉しないよう確保
+ */
+.accountTravelerLink {
+  pointer-events: auto;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.accountTravelerLink:hover,
+.accountTravelerLink:focus-visible {
+  filter: brightness(1.1) drop-shadow(0 0 3px rgba(26, 88, 152, 0.55));
+}
+
+.accountTravelerLink:focus-visible {
+  outline: 2px solid #1a5898;
+  outline-offset: 3px;
+  border-radius: 50%;
 }
 
 /*
