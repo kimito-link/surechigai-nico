@@ -64,11 +64,11 @@ const SPECIAL_THANKS_LINKS = [
     href: "https://www.ahuranproject.com/",
   },
   {
-    label: "佐藤さんのXアカウント",
+    label: "@yuka_designer",
     href: "https://x.com/yuka_designer",
   },
   {
-    label: "オオマユさんのXアカウント",
+    label: "@oomayu12345",
     href: "https://x.com/oomayu12345",
   },
   {
@@ -76,47 +76,47 @@ const SPECIAL_THANKS_LINKS = [
     href: "https://oto1to1.com/",
   },
   {
-    label: "OTO1to1のXアカウント",
+    label: "@OTO1to1",
     href: "https://x.com/OTO1to1",
   },
   {
-    label: "あぶそりゅーと☆せぶん 公式X",
+    label: "@abuso2525",
     href: "https://x.com/abuso2525",
   },
   {
-    label: "しらせのXアカウント",
+    label: "@shirase_0404",
     href: "https://x.com/shirase_0404",
   },
   {
-    label: "しらいっのXアカウント",
+    label: "@ewbcwj_lv",
     href: "https://x.com/ewbcwj_lv",
   },
   {
-    label: "しんせいねうのXアカウント",
+    label: "@sinseinaru",
     href: "https://x.com/sinseinaru",
   },
   {
-    label: "ゆずち☆のXアカウント",
+    label: "@yuzuchis_mammy",
     href: "https://x.com/yuzuchis_mammy",
   },
   {
-    label: "みぃですのXアカウント",
+    label: "@bakusyokuM",
     href: "https://x.com/bakusyokuM",
   },
   {
-    label: "まある20.0のXアカウント",
+    label: "@m20210411",
     href: "https://x.com/m20210411",
   },
   {
-    label: "蒼凪(あおなぎ)しずくのXアカウント",
+    label: "@flap_shizuku",
     href: "https://x.com/flap_shizuku",
   },
   {
-    label: "星野ロミさん 公式X",
+    label: "@romi_hoshino",
     href: "https://x.com/romi_hoshino",
   },
   {
-    label: "星野ロミさん サブX",
+    label: "@romi63hoshino",
     href: "https://x.com/romi63hoshino",
   },
 ] as const;
