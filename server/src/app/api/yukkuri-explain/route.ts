@@ -7,6 +7,10 @@ export const maxDuration = 300;
 
 const CACHE_TTL_OK = 3600; // 1時間キャッシュ（成功）
 const CACHE_TTL_FAIL = 20; // 20秒キャッシュ（失敗）— 一時障害時の再試行余地を残す
+const CACHE_TTL_MEM_OK_MS = 10 * 60 * 1000; // 10分（インスタンス内）
+const OPENROUTER_GLOBAL_BACKOFF_KEY = "yukkuri:openrouter:backoff:global";
+const OPENROUTER_GLOBAL_BACKOFF_MAX_SEC = 180;
+const OPENROUTER_MODEL_COOLDOWN_MS = 120_000;
 
 /**
  * OpenRouter 無料モデル候補。
@@ -86,14 +90,45 @@ type CachedPayload =
   | { ok: true; dialogue: Dialogue }
   | { ok: false; errorCode: string; status?: number; message?: string };
 
+const memoryCache = new Map<
+  string,
+  { payload: CachedPayload; expiresAt: number }
+>();
+const modelCooldownUntil = new Map<string, number>();
+let globalBackoffUntilLocal = 0;
+let global429Strike = 0;
+
 // ---------------- Upstash キャッシュ ----------------
+
+function cacheKeyFromHandle(handle: string): string {
+  return `yukkuri:${handle.toLowerCase()}`;
+}
+
+function getCachedFromMemory(handle: string): CachedPayload | null {
+  const key = cacheKeyFromHandle(handle);
+  const hit = memoryCache.get(key);
+  if (!hit) return null;
+  if (hit.expiresAt <= Date.now()) {
+    memoryCache.delete(key);
+    return null;
+  }
+  return hit.payload;
+}
+
+function setCachedToMemory(handle: string, payload: CachedPayload) {
+  const key = cacheKeyFromHandle(handle);
+  const ttlMs = payload.ok ? CACHE_TTL_MEM_OK_MS : CACHE_TTL_FAIL * 1000;
+  memoryCache.set(key, { payload, expiresAt: Date.now() + ttlMs });
+}
 
 async function getCached(handle: string): Promise<CachedPayload | null> {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token || !handle) return null;
+  const memoryHit = getCachedFromMemory(handle);
+  if (memoryHit) return memoryHit;
   try {
-    const res = await fetch(`${url}/get/yukkuri:${encodeURIComponent(handle)}`, {
+    const res = await fetch(`${url}/get/${encodeURIComponent(cacheKeyFromHandle(handle))}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return null;
@@ -108,10 +143,14 @@ async function getCached(handle: string): Promise<CachedPayload | null> {
         "konta" in parsed &&
         "tanunee" in parsed
       ) {
-        return { ok: true, dialogue: parsed as Dialogue };
+        const payload = { ok: true, dialogue: parsed as Dialogue } as const;
+        setCachedToMemory(handle, payload);
+        return payload;
       }
       if (parsed && typeof parsed === "object" && "errorCode" in parsed) {
-        return parsed as CachedPayload;
+        const payload = parsed as CachedPayload;
+        setCachedToMemory(handle, payload);
+        return payload;
       }
     } catch {
       /* legacy raw dialogue 文字列なども捨てる */
@@ -123,9 +162,11 @@ async function getCached(handle: string): Promise<CachedPayload | null> {
 }
 
 async function setCached(handle: string, payload: CachedPayload) {
+  if (!handle) return;
+  setCachedToMemory(handle, payload);
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token || !handle) return;
+  if (!url || !token) return;
   try {
     const ttl = payload.ok ? CACHE_TTL_OK : CACHE_TTL_FAIL;
     await fetch(`${url}/pipeline`, {
@@ -135,12 +176,63 @@ async function setCached(handle: string, payload: CachedPayload) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify([
-        ["SET", `yukkuri:${handle}`, JSON.stringify(payload), "EX", ttl],
+        ["SET", cacheKeyFromHandle(handle), JSON.stringify(payload), "EX", ttl],
       ]),
     });
   } catch {
     console.warn("[yukkuri-explain] upstash setCached failed");
   }
+}
+
+async function getGlobalBackoffUntilRedis(): Promise<number> {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return 0;
+  try {
+    const res = await fetch(`${url}/get/${encodeURIComponent(OPENROUTER_GLOBAL_BACKOFF_KEY)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return 0;
+    const data = (await res.json()) as { result?: string | null };
+    const n = Number.parseInt(data.result ?? "", 10);
+    return Number.isFinite(n) ? n : 0;
+  } catch {
+    return 0;
+  }
+}
+
+async function setGlobalBackoff(seconds: number) {
+  const now = Date.now();
+  const until = now + Math.max(1, seconds) * 1000;
+  globalBackoffUntilLocal = Math.max(globalBackoffUntilLocal, until);
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return;
+  try {
+    await fetch(`${url}/pipeline`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify([
+        ["SET", OPENROUTER_GLOBAL_BACKOFF_KEY, String(until), "EX", Math.max(1, seconds)],
+      ]),
+    });
+  } catch {
+    console.warn("[yukkuri-explain] setGlobalBackoff failed");
+  }
+}
+
+function nextGlobalBackoffSeconds(): number {
+  global429Strike = Math.min(global429Strike + 1, 6);
+  const base = 12 * 2 ** (global429Strike - 1);
+  const jitter = Math.floor(Math.random() * 6);
+  return Math.min(OPENROUTER_GLOBAL_BACKOFF_MAX_SEC, base + jitter);
+}
+
+function resetGlobalBackoffStrike() {
+  global429Strike = 0;
 }
 
 // ---------------- X プロフィール ----------------
@@ -678,12 +770,27 @@ export async function GET() {
       }
     : { configured: false as const };
 
+  const now = Date.now();
+  const globalBackoffUntilRedis = await getGlobalBackoffUntilRedis();
+  const globalBackoffUntil = Math.max(globalBackoffUntilLocal, globalBackoffUntilRedis);
+  const cooldowns = Object.fromEntries(
+    MODELS.map((m) => {
+      const until = modelCooldownUntil.get(m) ?? 0;
+      return [m, until > now ? Math.ceil((until - now) / 1000) : 0];
+    })
+  );
+
   return NextResponse.json({
     yukkuriExplain: "ok",
     ollama: ollamaConfigured
       ? { configured: true, model: ollamaModel, reachable: ollamaReachable, suspicious: ollamaSuspicious }
       : { configured: false },
     openRouter,
+    backoff: {
+      global_wait_sec: globalBackoffUntil > now ? Math.ceil((globalBackoffUntil - now) / 1000) : 0,
+      model_wait_sec: cooldowns,
+      strike: global429Strike,
+    },
     models: MODELS,
     budgets: { total_ms: TOTAL_BUDGET_MS, per_model_min_ms: PER_MODEL_MIN_MS },
   });
@@ -780,10 +887,45 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const now = Date.now();
+  const globalBackoffUntilRedis = await getGlobalBackoffUntilRedis();
+  const globalBackoffUntil = Math.max(globalBackoffUntilLocal, globalBackoffUntilRedis);
+  if (apiKey && now < globalBackoffUntil) {
+    const fallback = buildFallbackDialogue(body, profile);
+    if (handle) {
+      await setCached(handle, { ok: true, dialogue: fallback });
+    }
+    const waitSec = Math.max(1, Math.ceil((globalBackoffUntil - now) / 1000));
+    console.warn(
+      `[yukkuri-explain] global_backoff_skip wait=${waitSec}s handle=${handle || "-"}`
+    );
+    return NextResponse.json(
+      {
+        ...fallback,
+        degraded: true,
+        source: "fallback_backoff_global",
+      },
+      { headers: { "Retry-After": String(waitSec) } }
+    );
+  }
+
   // OpenRouter モデル群
   if (apiKey) {
     let modelsLeft = MODELS.length;
     for (const model of MODELS) {
+      const coolUntil = modelCooldownUntil.get(model) ?? 0;
+      if (Date.now() < coolUntil) {
+        failures.push({
+          ok: false,
+          model,
+          elapsedMs: 0,
+          errorCode: "E_YUKKURI_LLM_UPSTREAM_429",
+          status: 429,
+          errorMessage: `model cooldown active until ${new Date(coolUntil).toISOString()}`,
+        });
+        modelsLeft -= 1;
+        continue;
+      }
       const rb = remainingBudget();
       if (rb <= PER_MODEL_MIN_MS) {
         console.warn(`[yukkuri-explain] budget exhausted before model=${model} remaining=${rb}ms`);
@@ -803,6 +945,7 @@ export async function POST(req: NextRequest) {
         const dialogue = extractDialogue(r.text);
         if (dialogue) {
           await setCached(handle, { ok: true, dialogue });
+          resetGlobalBackoffStrike();
           console.log(
             `[yukkuri-explain] success model=${r.model} elapsed=${r.elapsedMs}ms handle=${handle || "-"}`
           );
@@ -817,6 +960,11 @@ export async function POST(req: NextRequest) {
         continue;
       }
       failures.push(r);
+      if (r.errorCode === "E_YUKKURI_LLM_UPSTREAM_429") {
+        modelCooldownUntil.set(model, Date.now() + OPENROUTER_MODEL_COOLDOWN_MS);
+        const backoffSec = nextGlobalBackoffSeconds();
+        await setGlobalBackoff(backoffSec);
+      }
       // レート上限 / 認証系は継続しても無意味なので即失敗扱いに
       if (
         r.errorCode === "E_YUKKURI_LLM_UPSTREAM_401" ||
