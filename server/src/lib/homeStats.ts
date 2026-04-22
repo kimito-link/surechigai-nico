@@ -1,6 +1,7 @@
 import "server-only";
 import type { RowDataPacket } from "mysql2";
 import pool from "@/lib/db";
+import { countYukkuriExplainedArchive } from "@/lib/yukkuriExplainedArchive";
 
 /** 「現在参加中」の判定窓（分） */
 export const ACTIVE_WINDOW_MINUTES = 30;
@@ -62,7 +63,7 @@ async function loadEncountersTotal(): Promise<number> {
   }
 }
 
-async function loadYukkuriExplained(): Promise<number> {
+async function loadYukkuriExplainedRedis(): Promise<number> {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) return 0;
@@ -81,6 +82,43 @@ async function loadYukkuriExplained(): Promise<number> {
   } catch {
     return 0;
   }
+}
+
+/**
+ * 解説成功時に固有ハンドル集合へ SADD（べき等）。
+ * キャッシュヒット時は setCached が呼ばれないため、ここでも記録して TOP の件数と揃える。
+ */
+export async function recordYukkuriExplainedHandleRedis(handle: string): Promise<void> {
+  const h = handle.replace(/^@+/, "").trim().toLowerCase();
+  if (!h) return;
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return;
+  try {
+    const res = await fetch(`${url}/pipeline`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify([["SADD", YUKKURI_EXPLAINED_SET_KEY, h]]),
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      console.warn("[homeStats] recordYukkuriExplainedHandleRedis pipeline not ok", res.status);
+    }
+  } catch {
+    console.warn("[homeStats] recordYukkuriExplainedHandleRedis failed");
+  }
+}
+
+/** DB アーカイブ件数と Redis 集合の大きい方（移行期間・Redis 未設定でも DB のみで表示できる） */
+async function loadYukkuriExplained(): Promise<number> {
+  const [fromRedis, fromDb] = await Promise.all([
+    loadYukkuriExplainedRedis(),
+    countYukkuriExplainedArchive(),
+  ]);
+  return Math.max(fromRedis, fromDb);
 }
 
 /**

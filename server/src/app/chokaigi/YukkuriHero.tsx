@@ -53,6 +53,13 @@ export function YukkuriHero() {
     return () => window.clearInterval(t);
   }, [loading]);
 
+  /** サーバー描画の HeroStats を、解説 API 成功直後に再取得してチップの人数を更新する */
+  useEffect(() => {
+    if (!dialogue || loading) return;
+    if (error) return;
+    router.refresh();
+  }, [dialogue, loading, error, router]);
+
   const raw = handle.trim().replace(/^@+/, "");
   const hasInput = raw.length > 0;
   const isTalking = Boolean(dialogue);

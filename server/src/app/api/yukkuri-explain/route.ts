@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { YUKKURI_EXPLAINED_SET_KEY } from "@/lib/homeStats";
+import { recordYukkuriExplainedHandleRedis, YUKKURI_EXPLAINED_SET_KEY } from "@/lib/homeStats";
+import { upsertYukkuriExplainedArchive } from "@/lib/yukkuriExplainedArchive";
 
 /** ローカル / Tunnel の Ollama は応答が長い。Edge ではなく Node ランタイムを使う。 */
 export const runtime = "nodejs";
@@ -57,6 +58,27 @@ const SYSTEM_PROMPT = `あなたはニコニコ超会議2026「すれちがい�
 {"rink":"セリフ","konta":"セリフ","tanunee":"セリフ"}`;
 
 type Dialogue = { rink: string; konta: string; tanunee: string };
+
+async function scheduleArchiveSave(
+  handleRaw: string,
+  dialogue: Dialogue,
+  body: { name?: string },
+  source: string
+) {
+  const h = handleRaw.replace(/^@+/, "").trim();
+  if (!h) return;
+  await Promise.all([
+    upsertYukkuriExplainedArchive({
+      xHandle: h,
+      displayName: body.name?.trim() || null,
+      rink: dialogue.rink,
+      konta: dialogue.konta,
+      tanunee: dialogue.tanunee,
+      source,
+    }),
+    recordYukkuriExplainedHandleRedis(h),
+  ]);
+}
 
 type LlmErrorCode =
   | "E_YUKKURI_LLM_TIMEOUT"
@@ -836,6 +858,7 @@ export async function POST(req: NextRequest) {
   const cached = await getCached(handle);
   if (cached) {
     if (cached.ok) {
+      await scheduleArchiveSave(handle, cached.dialogue, body, "cache_hit");
       return NextResponse.json(cached.dialogue);
     }
     if (!useOllama) {
@@ -843,6 +866,7 @@ export async function POST(req: NextRequest) {
       if (handle) {
         await setCached(handle, { ok: true, dialogue: fallback });
       }
+      await scheduleArchiveSave(handle, fallback, body, "fallback_no_ollama");
       return NextResponse.json({
         ...fallback,
         degraded: true,
@@ -866,6 +890,7 @@ export async function POST(req: NextRequest) {
     if (handle) {
       await setCached(handle, { ok: true, dialogue: fallback });
     }
+    await scheduleArchiveSave(handle, fallback, body, "fallback_no_ollama");
     return NextResponse.json({
       ...fallback,
       degraded: true,
@@ -887,6 +912,7 @@ export async function POST(req: NextRequest) {
       const dialogue = extractDialogue(r.text);
       if (dialogue) {
         await setCached(handle, { ok: true, dialogue });
+        await scheduleArchiveSave(handle, dialogue, body, "ollama");
         return NextResponse.json(dialogue);
       }
       failures.push({
@@ -905,6 +931,7 @@ export async function POST(req: NextRequest) {
     if (handle) {
       await setCached(handle, { ok: true, dialogue: fallback });
     }
+    await scheduleArchiveSave(handle, fallback, body, "fallback_ollama");
     console.warn(
       `[yukkuri-explain] fallback_ollama handle=${handle || "-"} failures=${JSON.stringify(
         failures.map((f) => (f.ok ? null : { m: f.model, c: f.errorCode, s: f.status, e: f.elapsedMs }))
