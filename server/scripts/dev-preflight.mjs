@@ -71,7 +71,7 @@ if (!vxBase) {
 }
 console.log("");
 
-const nextBase = (process.env.YUKKURI_BASE || "http://127.0.0.1:3010").replace(/\/$/, "");
+const nextBase = (process.env.YUKKURI_BASE || "http://localhost:3010").replace(/\/$/, "");
 console.log(`[Next プロキシ（任意・サーバー起動中なら）] ${nextBase}`);
 try {
   const r = await fetch(`${nextBase}/api/voicevox/synthesize`, {
@@ -89,7 +89,7 @@ try {
     console.log(`  ⚠ HTTP ${r.status}（このプロジェクトの next dev なら通常 200）`);
     if (r.status === 500 || r.status === 404) {
       console.log("     → ポートが別アプリを掴んでいる可能性があります。");
-      console.log("        npm run dev:3011 で別ポート起動、または YUKKURI_BASE=http://127.0.0.1:3011 npm run preflight");
+      console.log("        npm run dev:3011 で別ポート起動、または YUKKURI_BASE=http://localhost:3011 npm run preflight");
       console.log("        PowerShell 例: Get-NetTCPConnection -LocalPort 3010 | Select-Object OwningProcess");
     } else {
       console.log("     → npm run dev 実行後に再試行してください");

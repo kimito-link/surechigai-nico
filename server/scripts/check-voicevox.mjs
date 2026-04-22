@@ -1,8 +1,8 @@
 /**
  * GET /api/voicevox/synthesize — VOICEVOX プロキシの設定確認
- * YUKKURI_BASE=http://127.0.0.1:3010 node scripts/check-voicevox.mjs
+ * YUKKURI_BASE=http://localhost:3010 node scripts/check-voicevox.mjs
  */
-const base = (process.env.YUKKURI_BASE || "http://127.0.0.1:3010").replace(/\/$/, "");
+const base = (process.env.YUKKURI_BASE || "http://localhost:3010").replace(/\/$/, "");
 const url = `${base}/api/voicevox/synthesize`;
 const res = await fetch(url);
 const text = await res.text();
