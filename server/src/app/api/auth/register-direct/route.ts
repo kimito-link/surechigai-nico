@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import pool from "@/lib/db";
 import { mapDbErrorToUserMessage } from "@/lib/mapDbError";
 import { v4 as uuidv4 } from "uuid";
@@ -54,12 +55,34 @@ function normalizeAvatarConfigForDb(
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { clerkId, email, twitterHandle, displayName, avatarUrl } = body;
-
-    if (!clerkId || typeof clerkId !== "string") {
-      return Response.json({ error: "clerkId が必要です" }, { status: 400 });
+    // 【重要】clerkId は Clerk サーバセッションから取得する。
+    // body の clerkId は無視する（なりすまし防止: ログイン中ユーザのみを更新対象とする）。
+    const { userId: sessionClerkId } = await auth();
+    if (!sessionClerkId) {
+      return Response.json(
+        { error: "ログインが必要です" },
+        { status: 401 }
+      );
     }
+
+    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+
+    // 参考: body.clerkId がセッション ID と不一致ならクライアントのバグとして 403 を返す
+    const bodyClerkId = body.clerkId;
+    if (typeof bodyClerkId === "string" && bodyClerkId !== sessionClerkId) {
+      return Response.json(
+        { error: "セッションと異なるユーザの登録はできません" },
+        { status: 403 }
+      );
+    }
+
+    const clerkId = sessionClerkId;
+    const toStrOrNull = (v: unknown): string | null =>
+      typeof v === "string" ? v : null;
+    const email = toStrOrNull(body.email);
+    const twitterHandle = toStrOrNull(body.twitterHandle);
+    const displayName = toStrOrNull(body.displayName);
+    const avatarUrl = toStrOrNull(body.avatarUrl);
 
     const [existing] = await pool.execute<RowDataPacket[]>(
       "SELECT id, uuid, nickname, avatar_config, avatar_url FROM users WHERE clerk_id = ? AND is_deleted = FALSE",

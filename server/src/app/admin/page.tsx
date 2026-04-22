@@ -48,23 +48,49 @@ export default function AdminPage() {
   const [reports, setReports] = useState<ReportedUser[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const adminHeaders: HeadersInit = {
-    Authorization: "Basic " + btoa("admin:admin"),
+  /**
+   * 管理 API は Basic 認証で保護されている。
+   * `credentials: "include"` でブラウザに認証ヘッダを自動付与させる。
+   * 初回 401 でブラウザが認証ダイアログを出し、以降は自動で付与される。
+   */
+  const ADMIN_FETCH_OPTIONS: RequestInit = {
+    credentials: "include",
   };
 
   const fetchReports = () => {
-    fetch("/api/admin/reports", { headers: adminHeaders })
-      .then((r) => r.json())
+    fetch("/api/admin/reports", ADMIN_FETCH_OPTIONS)
+      .then(async (r) => {
+        if (r.status === 401) {
+          setError("管理者認証が必要です（ブラウザの認証ダイアログでログインしてください）");
+          return null;
+        }
+        if (r.status === 503) {
+          setError("管理 API が未設定です（環境変数 ADMIN_USER / ADMIN_PASS を設定してください）");
+          return null;
+        }
+        return r.json();
+      })
       .then((data) => {
-        if (data.reports) setReports(data.reports);
+        if (data?.reports) setReports(data.reports);
       })
       .catch(() => {});
   };
 
   useEffect(() => {
-    fetch("/api/admin/stats", { headers: adminHeaders })
-      .then((r) => r.json())
+    fetch("/api/admin/stats", ADMIN_FETCH_OPTIONS)
+      .then(async (r) => {
+        if (r.status === 401) {
+          setError("管理者認証が必要です（ブラウザの認証ダイアログでログインしてください）");
+          return null;
+        }
+        if (r.status === 503) {
+          setError("管理 API が未設定です（環境変数 ADMIN_USER / ADMIN_PASS を設定してください）");
+          return null;
+        }
+        return r.json();
+      })
       .then((data) => {
+        if (!data) return;
         if (data.error) setError(data.error);
         else setStats(data);
       })
@@ -75,7 +101,8 @@ export default function AdminPage() {
   const handleModAction = async (userId: number, action: "suspend" | "unsuspend") => {
     await fetch("/api/admin/reports", {
       method: "PATCH",
-      headers: { ...adminHeaders, "Content-Type": "application/json" },
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, action }),
     });
     fetchReports();

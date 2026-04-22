@@ -1,8 +1,12 @@
+import { NextRequest } from "next/server";
 import pool from "@/lib/db";
+import { requireAdminAuth } from "@/lib/adminAuth";
 import type { RowDataPacket } from "mysql2";
 
-// 管理用統計API（middlewareでBasic認証済み）
-export async function GET() {
+// 管理用統計API — Basic 認証 (requireAdminAuth) で保護
+export async function GET(req: NextRequest) {
+  const unauth = requireAdminAuth(req);
+  if (unauth) return unauth;
 
   try {
     // DAU（今日app_openしたユニークユーザー数）

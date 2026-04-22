@@ -183,13 +183,18 @@ export async function GET(req: NextRequest) {
         : "公開モード: 匿名の500mグリッド位置を表示しています",
     });
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
     console.error("会場ライブマップ取得エラー:", error);
+    const debug =
+      process.env.NODE_ENV === "production"
+        ? undefined
+        : error instanceof Error
+          ? error.message
+          : String(error);
     return Response.json(
       {
         ok: false,
         error: "会場ライブマップの取得に失敗しました",
-        debug: msg,
+        ...(debug ? { debug } : {}),
       },
       { status: 503 }
     );

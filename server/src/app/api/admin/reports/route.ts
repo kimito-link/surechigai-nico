@@ -1,9 +1,13 @@
 import { NextRequest } from "next/server";
 import pool from "@/lib/db";
+import { requireAdminAuth } from "@/lib/adminAuth";
 import type { RowDataPacket } from "mysql2";
 
-// 通報一覧(ユーザーごとに集約) — middlewareでBasic認証済み
-export async function GET() {
+// 通報一覧(ユーザーごとに集約) — Basic 認証 (requireAdminAuth) で保護
+export async function GET(req: NextRequest) {
+  const unauth = requireAdminAuth(req);
+  if (unauth) return unauth;
+
   const [rows] = await pool.execute<RowDataPacket[]>(`
     SELECT
       u.id AS user_id,
@@ -29,8 +33,11 @@ export async function GET() {
   return Response.json({ reports: rows });
 }
 
-// 停止/解除 — middlewareでBasic認証済み
+// 停止/解除 — Basic 認証 (requireAdminAuth) で保護
 export async function PATCH(req: NextRequest) {
+  const unauth = requireAdminAuth(req);
+  if (unauth) return unauth;
+
   const { userId, action } = await req.json();
 
   if (!userId || !["suspend", "unsuspend"].includes(action)) {

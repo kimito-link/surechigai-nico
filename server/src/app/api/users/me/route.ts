@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   if (authResult instanceof Response) return authResult;
 
   const [rows] = await pool.execute<RowDataPacket[]>(
-    `SELECT id, uuid, nickname, avatar_config, avatar_url, hitokoto,
+    `SELECT id, uuid, nickname, avatar_config, avatar_url, hitokoto, hitokoto_set_at,
             spotify_track_id, spotify_track_name, spotify_artist_name, spotify_album_image_url,
             age_group, gender, show_age_group, show_gender,
             notification_enabled, location_paused_until, streak_count, last_encounter_date, created_at
