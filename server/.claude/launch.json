@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3010
+    },
+    {
+      "name": "chokaigi-dev-3011",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:3011"],
+      "port": 3011
     }
   ]
 }

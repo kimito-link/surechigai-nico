@@ -106,8 +106,17 @@ export async function POST(req: NextRequest) {
       const tw = clipTwitterHandleForDb(
         typeof twitterHandle === "string" ? twitterHandle : null
       );
+      // twitter_handle は X 必須ログイン前提だが、Clerk が externalAccount.username を
+      // 返さないタイミングがあるため、NULL で上書きすると既存のハンドルが飛ぶ。
+      // COALESCE で「値がある場合のみ更新・無い場合は既存を維持」にしておく。
       await pool.execute(
-        "UPDATE users SET nickname = ?, avatar_config = ?, avatar_url = ?, twitter_handle = ?, clerk_email = ? WHERE id = ?",
+        `UPDATE users
+           SET nickname = ?,
+               avatar_config = ?,
+               avatar_url = ?,
+               twitter_handle = COALESCE(?, twitter_handle),
+               clerk_email = ?
+         WHERE id = ?`,
         [nickname, avatarConfig, nextAvatarUrl, tw, email || null, user.id]
       );
       return Response.json({

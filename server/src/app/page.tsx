@@ -15,6 +15,7 @@ import {
 } from "./chokaigi/lp-content";
 import { HomeVenueWander } from "./HomeVenueWander";
 import { PrefetchChokaigiWhenVisible } from "./components/PrefetchChokaigiRoutes";
+import HeroStats from "./components/HeroStats";
 import LiveParticipants from "./components/LiveParticipants";
 import { CreatorCrossSearch } from "./chokaigi/CreatorCrossSearch";
 import { YukkuriHero } from "./chokaigi/YukkuriHero";
@@ -59,6 +60,9 @@ export default function Home() {
             </span>
             <h1 className={styles.title}>すれちがいライト</h1>
             <p className={styles.lead}>{HOME_HERO_LEAD}</p>
+            <Suspense fallback={null}>
+              <HeroStats />
+            </Suspense>
             <PrefetchChokaigiWhenVisible>
               <div className={styles.ctaRow}>
                 <Link href="/chokaigi" className={styles.ctaPrimary}>

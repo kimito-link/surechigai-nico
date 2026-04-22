@@ -5,17 +5,46 @@ import { mapDbErrorToUserMessage } from "@/lib/mapDbError";
 import { reverseGeocodeToMunicipality } from "@/lib/geocoding";
 import { toGrid, toH3Cell, assertFiniteLatLng } from "@/lib/locationGeom";
 import { publishLiveMapEvent } from "@/lib/liveMapBus";
+import { PREFECTURES, extractPrefecture } from "@/lib/prefectureCoords";
 import type { RowDataPacket } from "mysql2";
 
 export const runtime = "nodejs";
 
 const MUNICIPALITY_MAX = 50;
 
+/**
+ * クライアント/サーバどちらの逆ジオ結果でも扱えるよう文字列を正規化する。
+ *   - 全角/半角スペース・タブ・連続スペースを除去
+ *   - "東京都 千代田区" → "東京都千代田区"
+ *   - 50 文字を超える場合は切り詰め（DB カラム長に合わせる）
+ *   - 都道府県を含まないもの（"千代田区" 単独など）はそのまま返す。
+ *     extractPrefecture 側で解決できなければピン表示から自然に外れる。
+ */
 function normalizeMunicipality(value: unknown): string | null {
   if (value == null) return null;
-  const s = String(value).trim();
-  if (!s) return null;
-  return s.slice(0, MUNICIPALITY_MAX);
+  const collapsed = String(value)
+    .replace(/[\s\u3000]+/g, "")
+    .trim();
+  if (!collapsed) return null;
+  return collapsed.slice(0, MUNICIPALITY_MAX);
+}
+
+/**
+ * lat/lng から最寄りの都道府県名を返す最終フォールバック。
+ * クライアント Geolonia + サーバ Nominatim が両方失敗しても
+ * 「長野県」「福岡県」などの粒度の表示は維持できるようにする。
+ */
+function nearestPrefectureName(lat: number, lng: number): string | null {
+  let best: { name: string; dist: number } | null = null;
+  for (const p of PREFECTURES) {
+    const dLat = p.lat - lat;
+    const dLng = p.lng - lng;
+    const dist = dLat * dLat + dLng * dLng;
+    if (best == null || dist < best.dist) {
+      best = { name: p.name, dist };
+    }
+  }
+  return best ? best.name : null;
 }
 
 export async function POST(req: NextRequest) {
@@ -122,20 +151,31 @@ export async function POST(req: NextRequest) {
       ts: Date.now(),
     });
 
-    // Nominatim 逆ジオは非同期で補完（レスポンスをブロックしない）
+    // Nominatim 逆ジオは非同期で補完（レスポンスをブロックしない）。
+    // Nominatim が失敗しても municipality が NULL のまま残らないよう、
+    // 最寄りの都道府県名で粗く埋めるフォールバックを挟む（/creators の県別集計に反映される）。
     if (!eagerMunicipality && insertedId) {
       void (async () => {
+        let resolved: string | null = null;
         try {
           const raw = await reverseGeocodeToMunicipality(lat, lng);
-          const m = normalizeMunicipality(raw);
-          if (m) {
-            await pool.execute(
-              "UPDATE locations SET municipality = ? WHERE id = ?",
-              [m, insertedId]
-            );
-          }
+          resolved = normalizeMunicipality(raw);
         } catch (err) {
           console.warn("[逆ジオ非同期補完失敗]", err);
+        }
+        if (!resolved || !extractPrefecture(resolved)) {
+          // Nominatim が 5xx やタイムアウトした場合でも県レベルは担保する
+          resolved = nearestPrefectureName(lat, lng);
+        }
+        if (resolved) {
+          try {
+            await pool.execute(
+              "UPDATE locations SET municipality = ? WHERE id = ?",
+              [resolved, insertedId]
+            );
+          } catch (updateErr) {
+            console.warn("[逆ジオ UPDATE 失敗]", updateErr);
+          }
         }
       })();
     }

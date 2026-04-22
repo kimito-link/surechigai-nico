@@ -620,7 +620,7 @@ export default function LocationButton({
       {/* 全国参加者マップ + エリアタグ */}
       {mapPayload?.areaStats && mapPayload.areaStats.length > 0 && (
         <div className={styles.areaStatsWrap}>
-          <h5 className={styles.areaStatsTitle}>全国の参加者（過去30分）</h5>
+          <h5 className={styles.areaStatsTitle}>全国の参加者（累計・最新位置）</h5>
           <JapanMap
             areaStats={mapPayload.areaStats}
             selfMunicipality={

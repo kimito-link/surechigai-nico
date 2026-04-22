@@ -6,7 +6,8 @@ import { PREFECTURES, extractPrefecture, type PrefectureInfo } from "@/lib/prefe
 export const LIVE_WINDOW_MINUTES = 30;
 
 export type CreatorEntry = {
-  twitterHandle: string;
+  userId: number;
+  twitterHandle: string | null;
   nickname: string;
   avatarUrl: string | null;
   lastActiveAt: string | null;
@@ -44,6 +45,7 @@ type PairRow = RowDataPacket & {
 };
 
 type CreatorRow = RowDataPacket & {
+  user_id: number;
   twitter_handle: string | null;
   nickname: string | null;
   avatar_url: string | null;
@@ -62,6 +64,7 @@ function buildEmptySummary(): PrefectureSummary[] {
 
 export async function getPrefectureSummaries(): Promise<PrefectureListResult> {
   try {
+    // twitter_handle 未設定の参加者も一覧に含める（X 未連携でも都道府県に居た事実は残す）。
     const [rows] = await pool.execute<PairRow[]>(
       `SELECT DISTINCT
          l.user_id,
@@ -71,8 +74,6 @@ export async function getPrefectureSummaries(): Promise<PrefectureListResult> {
        INNER JOIN users u ON u.id = l.user_id
        WHERE u.is_deleted = FALSE
          AND u.is_suspended = FALSE
-         AND u.twitter_handle IS NOT NULL
-         AND u.twitter_handle <> ''
          AND l.municipality IS NOT NULL`
     );
 
@@ -138,8 +139,10 @@ export async function getCreatorsByPrefecture(
   }
 
   try {
+    // twitter_handle 未設定の参加者も含めて返す（X 未連携の方もニックネームで表示する）。
     const [rows] = await pool.execute<CreatorRow[]>(
       `SELECT
+         u.id AS user_id,
          u.twitter_handle,
          u.nickname,
          u.avatar_url,
@@ -149,8 +152,6 @@ export async function getCreatorsByPrefecture(
        INNER JOIN locations l ON l.user_id = u.id
        WHERE u.is_deleted = FALSE
          AND u.is_suspended = FALSE
-         AND u.twitter_handle IS NOT NULL
-         AND u.twitter_handle <> ''
          AND l.municipality LIKE ?
        GROUP BY u.id
        ORDER BY u.last_active_at DESC, last_seen_in_pref DESC`,
@@ -158,34 +159,35 @@ export async function getCreatorsByPrefecture(
     );
 
     const now = Date.now();
-    const creators: CreatorEntry[] = rows
-      .filter((r): r is CreatorRow & { twitter_handle: string } =>
-        Boolean(r.twitter_handle)
-      )
-      .map((r) => {
-        const lastActive = r.last_active_at
-          ? new Date(r.last_active_at).getTime()
-          : 0;
-        const minutesSinceActive =
-          lastActive > 0
-            ? Math.floor((now - lastActive) / 60000)
-            : Number.POSITIVE_INFINITY;
-        return {
-          twitterHandle: r.twitter_handle,
-          nickname: r.nickname || "匿名さん",
-          avatarUrl: r.avatar_url,
-          lastActiveAt: r.last_active_at
-            ? new Date(r.last_active_at).toISOString()
-            : null,
-          lastSeenInPrefAt: r.last_seen_in_pref
-            ? new Date(r.last_seen_in_pref).toISOString()
-            : null,
-          isLive: minutesSinceActive < LIVE_WINDOW_MINUTES,
-          minutesSinceActive: Number.isFinite(minutesSinceActive)
-            ? minutesSinceActive
-            : null,
-        };
-      });
+    const creators: CreatorEntry[] = rows.map((r) => {
+      const lastActive = r.last_active_at
+        ? new Date(r.last_active_at).getTime()
+        : 0;
+      const minutesSinceActive =
+        lastActive > 0
+          ? Math.floor((now - lastActive) / 60000)
+          : Number.POSITIVE_INFINITY;
+      const trimmedHandle =
+        typeof r.twitter_handle === "string"
+          ? r.twitter_handle.trim().replace(/^@/, "")
+          : "";
+      return {
+        userId: Number(r.user_id),
+        twitterHandle: trimmedHandle ? trimmedHandle : null,
+        nickname: r.nickname || "匿名さん",
+        avatarUrl: r.avatar_url,
+        lastActiveAt: r.last_active_at
+          ? new Date(r.last_active_at).toISOString()
+          : null,
+        lastSeenInPrefAt: r.last_seen_in_pref
+          ? new Date(r.last_seen_in_pref).toISOString()
+          : null,
+        isLive: minutesSinceActive < LIVE_WINDOW_MINUTES,
+        minutesSinceActive: Number.isFinite(minutesSinceActive)
+          ? minutesSinceActive
+          : null,
+      };
+    });
 
     return {
       prefecture: prefectureName,

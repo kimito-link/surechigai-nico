@@ -7,6 +7,7 @@ import {
   type CreatorEntry,
 } from "@/lib/creators";
 import styles from "../creators.module.css";
+import CreatorAvatar from "./CreatorAvatar";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -48,52 +49,52 @@ function formatRelative(iso: string | null): string {
 function CreatorRow({ c }: { c: CreatorEntry }) {
   const cls = `${styles.creatorCard} ${c.isLive ? styles.creatorCardLive : ""}`;
   const fallbackInitial = (c.nickname || c.twitterHandle || "?").slice(0, 1);
-  return (
-    <a
-      key={c.twitterHandle}
-      href={`https://x.com/${c.twitterHandle}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={cls}
-    >
-      {c.avatarUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={c.avatarUrl}
-          alt={c.nickname}
-          className={styles.avatar}
-          loading="lazy"
-        />
-      ) : (
-        <div
-          className={styles.avatar}
-          aria-hidden="true"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontWeight: 800,
-            color: "#aaa",
-            fontSize: 24,
-          }}
-        >
-          {fallbackInitial}
-        </div>
-      )}
-      <div className={styles.creatorInfo}>
-        <span className={styles.creatorName}>{c.nickname}</span>
+  const avatar = (
+    <CreatorAvatar
+      src={c.avatarUrl}
+      alt={c.nickname}
+      fallbackInitial={fallbackInitial}
+      className={styles.avatar}
+    />
+  );
+  const info = (
+    <div className={styles.creatorInfo}>
+      <span className={styles.creatorName}>{c.nickname}</span>
+      {c.twitterHandle ? (
         <span className={styles.creatorHandle}>@{c.twitterHandle}</span>
-        <span className={styles.creatorMeta}>
-          この県に最後に滞在: {formatRelative(c.lastSeenInPrefAt)}
-        </span>
-      </div>
-      {c.isLive && (
-        <span className={styles.liveBadge}>
-          <span className={styles.liveDot} aria-hidden="true" />
-          LIVE
-        </span>
-      )}
-    </a>
+      ) : null}
+      <span className={styles.creatorMeta}>
+        この県に最後に滞在: {formatRelative(c.lastSeenInPrefAt)}
+      </span>
+    </div>
+  );
+  const liveBadge = c.isLive ? (
+    <span className={styles.liveBadge}>
+      <span className={styles.liveDot} aria-hidden="true" />
+      LIVE
+    </span>
+  ) : null;
+
+  if (c.twitterHandle) {
+    return (
+      <a
+        href={`https://x.com/${c.twitterHandle}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cls}
+      >
+        {avatar}
+        {info}
+        {liveBadge}
+      </a>
+    );
+  }
+  return (
+    <div className={cls}>
+      {avatar}
+      {info}
+      {liveBadge}
+    </div>
   );
 }
 
@@ -155,7 +156,7 @@ export default async function PrefectureCreatorsPage({
       ) : (
         <div className={styles.creatorList}>
           {creators.map((c) => (
-            <CreatorRow key={c.twitterHandle} c={c} />
+            <CreatorRow key={c.userId} c={c} />
           ))}
         </div>
       )}

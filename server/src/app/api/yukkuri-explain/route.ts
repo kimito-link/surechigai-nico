@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { YUKKURI_EXPLAINED_SET_KEY } from "@/lib/homeStats";
 
 /** ローカル / Tunnel の Ollama は応答が長い。Edge ではなく Node ランタイムを使う。 */
 export const runtime = "nodejs";
@@ -170,15 +171,21 @@ async function setCached(handle: string, payload: CachedPayload) {
   if (!url || !token) return;
   try {
     const ttl = payload.ok ? CACHE_TTL_OK : CACHE_TTL_FAIL;
+    // 成功時は「これまでに解説された固有ハンドル」の集合にも登録しておき、
+    // TOP のヒーロー統計（ゆっくり解説された数）から参照できるようにする。
+    const commands: Array<Array<string | number>> = [
+      ["SET", cacheKeyFromHandle(handle), JSON.stringify(payload), "EX", ttl],
+    ];
+    if (payload.ok) {
+      commands.push(["SADD", YUKKURI_EXPLAINED_SET_KEY, handle.toLowerCase()]);
+    }
     await fetch(`${url}/pipeline`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify([
-        ["SET", cacheKeyFromHandle(handle), JSON.stringify(payload), "EX", ttl],
-      ]),
+      body: JSON.stringify(commands),
     });
   } catch {
     console.warn("[yukkuri-explain] upstash setCached failed");

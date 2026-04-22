@@ -1,6 +1,8 @@
 /** viewport / canonical: chokaigi/layout.tsx */
+import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import LiveParticipants from "../components/LiveParticipants";
 import {
   GUIDES,
   HERO_HEADING,
@@ -135,6 +137,27 @@ export default function ChokaigiPage() {
         </header>
 
         <YukkuriDialogue />
+
+        <section
+          className={styles.section}
+          aria-labelledby="live-participants-lp-heading"
+        >
+          <h2 id="live-participants-lp-heading">
+            全国のどこで、誰が参加しているのか
+          </h2>
+          <p className={styles.sectionLead}>
+            都道府県ごとにピンが立つ日本地図。
+            <strong>送信した位置はずっと残り続け</strong>、
+            長野・福岡・北海道…全国どこからでも、参加した人のピンが累計で表示されます。
+          </p>
+          <CharacterTip
+            character="rink"
+            message="地図を見るだけで「この県の人が今アクティブなんだ〜」ってわかるよ！超会議の日にはここがもっと賑やかになるはず。"
+          />
+          <Suspense fallback={null}>
+            <LiveParticipants />
+          </Suspense>
+        </section>
 
         <section className={styles.section} aria-labelledby="features-heading">
           <h2 id="features-heading">
@@ -550,6 +573,11 @@ export default function ChokaigiPage() {
             <strong>すれ違いを成立させるには、参加中の位置情報が必要です。</strong>
             すれちがいライト本体と同様、一定間隔での送信やバックグラウンド更新を想定します（マッチャーは数分単位など、実装に合わせて調整）。
             他者に見えるのは粗いエリア（例: 500m グリッドに丸めた位置）に留め、目的外の共有はしません。本サイト内にDM機能は設けず、実際の連絡はXアカウント同士で行う前提です。利用開始時の説明同意・オプトアウトの導線は公開時に明記します。
+          </p>
+          <p className={styles.note}>
+            <strong>位置情報は「ここに居た」という記録として累計で残ります。</strong>
+            マップや都道府県別のクリエイター一覧には、各ユーザーの<em>最新の位置</em>だけを表示します（過去の経路は他者には見えません）。
+            退会（アカウント削除）をリクエストした時点で、あなたの位置情報はすべて即座に消去されます。
           </p>
         </section>
 

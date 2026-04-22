@@ -8,6 +8,17 @@ import {
   type YukkuriDialogue,
 } from "./yukkuriExplainClient";
 
+function buildLocalFallbackDialogue(body: Record<string, unknown>): YukkuriDialogue {
+  const rawHandle =
+    typeof body.xHandle === "string" ? body.xHandle.replace(/^@+/, "") : "";
+  const handleText = rawHandle ? `@${rawHandle}` : "この方";
+  return {
+    rink: `${handleText}さんだよ！混雑していても、気になる人は先にチェックしておこうね！`,
+    konta: `${handleText} の紹介だよ。いまは混雑しているみたいだから、少し時間をおいて再実行してみてね。`,
+    tanunee: `${handleText}さん、応援してるよ！交流はXでやさしくいこうね。`,
+  };
+}
+
 export function useYukkuriExplain() {
   const [dialogue, setDialogue] = useState<YukkuriDialogue | null>(null);
   const [loading, setLoading] = useState(false);
@@ -73,6 +84,7 @@ export function useYukkuriExplain() {
         }
         if (timeoutFiredRef.current) {
           timeoutFiredRef.current = false;
+          setDialogue(buildLocalFallbackDialogue(body));
           setError(
             yukkuriExplainUserMessage(
               new DOMException("The operation timed out.", "TimeoutError")
@@ -82,6 +94,7 @@ export function useYukkuriExplain() {
         }
         return;
       }
+      setDialogue(buildLocalFallbackDialogue(body));
       setError(yukkuriExplainUserMessage(e));
     } finally {
       if (timeoutRef.current) {
