@@ -83,7 +83,7 @@ export async function deleteAccount() {
 
 // 位置情報
 export async function sendLocation(lat: number, lng: number) {
-  const payload = { lat: lng, lng: lat };
+  const payload = { lat, lng };
   return request<{ ok: boolean }>("/locations", {
     method: "POST",
     body: JSON.stringify(payload),
