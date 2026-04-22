@@ -6,83 +6,95 @@
  *   `/chokaigi/japan-outline.svg` として読み込む
  * - その上に「全国 → 幕張（集まる）」「幕張 → 全国（散らばる）」の
  *   呼吸アニメと幕張ピンをオーバーレイする
- * - さらに、X アカウント（＝参加者のアバター）を表すドットが各地から
- *   幕張に向かって軌跡の上を流れてくる（gathering 演出）
+ * - 入射軌跡を実在の X アカウントのアバター画像が SMIL `animateMotion`
+ *   で実際に流れてくる（「みんなが幕張に集まってくる」を literal に可視化）
  * - 幕張の会場は「4連三角屋根＋旗＋スポットライト＋群衆」でイベント感を出す
+ *
+ * MAKUHARI 座標について:
+ * - 元 SVG (1024x1024) における千葉県幕張メッセの位置を目視合わせ。
+ *   東京湾東岸・関東の東端。東日本に寄せた座標。
  *
  * 位置は `position: absolute` で親ヒーロー section に広がり、
  * 入力フォームやキャラクターは前面（z-index）で視認性を担保する。
- *
- * izanami 記事の原則:
- * - 情報の優先順位: 入力フォームが主役なので、地図は薄く（opacity 低め）
- * - 体験の一貫性: 下部 `JapanVenueLocator` と同じ幕張赤ピン、同じ配色
  */
 
 import styles from "./chokaigi.module.css";
 
-// 幕張の SVG viewBox (0..1024) 上の座標（日本の原画に対してだいたい千葉のあたり）
-// 原 SVG は 1024x1024, 東京湾は viewBox の右下寄りなので手動調整。
-const MAKUHARI = { x: 730, y: 480 };
+// 幕張メッセの SVG viewBox (0..1024) 上の座標（千葉・Kanto 東端）。
+// `.conceptPinLarge` / `.chokaigiMesse` / `.makuhariHalo` 他の
+// CSS `transform-origin` もこの座標と一致させること。
+const MAKUHARI = { x: 820, y: 432 };
 
 type LineSpec = {
+  /** `<mpath href>` で参照するための id */
   id: string;
+  /** SVG パス文字列 */
   d: string;
+  /** 軌跡自体の描画制御 class */
   lineClass: string;
+  /** 軌跡上を流れるアバターの class（reduced-motion 等で使用） */
   travelerClass: string;
-  /** アバタードットの色（流入者の多様性を出す） */
-  color: string;
+  /** 使用するアバター画像（実在の X アカウントから抽出） */
+  avatarSrc: string;
+  /** アバター外周リングの色（アカウント性を色でも示す） */
+  ringColor: string;
 };
 
-// 日本各地 → 幕張 への入射軌跡（主要地方の概略点から）
+// 日本各地 → 幕張 への入射軌跡（各地方の代表点から）。
+// 終点 (MAKUHARI) は変更があれば一括で反映される。
 const INBOUND_LINES: readonly LineSpec[] = [
   {
     id: "inbPath-okinawa",
-    d: `M 180 950 Q 450 720 ${MAKUHARI.x} ${MAKUHARI.y}`,
+    d: `M 180 950 Q 500 760 ${MAKUHARI.x} ${MAKUHARI.y}`,
     lineClass: styles.conceptInbound1,
     travelerClass: styles.accountTraveler1,
-    color: "#e91e63",
+    avatarSrc: "/chokaigi/avatars/streamerfunch.png",
+    ringColor: "#1a5898",
   },
   {
     id: "inbPath-kyushu",
-    d: `M 310 780 Q 500 640 ${MAKUHARI.x} ${MAKUHARI.y}`,
+    d: `M 310 780 Q 540 680 ${MAKUHARI.x} ${MAKUHARI.y}`,
     lineClass: styles.conceptInbound2,
     travelerClass: styles.accountTraveler2,
-    color: "#DD6500",
+    avatarSrc: "/chokaigi/avatars/yukkuritanunee.png",
+    ringColor: "#DD6500",
   },
   {
     id: "inbPath-chugoku",
-    d: `M 450 620 Q 600 560 ${MAKUHARI.x} ${MAKUHARI.y}`,
+    d: `M 450 620 Q 620 560 ${MAKUHARI.x} ${MAKUHARI.y}`,
     lineClass: styles.conceptInbound3,
     travelerClass: styles.accountTraveler3,
-    color: "#00897b",
+    avatarSrc: "/chokaigi/avatars/yukkurilink.png",
+    ringColor: "#e91e63",
   },
   {
     id: "inbPath-kinki",
-    d: `M 600 420 Q 660 450 ${MAKUHARI.x} ${MAKUHARI.y}`,
+    d: `M 620 500 Q 720 480 ${MAKUHARI.x} ${MAKUHARI.y}`,
     lineClass: styles.conceptInbound4,
     travelerClass: styles.accountTraveler4,
-    color: "#7b1fa2",
+    avatarSrc: "/chokaigi/avatars/yukkurikonta.png",
+    ringColor: "#ff9800",
   },
   {
     id: "inbPath-hokkaido",
-    d: `M 820 180 Q 780 320 ${MAKUHARI.x} ${MAKUHARI.y}`,
+    d: `M 830 200 Q 830 320 ${MAKUHARI.x} ${MAKUHARI.y}`,
     lineClass: styles.conceptInbound5,
     travelerClass: styles.accountTraveler5,
-    color: "#1a5898",
+    avatarSrc: "/chokaigi/avatars/idolfunch.png",
+    ringColor: "#00897b",
   },
 ];
 
 // 幕張 → 各地 の散出軌跡（同じ 5 方向）
 const OUTBOUND_LINES: { d: string; className: string }[] = [
-  { d: `M ${MAKUHARI.x} ${MAKUHARI.y} Q 450 720 180 950`, className: styles.conceptOutbound1 },
-  { d: `M ${MAKUHARI.x} ${MAKUHARI.y} Q 500 640 310 780`, className: styles.conceptOutbound2 },
-  { d: `M ${MAKUHARI.x} ${MAKUHARI.y} Q 600 560 450 620`, className: styles.conceptOutbound3 },
-  { d: `M ${MAKUHARI.x} ${MAKUHARI.y} Q 660 450 600 420`, className: styles.conceptOutbound4 },
-  { d: `M ${MAKUHARI.x} ${MAKUHARI.y} Q 780 320 820 180`, className: styles.conceptOutbound5 },
+  { d: `M ${MAKUHARI.x} ${MAKUHARI.y} Q 500 760 180 950`, className: styles.conceptOutbound1 },
+  { d: `M ${MAKUHARI.x} ${MAKUHARI.y} Q 540 680 310 780`, className: styles.conceptOutbound2 },
+  { d: `M ${MAKUHARI.x} ${MAKUHARI.y} Q 620 560 450 620`, className: styles.conceptOutbound3 },
+  { d: `M ${MAKUHARI.x} ${MAKUHARI.y} Q 720 480 620 500`, className: styles.conceptOutbound4 },
+  { d: `M ${MAKUHARI.x} ${MAKUHARI.y} Q 830 320 830 200`, className: styles.conceptOutbound5 },
 ];
 
 // 幕張の周りに集まっている群衆の配置（アバター点）
-// 会場の下、左右に自然に散らばるように。順序は視線の流れに合わせる。
 const CROWD_DOTS: { dx: number; dy: number; r: number; color: string; delay: number }[] = [
   { dx: -46, dy: 16, r: 3.2, color: "#e91e63", delay: 0 },
   { dx: -32, dy: 20, r: 3.6, color: "#DD6500", delay: 0.15 },
@@ -97,6 +109,9 @@ const CROWD_DOTS: { dx: number; dy: number; r: number; color: string; delay: num
   { dx: 28, dy: 30, r: 2.8, color: "#e91e63", delay: 1.5 },
   { dx: 46, dy: 28, r: 2.8, color: "#DD6500", delay: 1.65 },
 ];
+
+/** 軌跡上を流れるアバターの半径（SVG 座標単位） */
+const AVATAR_R = 11;
 
 export function ChokaigiConceptBanner() {
   return (
@@ -125,6 +140,15 @@ export function ChokaigiConceptBanner() {
           {INBOUND_LINES.map((line) => (
             <path key={line.id} id={line.id} d={line.d} />
           ))}
+
+          {/*
+           * アバターを円形に切り抜くための共通クリップパス。
+           * `<g>` が animateMotion で動いても、g の local 座標系で適用されるため
+           * 円の中心 (0,0) を自動で追従する。
+           */}
+          <clipPath id="avatarClip">
+            <circle cx="0" cy="0" r={AVATAR_R - 1.2} />
+          </clipPath>
 
           {/* 幕張の上空に浮かぶ光（会場のスポットライト／お祭り感） */}
           <radialGradient id="makuhariGlow" cx="50%" cy="50%" r="50%">
@@ -170,58 +194,63 @@ export function ChokaigiConceptBanner() {
         </g>
 
         {/*
-         * X アカウント（＝参加者のアバター）を表すドット。
-         * 各軌跡に紐付けて SMIL の animateMotion で移動させる。
-         * 「みんなが幕張に向かって集まってくる」を literal に見せるための演出。
+         * X アカウント（＝参加者のアバター）を表すアイコンが
+         * 各地 → 幕張 の軌跡上を流れてくる演出。
+         * 「みんなが幕張に向かって集まってくる」を literal に見せる。
+         *
+         * 技術:
+         * - `<g>` に animateMotion を掛けることで中身の <image> / <circle>
+         *   がまとめて path を追従する
+         * - 画像は <clipPath> で円形に切り抜き、枠は白＋アカウント色の二重線
+         * - `<animate attributeName="opacity">` で到着時にフェードアウト
          */}
         <g className={styles.accountTravelers}>
           {INBOUND_LINES.map((line, i) => {
-            const delay = i * 0.25; // 軌跡のドロー開始と合わせる
+            const delay = i * 0.25;
             return (
               <g key={`traveler-${line.id}`} className={line.travelerClass}>
-                {/* 外側リング（アバター枠っぽく） */}
-                <circle r="8" fill="#fff" stroke={line.color} strokeWidth="2.5">
-                  <animateMotion
-                    dur="8s"
-                    begin={`${delay}s`}
-                    repeatCount="indefinite"
-                    rotate="auto"
-                    keyPoints="0;1;1"
-                    keyTimes="0;0.4;1"
-                    calcMode="linear"
-                  >
-                    <mpath href={`#${line.id}`} />
-                  </animateMotion>
-                  <animate
-                    attributeName="opacity"
-                    values="0;1;1;0;0"
-                    keyTimes="0;0.05;0.38;0.45;1"
-                    dur="8s"
-                    begin={`${delay}s`}
-                    repeatCount="indefinite"
-                  />
-                </circle>
-                {/* 内側のドット（アバター中身） */}
-                <circle r="4" fill={line.color}>
-                  <animateMotion
-                    dur="8s"
-                    begin={`${delay}s`}
-                    repeatCount="indefinite"
-                    keyPoints="0;1;1"
-                    keyTimes="0;0.4;1"
-                    calcMode="linear"
-                  >
-                    <mpath href={`#${line.id}`} />
-                  </animateMotion>
-                  <animate
-                    attributeName="opacity"
-                    values="0;1;1;0;0"
-                    keyTimes="0;0.05;0.38;0.45;1"
-                    dur="8s"
-                    begin={`${delay}s`}
-                    repeatCount="indefinite"
-                  />
-                </circle>
+                <image
+                  href={line.avatarSrc}
+                  x={-AVATAR_R + 1.2}
+                  y={-AVATAR_R + 1.2}
+                  width={(AVATAR_R - 1.2) * 2}
+                  height={(AVATAR_R - 1.2) * 2}
+                  clipPath="url(#avatarClip)"
+                  preserveAspectRatio="xMidYMid slice"
+                />
+                {/* 白枠（読みやすさ） */}
+                <circle
+                  r={AVATAR_R - 0.6}
+                  fill="none"
+                  stroke="#fff"
+                  strokeWidth="1.8"
+                />
+                {/* アカウント色の外リング */}
+                <circle
+                  r={AVATAR_R + 0.6}
+                  fill="none"
+                  stroke={line.ringColor}
+                  strokeWidth="1.6"
+                  opacity="0.85"
+                />
+                <animateMotion
+                  dur="8s"
+                  begin={`${delay}s`}
+                  repeatCount="indefinite"
+                  keyPoints="0;1;1"
+                  keyTimes="0;0.4;1"
+                  calcMode="linear"
+                >
+                  <mpath href={`#${line.id}`} />
+                </animateMotion>
+                <animate
+                  attributeName="opacity"
+                  values="0;1;1;0;0"
+                  keyTimes="0;0.05;0.38;0.45;1"
+                  dur="8s"
+                  begin={`${delay}s`}
+                  repeatCount="indefinite"
+                />
               </g>
             );
           })}

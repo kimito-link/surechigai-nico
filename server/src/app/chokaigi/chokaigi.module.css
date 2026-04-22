@@ -3379,9 +3379,9 @@ details[open] .detailMapSummary::before {
   width: 100%;
 }
 
-/* 幕張ピン（大きめ）の呼吸演出 */
+/* 幕張ピン（大きめ）の呼吸演出。transform-origin は MAKUHARI 座標と一致させる。 */
 .conceptPinLarge {
-  transform-origin: 730px 480px;
+  transform-origin: 820px 432px;
   animation: conceptPinPulse 2.4s ease-in-out infinite;
 }
 
@@ -3396,7 +3396,7 @@ details[open] .detailMapSummary::before {
  * 位置はピンのすぐ上なので transform-origin は揃える。
  */
 .chokaigiMesse {
-  transform-origin: 730px 465px;
+  transform-origin: 820px 420px;
   animation: chokaigiMesseBreath 4.8s ease-in-out infinite;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
   opacity: 0.82;
@@ -3412,7 +3412,7 @@ details[open] .detailMapSummary::before {
  * ゆっくり呼吸して「熱気」を演出する。
  */
 .makuhariHalo {
-  transform-origin: 730px 470px;
+  transform-origin: 820px 422px;
   animation: makuhariHaloPulse 3.6s ease-in-out infinite;
   mix-blend-mode: multiply;
 }
@@ -3425,13 +3425,14 @@ details[open] .detailMapSummary::before {
 /*
  * 旗。会場上で風にゆれる演出。2本はタイミングをずらす。
  */
+/* 旗の支柱の根元（屋根のてっぺん）を transform-origin に設定する */
 .chokaigiFlag1 {
-  transform-origin: 717px 438px;
+  transform-origin: 807px 390px;
   animation: chokaigiFlagSway 2.6s ease-in-out infinite;
 }
 
 .chokaigiFlag2 {
-  transform-origin: 741px 438px;
+  transform-origin: 831px 390px;
   animation: chokaigiFlagSway 2.6s ease-in-out infinite 0.4s;
 }
 
