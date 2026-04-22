@@ -67,7 +67,6 @@ export default function LocationButton({
   authSyncError = null,
 }: LocationButtonProps) {
   const [isSending, setIsSending] = useState(false);
-  const [isRefreshingMap, setIsRefreshingMap] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [aiReport, setAiReport] = useState<string | null>(null);
   const [mapPayload, setMapPayload] = useState<LiveMapPayload | null>(null);
@@ -82,11 +81,7 @@ export default function LocationButton({
     return getUuidToken();
   }, [authUuidProp]);
 
-  const fetchLiveMap = useCallback(async (manual = false) => {
-    if (manual) {
-      setIsRefreshingMap(true);
-    }
-
+  const fetchLiveMap = useCallback(async () => {
     try {
       const uuid = resolveUuid();
       const headers: Record<string, string> = {};
@@ -122,20 +117,12 @@ export default function LocationButton({
             url: "/api/chokaigi/live-map",
           },
           context: {
-            manualRefresh: manual,
             authSyncing,
             authSyncError,
             authUuidMasked: maskToken(resolveUuid()),
           },
         })
       );
-      if (manual) {
-        setMessage({ type: "error", text });
-      }
-    } finally {
-      if (manual) {
-        setIsRefreshingMap(false);
-      }
     }
   }, [resolveUuid]);
 
@@ -206,9 +193,10 @@ export default function LocationButton({
       }
 
       console.log(`[位置送信成功] 座標: (${position.latitude}, ${position.longitude})`);
-      setMessage({ type: "success", text: "位置情報を送信しました（500mグリッドで共有）" });
       setAiReport(null);
       await fetchLiveMap();
+      // 地図更新後にメッセージを出す（自己位置が反映されたタイミングで表示）
+      setMessage({ type: "success", text: "現在地を送信して地図に反映しました" });
     } catch (error) {
       const isGeo =
         typeof error === "object" &&
@@ -361,13 +349,6 @@ export default function LocationButton({
           className={styles.button}
         >
           {isSending ? "送信中..." : "現在地を送信"}
-        </button>
-        <button
-          onClick={() => fetchLiveMap(true)}
-          disabled={isRefreshingMap}
-          className={styles.mapRefreshButton}
-        >
-          {isRefreshingMap ? "更新中..." : "地図を更新"}
         </button>
       </div>
 
