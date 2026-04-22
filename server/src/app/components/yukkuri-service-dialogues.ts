@@ -322,6 +322,58 @@ export const MIIDESU_DIALOGUE: YukkuriDialogue = {
   ctaLabel: "みぃですさんの X プロフィールを開く",
 };
 
+/**
+ * 今川ギララさん（@Tottokotokobusi）— ニコニコ生放送の生主。
+ * 雑談センスが『ラジオ級』で、伊集院光さんのラジオを聴いている
+ * ときのような間合い・オチ運びが魅力。将来はプロデューサー的な
+ * 広がりも期待している、という文脈で紹介。
+ * あわせて『今川ギララ[ニコ生配信者]ゆっくり解説で紹介』という
+ * 動画を作らせていただいた件にも触れる。
+ */
+export const IMAGAWA_DIALOGUE: YukkuriDialogue = {
+  title:
+    "🎙️ 今川ギララさん（@Tottokotokobusi） — 雑談センスが “ラジオ級” のニコ生 生主",
+  lines: [
+    {
+      who: "rink",
+      text: "今日はね、ぼくらがもうすっかりファンになっちゃってる生主さんを紹介させて。ニコニコ生放送の生主、今川ギララさん（@Tottokotokobusi）だよ。",
+    },
+    {
+      who: "konta",
+      text: "ニコ生の生主さん〜！どんなタイプの配信なの？",
+    },
+    {
+      who: "tanunee",
+      text: "とにかく、雑談が、おもしろいのだー。ふとした話題から話をどんどん広げていくセンスがすごくて、聴いてるだけで時間がぐんぐん溶けていくタイプなのだー。",
+    },
+    {
+      who: "rink",
+      text: "体感としては、“伊集院光さんのラジオを聴いてる感じ” にちょっと近いんだよ。話のリズム、間、オチの置き方。ひとりでラジオが一本成立しちゃう感じ。",
+    },
+    {
+      who: "konta",
+      text: "それもう完全にラジオじゃん！作業中にちょうど良さそう〜！ラジオ代わりに流しときたいやつ〜！",
+    },
+    {
+      who: "tanunee",
+      text: "配信そのものももちろん面白いのだけど、今後はプロデューサー的な動きにも広がっていきそうな予感がするのだー。第二章がとても楽しみな方なのだー。",
+    },
+    {
+      who: "rink",
+      text: "そしてね……実は今川さんについても、ゆっくり解説の動画を作らせていただきました！『今川ギララ[ニコ生配信者]ゆっくり解説で紹介』というタイトルで、君斗りんく@クリエイター応援ちゃんねるに公開されているよ。",
+    },
+    {
+      who: "konta",
+      text: "動画まで作ったの！？そりゃもう完全にファン側じゃん〜！",
+    },
+    {
+      who: "tanunee",
+      text: "ほんとうに、個人的にもずっと応援している方なのだー。まずは X プロフィールから覗いてみて、雑談の空気を味わってみてほしいのだー。",
+    },
+  ],
+  ctaLabel: "今川ギララさんの X プロフィールを開く",
+};
+
 const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://socialxup.com/": SOCIALXUP_DIALOGUE,
   "https://threads.socialxup.com/": SOCIALXUP_THREADS_DIALOGUE,
@@ -332,6 +384,7 @@ const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://www.ahuranproject.com/": AHURAN_DIALOGUE,
   "https://oto1to1.com/": OTO1TO1_DIALOGUE,
   "https://x.com/bakusyokuM": MIIDESU_DIALOGUE,
+  "https://x.com/Tottokotokobusi": IMAGAWA_DIALOGUE,
 };
 
 export function getYukkuriDialogue(href: string): YukkuriDialogue | undefined {

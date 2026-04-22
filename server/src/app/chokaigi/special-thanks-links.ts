@@ -118,6 +118,24 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
     xHandles: [{ label: "@OTO1to1", href: "https://x.com/OTO1to1" }],
   },
   {
+    id: "imagawa-gyarara",
+    name: "今川ギララ さん（@Tottokotokobusi）",
+    title:
+      "ニコニコ生放送の生主／雑談センスが “ラジオ級” の配信者（新潟・新潟市）",
+    intro: [
+      "とにかく、雑談が、おもしろい。ふとした会話からぐんぐん話を広げていくセンスがあって、聴いているとそれだけで “ラジオ代わり” になるタイプの生主さんです。",
+      "体感としては、伊集院光さんのラジオを聴いているときのような、話のリズム・間・オチの置き方があって、ひとりでちゃんとラジオが一本成立してしまうおもしろさ。ニコニコ生放送の配信ももちろん面白いのですが、今後はプロデューサー的な動きにも広がっていきそうで、個人的にもとても楽しみにしています。",
+      "実は今川さんについても、ゆっくり解説の動画を作らせていただきました。アイコンをクリックすると、ゆっくり 3 人がそのあたりも熱めに語ってくれます。",
+    ],
+    sites: [
+      {
+        label: "今川ギララさん X プロフィール（@Tottokotokobusi）",
+        href: "https://x.com/Tottokotokobusi",
+        tagline: "ニコニコ生放送の生主／新潟・新潟市",
+      },
+    ],
+  },
+  {
     id: "miidesu",
     name: "みぃです さん（@bakusyokuM）",
     title:
