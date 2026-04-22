@@ -64,7 +64,7 @@ if (!vxBase) {
     console.log("  ✓ エンジン /version に応答あり");
   } else if (v.err) {
     console.log(`  ⚠ エンジンに届かない: ${v.err}`);
-    console.log("     → VOICEVOX アプリを起動し、ポートが 50021 か確認してください");
+    console.log("     → npm run voicevox:launch を実行してから再確認してください");
   } else {
     console.log(`  ⚠ HTTP ${v.status}`);
   }
