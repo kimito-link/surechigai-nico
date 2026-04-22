@@ -262,6 +262,30 @@ export default function LocationButton({
   );
 
   const listUsers = mapPayload?.users ?? [];
+  const alwaysAvailableReport = useMemo(
+    () =>
+      buildAiErrorReport({
+        feature: "dashboard/location-debug-snapshot",
+        userMessage: "エラー未発生時の状態スナップショット",
+        request: {
+          method: "GET/POST",
+          url: "/api/chokaigi/live-map + /api/locations",
+        },
+        context: {
+          authSyncing,
+          authSyncError,
+          authUuidMasked: maskToken(resolveUuid()),
+          hasMapPayload: Boolean(mapPayload),
+          mapApiError,
+          currentMessageType: message?.type ?? null,
+          currentMessageText: message?.text ?? null,
+          visibleUsers: listUsers.length,
+          geolocationSupported:
+            typeof navigator !== "undefined" && Boolean(navigator.geolocation),
+        },
+      }),
+    [authSyncing, authSyncError, mapPayload, mapApiError, message, listUsers.length, resolveUuid]
+  );
 
   return (
     <div className={styles.card}>
@@ -302,7 +326,7 @@ export default function LocationButton({
           ライブマップ: {mapApiError}
         </p>
       )}
-      {(message?.type === "error" || mapApiError) && <AiErrorShare report={aiReport} />}
+      <AiErrorShare report={aiReport ?? alwaysAvailableReport} />
 
       <div className={styles.liveMapWrap}>
         <div className={styles.liveMapHeaderRow}>
