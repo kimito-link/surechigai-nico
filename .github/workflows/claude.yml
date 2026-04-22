@@ -3,10 +3,17 @@ name: Claude Code Review
 # PR / Issue のコメント（およびレビューコメント）に「@claude ～」と書かれたら
 # Claude が差分を読んでレビュー・修正提案してくれる体制。
 #
+# 認証方式: Claude Pro / Max サブスクリプションの OAuth トークン
+#   → 追加の API 課金ゼロ。サブスク料金内で動く。
+#
 # 前提（1回だけ設定）:
-#   1. https://github.com/apps/claude を本リポジトリにインストール
-#   2. Settings → Secrets and variables → Actions に
-#      ANTHROPIC_API_KEY を追加（console.anthropic.com で発行した sk-ant-api03-... を貼る）
+#   1. https://github.com/apps/claude を本リポジトリにインストール（完了済み）
+#   2. ローカル（Claude Code が入っている端末）で以下を実行してトークン発行：
+#        claude setup-token
+#      ブラウザで Claude.ai にログインして承認 → `sk-ant-oat-...` が出力される
+#      （有効期限 1 年。切れたら再発行して Secret を更新する）
+#   3. Settings → Secrets and variables → Actions に
+#      CLAUDE_CODE_OAUTH_TOKEN を追加（上で出た sk-ant-oat-... を貼る）
 #
 # 使い方:
 #   - PR に「@claude このハンドル正規化の変更、他に見落としありそう？」のようにコメント
@@ -35,4 +42,4 @@ jobs:
       - name: Run Claude Code
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
