@@ -21,6 +21,12 @@ import { CreatorCrossSearch } from "./chokaigi/CreatorCrossSearch";
 import { YukkuriHero } from "./chokaigi/YukkuriHero";
 import styles from "./page.module.css";
 
+// HeroStats（Redis/MySQL からカウンタを取得）を毎リクエスト再計算するため、
+// ページ自体を明示的に動的化する。SiteHeader の headers() 呼び出しに暗黙依存していた
+// 従来挙動は、ヘッダー改修で容易に崩れるため。router.refresh() で確実に数字が更新される。
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: LP_TITLE,
   description: LP_DESCRIPTION,
