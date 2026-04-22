@@ -14,9 +14,30 @@ type Props = {
  * Special Thanks の方々を 1 人 1 枚のカードで個別紹介するためのコンポーネント。
  * - `profile.highlight` が true のとき、ロゴ制作の Soletta さん専用の
  *   リッチな装飾（紫〜ピンクのグラデ、ややボリュームのある余白）に切り替わる。
- * - サイトリンクは `getYukkuriDialogue(href)` で対応する解説があれば
- *   YukkuriIntroLink を通してゆっくり解説モーダルを挟む。
+ * - サイトリンク／X バッジどちらも、`getYukkuriDialogue(href)` で対応する解説が
+ *   あれば YukkuriIntroLink を通して「ゆっくり解説モーダル → 外部遷移」に
+ *   なる。公式サイトを持たず X だけの方でも、カードのトンマナを保ったまま
+ *   バッジから同じ体験を提供できる。
  */
+
+/** 公式 X (旧 Twitter) ロゴを再現した最小限の SVG パス */
+const X_ICON_PATH =
+  "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z";
+
+function XBadgeIcon() {
+  return (
+    <svg
+      className={styles.xBadgeIcon}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d={X_ICON_PATH} />
+    </svg>
+  );
+}
+
 export function SpecialThanksProfileCard({
   profile,
   headingLevel = "h3",
@@ -94,17 +115,41 @@ export function SpecialThanksProfileCard({
 
       {profile.xHandles && profile.xHandles.length > 0 ? (
         <div className={styles.xRow}>
-          {profile.xHandles.map((handle) => (
-            <a
-              key={handle.href}
-              href={handle.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.xBadge}
-            >
-              𝕏 {handle.label}
-            </a>
-          ))}
+          {profile.xHandles.map((handle) => {
+            const dialogue = getYukkuriDialogue(handle.href);
+            const content = (
+              <>
+                <XBadgeIcon />
+                <span className={styles.xBadgeLabel}>{handle.label}</span>
+              </>
+            );
+            if (dialogue) {
+              return (
+                <YukkuriIntroLink
+                  key={handle.href}
+                  href={handle.href}
+                  className={styles.xBadge}
+                  title={dialogue.title}
+                  lines={dialogue.lines}
+                  ctaLabel={dialogue.ctaLabel}
+                  ctaHref={dialogue.ctaHref}
+                >
+                  {content}
+                </YukkuriIntroLink>
+              );
+            }
+            return (
+              <a
+                key={handle.href}
+                href={handle.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.xBadge}
+              >
+                {content}
+              </a>
+            );
+          })}
         </div>
       ) : null}
     </section>
