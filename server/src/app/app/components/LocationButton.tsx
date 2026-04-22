@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getUuidToken } from "@/lib/clientAuth";
 import { AiErrorShare } from "@/app/components/AiErrorShare";
 import { buildAiErrorReport, maskToken } from "@/lib/aiErrorReport";
 import { clientReverseGeocode } from "@/lib/clientReverseGeocode";
 import { useLiveMapStream } from "@/lib/useLiveMapStream";
+import { haversineMeters } from "@/lib/geoDistance";
 import {
   LIVE_MAP_FALLBACK_VENUE,
   LIVE_MAP_POLL_MS,
@@ -55,6 +56,15 @@ async function readFetchErrorMessage(
   return fallback;
 }
 
+/** 自動追尾のスロットル: 直前送信から 50m 以上 動いた or 60s 以上 経過で再送 */
+const AUTO_SUBMIT_MIN_DISTANCE_METERS = 50;
+const AUTO_SUBMIT_MIN_INTERVAL_MS = 60_000;
+/** これ以内に他ユーザーが現れたらトースト通知（500m グリッド量子化の余裕を含め緩め） */
+const NEARBY_THRESHOLD_METERS = 1000;
+/** トースト自動消滅までの時間 */
+const TOAST_DISMISS_MS = 8_000;
+const AUTO_TRACK_STORAGE_KEY = "surechigai:autoTrack";
+
 type LocationButtonProps = {
   /** 親で解決済みの UUID（localStorage と同期）。未設定時は従来どおり getUuidToken を参照 */
   authUuid?: string | null;
@@ -83,6 +93,14 @@ export default function LocationButton({
     municipality: string | null;
     at: number;
   } | null>(null);
+  const [autoTrack, setAutoTrack] = useState(false);
+  const [autoTrackRunning, setAutoTrackRunning] = useState(false);
+  const [toasts, setToasts] = useState<Array<{ id: string; text: string }>>([]);
+
+  /** 直前に自動送信した座標と時刻（スロットル判定用） */
+  const lastAutoSubmitRef = useRef<{ lat: number; lng: number; at: number } | null>(null);
+  /** 前回チェック時に近接していた他ユーザー id のセット（新規到来検知用） */
+  const prevNearbyRef = useRef<Set<number>>(new Set());
 
   const resolveUuid = useCallback(() => {
     if (authUuidProp !== undefined) return authUuidProp;
@@ -202,12 +220,19 @@ export default function LocationButton({
 
       console.log(`[位置送信成功] 座標: (${position.latitude}, ${position.longitude})`);
       setAiReport(null);
+      const submittedAt = Date.now();
       setLastSubmission({
         lat: position.latitude,
         lng: position.longitude,
         municipality: reverseResult?.municipality ?? null,
-        at: Date.now(),
+        at: submittedAt,
       });
+      // 手動送信直後の自動追尾 re-submit を抑止するため、参照点を更新
+      lastAutoSubmitRef.current = {
+        lat: position.latitude,
+        lng: position.longitude,
+        at: submittedAt,
+      };
       await fetchLiveMap();
       // 地図更新後にメッセージを出す（自己位置が反映されたタイミングで表示）
       setMessage({ type: "success", text: "現在地を送信して地図に反映しました" });
@@ -255,6 +280,145 @@ export default function LocationButton({
       setTimeout(() => setMessage(null), messageDismissMs);
     }
   };
+
+  /** トースト追加（個別に自動消滅タイマーをセット） */
+  const addToast = useCallback((text: string) => {
+    const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+    setToasts((prev) => [...prev, { id, text }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, TOAST_DISMISS_MS);
+  }, []);
+
+  /** UI フィードバックなしで静かに POST（自動追尾用） */
+  const silentSubmit = useCallback(
+    async (lat: number, lng: number, accuracy: number) => {
+      try {
+        const uuid = resolveUuid();
+        if (!uuid) return;
+        const reverseResult = await clientReverseGeocode(lat, lng).catch(() => null);
+        const res = await fetch("/api/locations", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer uuid:${uuid}`,
+          },
+          body: JSON.stringify({
+            lat,
+            lng,
+            accuracy,
+            municipality: reverseResult?.municipality ?? null,
+          }),
+        });
+        if (!res.ok) return;
+        const at = Date.now();
+        setLastSubmission({
+          lat,
+          lng,
+          municipality: reverseResult?.municipality ?? null,
+          at,
+        });
+        lastAutoSubmitRef.current = { lat, lng, at };
+        await fetchLiveMap();
+      } catch {
+        /* 自動追尾失敗は UI には出さない（手動送信時にユーザーが気付ける） */
+      }
+    },
+    [resolveUuid, fetchLiveMap]
+  );
+
+  // localStorage から自動追尾設定を復元
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = window.localStorage.getItem(AUTO_TRACK_STORAGE_KEY);
+      if (saved === "1") setAutoTrack(true);
+    } catch {
+      /* private mode などで localStorage が使えない場合は無視 */
+    }
+  }, []);
+
+  // autoTrack 変更時に永続化
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(AUTO_TRACK_STORAGE_KEY, autoTrack ? "1" : "0");
+    } catch {
+      /* 同上 */
+    }
+  }, [autoTrack]);
+
+  // 自動追尾: watchPosition でスロットル送信。タブ非表示中は停止。
+  useEffect(() => {
+    if (!autoTrack) {
+      setAutoTrackRunning(false);
+      return;
+    }
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+
+    let watchId: number | null = null;
+    let cancelled = false;
+
+    const start = () => {
+      if (watchId !== null || cancelled) return;
+      watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          const { latitude, longitude, accuracy } = pos.coords;
+          const now = Date.now();
+          const prev = lastAutoSubmitRef.current;
+          const movedEnough = prev
+            ? haversineMeters(prev.lat, prev.lng, latitude, longitude) >=
+              AUTO_SUBMIT_MIN_DISTANCE_METERS
+            : true;
+          const intervalElapsed = prev
+            ? now - prev.at >= AUTO_SUBMIT_MIN_INTERVAL_MS
+            : true;
+          if (!prev || movedEnough || intervalElapsed) {
+            silentSubmit(latitude, longitude, accuracy);
+          }
+        },
+        () => {
+          /* 自動追尾のエラーは黙って無視（手動送信でユーザーが気付ける） */
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 30_000,
+          timeout: 30_000,
+        }
+      );
+      setAutoTrackRunning(true);
+    };
+
+    const stop = () => {
+      if (watchId !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+      setAutoTrackRunning(false);
+    };
+
+    const handleVisibility = () => {
+      if (typeof document === "undefined") return;
+      if (document.visibilityState === "visible") start();
+      else stop();
+    };
+
+    if (typeof document === "undefined" || document.visibilityState === "visible") {
+      start();
+    }
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", handleVisibility);
+    }
+
+    return () => {
+      cancelled = true;
+      stop();
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", handleVisibility);
+      }
+    };
+  }, [autoTrack, silentSubmit]);
 
   // Page Visibility に応じてポーリングを一時停止する。
   // 画面非表示タブからの無駄なリクエストを避け、
@@ -310,6 +474,46 @@ export default function LocationButton({
     fetchLiveMap();
   });
 
+  // 接近検知: mapPayload / 自己位置が更新されるたびに、前回は遠く・今回は近い他ユーザーをトーストで通知
+  useEffect(() => {
+    const selfLat = lastSubmission?.lat ?? mapPayload?.selfLocation?.lat ?? null;
+    const selfLng = lastSubmission?.lng ?? mapPayload?.selfLocation?.lng ?? null;
+    if (selfLat == null || selfLng == null) return;
+
+    const users = mapPayload?.users ?? [];
+    const currentNearby = new Set<number>();
+    const newcomers: Array<{ id: number; nickname: string; twitterHandle: string | null }> = [];
+
+    for (const user of users) {
+      if (user.isMe) continue;
+      const dist = haversineMeters(selfLat, selfLng, user.lat, user.lng);
+      if (dist <= NEARBY_THRESHOLD_METERS) {
+        currentNearby.add(user.id);
+        if (!prevNearbyRef.current.has(user.id)) {
+          newcomers.push({
+            id: user.id,
+            nickname: user.nickname,
+            twitterHandle: user.twitterHandle,
+          });
+        }
+      }
+    }
+
+    // 初回に prevNearbyRef が空の場合は「既に居た人」を一気にトースト表示しない
+    // → 最初の 1 回は検知だけして、以降の差分だけを通知する
+    if (prevNearbyRef.current.size === 0 && currentNearby.size > 0) {
+      prevNearbyRef.current = currentNearby;
+      return;
+    }
+
+    for (const u of newcomers) {
+      const who = u.twitterHandle ? `${u.nickname}（${u.twitterHandle}）` : u.nickname;
+      addToast(`📡 近くに ${who} さんが現れました`);
+    }
+
+    prevNearbyRef.current = currentNearby;
+  }, [mapPayload, lastSubmission, addToast]);
+
   const venue = mapPayload?.venue ?? LIVE_MAP_FALLBACK_VENUE;
   const points = useMemo(
     () =>
@@ -363,6 +567,27 @@ export default function LocationButton({
         >
           {isSending ? "送信中..." : "現在地を送信"}
         </button>
+
+        <label className={styles.autoTrackRow}>
+          <input
+            type="checkbox"
+            checked={autoTrack}
+            onChange={(e) => setAutoTrack(e.target.checked)}
+            className={styles.autoTrackCheckbox}
+            disabled={authSyncing || !resolveUuid()}
+          />
+          <span className={styles.autoTrackLabel}>
+            自動で位置を更新
+            <span className={styles.autoTrackHint}>
+              動いた・一定時間経過で自動送信（タブ非表示時は停止）
+            </span>
+          </span>
+          {autoTrack && (
+            <span className={styles.autoTrackIndicator}>
+              {autoTrackRunning ? "📡 追尾中" : "⏸ 一時停止"}
+            </span>
+          )}
+        </label>
       </div>
 
       {message && (
@@ -488,6 +713,26 @@ export default function LocationButton({
           <p className={styles.liveMapEmpty}>まだ会場付近の参加者データがありません</p>
         )}
       </details>
+
+      {toasts.length > 0 && (
+        <div className={styles.toastStack} role="status" aria-live="polite">
+          {toasts.map((t) => (
+            <div key={t.id} className={styles.toast}>
+              <span className={styles.toastText}>{t.text}</span>
+              <button
+                type="button"
+                className={styles.toastClose}
+                aria-label="通知を閉じる"
+                onClick={() =>
+                  setToasts((prev) => prev.filter((x) => x.id !== t.id))
+                }
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
