@@ -183,6 +183,20 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
       { label: "@yuzuchis_mammy", href: "https://x.com/yuzuchis_mammy" },
     ],
   },
+  {
+    id: "sinseinaru",
+    name: "しんせいねう さん（@sinseinaru）",
+    title:
+      "あぶそりゅーと☆せぶン 緑担当／『限界くらげを世界にお届け』な歌い手アイドル",
+    intro: [
+      "あぶそりゅーと☆せぶン（@abuso2525）の緑担当、しんせいねうさん。自称は『限界くらげを世界にお届け』という、プロフの時点でもう愛しい方なのですが——本当にすごいのは、歌です。",
+      "これは身内びいきではなくて、本気の話。ねうさんの歌を聴いた動画、ぼくらも何度も見返してしまいました。『あ、もう 1 回聴きたい』となって、気づいたらリピートで 5 回くらい観てしまう——そういうタイプの歌です。声質なのか、歌い方のニュアンスなのか、はっきり言葉にはできないけれど、聴くたびに『あ、やっぱりいいな……』と“もう一回ボタン” を押させてくる。じわ〜っと来るタイプなので、ぜひ何度か聴いてみてほしいのです。",
+      "だからこそ、現地・会場で聴けた人だけで終わらせるのはあまりにもったいない。現地に来れなかった人にも、この歌はちゃんと届いてほしい——そう本気で思っています。下の X バッジをクリックすると、ゆっくり 3 人がねうさんの歌の魅力を、たっぷり語ってくれます。",
+    ],
+    xHandles: [
+      { label: "@sinseinaru", href: "https://x.com/sinseinaru" },
+    ],
+  },
 ] as const;
 
 /**
@@ -191,7 +205,6 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
  */
 export const SPECIAL_THANKS_X_ONLY: ReadonlyArray<SpecialThanksXLink> = [
   { label: "@abuso2525", href: "https://x.com/abuso2525" },
-  { label: "@sinseinaru", href: "https://x.com/sinseinaru" },
   { label: "@m20210411", href: "https://x.com/m20210411" },
   { label: "@flap_shizuku", href: "https://x.com/flap_shizuku" },
 ] as const;

@@ -572,6 +572,72 @@ export const YUZUCHI_DIALOGUE: YukkuriDialogue = {
   ctaLabel: "ゆずちさんの X プロフィールを開く",
 };
 
+/**
+ * しんせいねうさん（@sinseinaru）— あぶそりゅーと☆せぶん の緑担当。
+ * 自称『限界くらげを世界にお届け』。とにかく歌が良くて、何度でも
+ * 聴きたくなる／動画を見返してしまうタイプ。現地に来られなかった人にも
+ * ぜひ知ってほしい、という“推し布教”の文脈で紹介。
+ */
+export const SINSEINEU_DIALOGUE: YukkuriDialogue = {
+  title:
+    "💚 しんせいねうさん（@sinseinaru） — 歌がよすぎて何度も聴きたくなる、限界くらげな “絶対アイドル”",
+  lines: [
+    {
+      who: "rink",
+      text: "今日ご紹介するのは、あぶそりゅーと☆せぶン（@abuso2525）の緑担当、しんせいねうさん（@sinseinaru）だよ。自称『限界くらげを世界にお届け』という、プロフからして最高に愛しいお方です。",
+    },
+    {
+      who: "konta",
+      text: "限界くらげ……名乗り方だけでもうキャラ濃いにゃ〜！",
+    },
+    {
+      who: "tanunee",
+      text: "そしてね、しんせいねうさんのいちばんの魅力は——歌なのだー。ほんとうに、歌が良いのだー。",
+    },
+    {
+      who: "rink",
+      text: "これはただの身内びいきじゃなくて、ぼくら本気で何度も動画を見返しちゃったんだよね。『あ、もう 1 回聴きたい』ってなって、リピートして、気づいたら 5 回くらい観てる、みたいな。",
+    },
+    {
+      who: "konta",
+      text: "そんなに聴き返しちゃったの〜！？ それもう完全に沼ってるやつにゃ！",
+    },
+    {
+      who: "tanunee",
+      text: "声質なのか、歌い方のニュアンスなのか、はっきりとは言葉にしにくいのだけどね。聴くたびに『あ、やっぱりいいな……』ってなる、“もう一回ボタン” を押させるタイプの歌なのだー。",
+    },
+    {
+      who: "rink",
+      text: "そしてこの良さは、動画を一度観ただけじゃなかなか伝わりきらない。じわ〜っと来るタイプだから、ぜひ何度か聴いてみてほしいの。",
+    },
+    {
+      who: "konta",
+      text: "1 回目より 2 回目、2 回目より 3 回目、って“効いてくる”タイプにゃね〜。",
+    },
+    {
+      who: "tanunee",
+      text: "そうなのだー。だからこそ、会場に来られた人だけじゃなくて、来れなかった人にもぜひ知ってほしいのだー。",
+    },
+    {
+      who: "rink",
+      text: "現地で聴いて『良かったね〜』で終わるにはもったいなさすぎる歌なんだよ。ねうさんの歌は、もっと広く、いろんな人に届いてほしい——ぼくらは本気でそう思ってます。",
+    },
+    {
+      who: "konta",
+      text: "これはもう、聴いた瞬間に他の人にシェアしたくなるやつにゃね〜。",
+    },
+    {
+      who: "tanunee",
+      text: "まずは X プロフィールから覗いて、動画や配信情報をチェックしてみてほしいのだー。『あ、このくらげさん、ほんとに歌うまい……』って絶対に思うはずなのだー。",
+    },
+    {
+      who: "rink",
+      text: "@sinseinaru をフォローして、ねうさんの歌を一緒に広めよう〜！1 回聴いたら、きっともう 1 回聴きたくなります。",
+    },
+  ],
+  ctaLabel: "しんせいねうさんの X プロフィールを開く",
+};
+
 const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://socialxup.com/": SOCIALXUP_DIALOGUE,
   "https://threads.socialxup.com/": SOCIALXUP_THREADS_DIALOGUE,
@@ -586,6 +652,7 @@ const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://x.com/ewbcwj_lv": SHIRAICCHAN_DIALOGUE,
   "https://x.com/shirase_0404": SHIRASE_DIALOGUE,
   "https://x.com/yuzuchis_mammy": YUZUCHI_DIALOGUE,
+  "https://x.com/sinseinaru": SINSEINEU_DIALOGUE,
 };
 
 export function getYukkuriDialogue(href: string): YukkuriDialogue | undefined {
