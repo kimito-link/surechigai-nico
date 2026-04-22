@@ -1,11 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import {
-  fetchYukkuriExplain,
-  yukkuriExplainUserMessage,
-  type YukkuriDialogue,
-} from "@/lib/yukkuriExplainClient";
+import type { YukkuriDialogue } from "@/lib/yukkuriExplainClient";
+import { useYukkuriExplain } from "@/lib/useYukkuriExplain";
 import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
 import styles from "./chokaigi.module.css";
 
@@ -26,22 +22,10 @@ const CHARS: Array<{ key: keyof Dialogue; label: string; speaker: "rink" | "kont
 ];
 
 export function YukkuriCreatorTalk({ creator }: { creator: CreatorInfo }) {
-  const [dialogue, setDialogue] = useState<Dialogue | null>(null);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
+  const { dialogue, loading, error, explain } = useYukkuriExplain();
 
-  const handleExplain = async () => {
-    setLoading(true);
-    setError("");
-    setDialogue(null);
-    try {
-      const data = await fetchYukkuriExplain({ ...creator });
-      setDialogue(data);
-    } catch (e) {
-      setError(yukkuriExplainUserMessage(e));
-    } finally {
-      setLoading(false);
-    }
+  const handleExplain = () => {
+    void explain({ ...creator });
   };
 
   return (

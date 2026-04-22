@@ -1,0 +1,101 @@
+.shell {
+  min-height: 60vh;
+  background: #060c1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  font-family: sans-serif;
+  color: #f0f4ff;
+  gap: 1.5rem;
+}
+
+.kicker {
+  font-size: 1.1rem;
+  color: #7aa8d8;
+}
+
+.handle {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.dialogueList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 480px;
+}
+
+.dialogueRow {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.badgeRink {
+  border-radius: 999px;
+  padding: 2px 12px;
+  color: #060c1a;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  background: #ff7eb3;
+}
+
+.badgeKonta {
+  border-radius: 999px;
+  padding: 2px 12px;
+  color: #060c1a;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  background: #7ec8ff;
+}
+
+.badgeTanunee {
+  border-radius: 999px;
+  padding: 2px 12px;
+  color: #060c1a;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  background: #a8e6a3;
+}
+
+.bubble {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.cta {
+  display: inline-block;
+  background: #dd6500;
+  color: #fff;
+  padding: 0.65rem 1.5rem;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.cta:hover {
+  filter: brightness(1.06);
+}
+
+@media (max-width: 480px) {
+  .shell {
+    padding: 1.25rem;
+    align-items: stretch;
+  }
+
+  .handle {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+}

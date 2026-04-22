@@ -2,113 +2,20 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getUuidToken } from "@/lib/clientAuth";
+import { AiErrorShare } from "@/app/components/AiErrorShare";
+import { buildAiErrorReport, maskToken } from "@/lib/aiErrorReport";
+import {
+  LIVE_MAP_FALLBACK_VENUE,
+  LIVE_MAP_POLL_MS,
+  LIVE_MAP_ZOOM,
+  liveMapBuildOsmTileImageUrl,
+  liveMapBuildStaticImageUrl,
+  liveMapFormatAgo,
+  liveMapToMapPoint,
+  type LiveMapPayload,
+  type MapPoint,
+} from "@/lib/liveMapShared";
 import styles from "../app.module.css";
-
-type LiveMapUser = {
-  id: number;
-  nickname: string;
-  twitterHandle: string | null;
-  lat: number;
-  lng: number;
-  municipality: string | null;
-  updatedAtMs: number;
-  isMe: boolean;
-};
-
-type LiveMapPayload = {
-  venue: {
-    name: string;
-    lat: number;
-    lng: number;
-  };
-  radiusMeters: number;
-  note: string;
-  users: LiveMapUser[];
-  generatedAtMs: number;
-};
-
-type MapPoint = LiveMapUser & {
-  leftPct: number;
-  topPct: number;
-};
-
-const MAP_WIDTH = 640;
-const MAP_HEIGHT = 420;
-const MAP_ZOOM = 15;
-
-const FALLBACK_VENUE = {
-  name: "幕張メッセ（ニコニコ超会議）",
-  lat: 35.64831,
-  lng: 140.03459,
-};
-
-function toWorldPixel(lat: number, lng: number, zoom: number) {
-  const scale = 256 * Math.pow(2, zoom);
-  const x = ((lng + 180) / 360) * scale;
-  const sinLat = Math.sin((lat * Math.PI) / 180);
-  const y =
-    (0.5 - Math.log((1 + sinLat) / (1 - sinLat)) / (4 * Math.PI)) * scale;
-  return { x, y };
-}
-
-function toMapPoint(
-  user: LiveMapUser,
-  venue: { lat: number; lng: number },
-  zoom: number
-): MapPoint | null {
-  const venuePixel = toWorldPixel(venue.lat, venue.lng, zoom);
-  const userPixel = toWorldPixel(user.lat, user.lng, zoom);
-
-  const px = MAP_WIDTH / 2 + (userPixel.x - venuePixel.x);
-  const py = MAP_HEIGHT / 2 + (userPixel.y - venuePixel.y);
-
-  if (px < -24 || px > MAP_WIDTH + 24 || py < -24 || py > MAP_HEIGHT + 24) {
-    return null;
-  }
-
-  const jitterX = user.isMe ? 0 : ((user.id * 13) % 5) - 2;
-  const jitterY = user.isMe ? 0 : ((user.id * 7) % 5) - 2;
-
-  const leftPct = ((px + jitterX) / MAP_WIDTH) * 100;
-  const topPct = ((py + jitterY) / MAP_HEIGHT) * 100;
-
-  return {
-    ...user,
-    leftPct,
-    topPct,
-  };
-}
-
-function formatAgo(updatedAtMs: number) {
-  const diffSec = Math.max(0, Math.floor((Date.now() - updatedAtMs) / 1000));
-  if (diffSec < 20) return "たった今";
-  if (diffSec < 60) return `${diffSec}秒前`;
-  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}分前`;
-  return `${Math.floor(diffSec / 3600)}時間前`;
-}
-
-function buildMapImageUrl(venue: { lat: number; lng: number }) {
-  const center = `${venue.lat},${venue.lng}`;
-  return `https://staticmap.openstreetmap.de/staticmap.php?center=${center}&zoom=${MAP_ZOOM}&size=${MAP_WIDTH}x${MAP_HEIGHT}&maptype=mapnik`;
-}
-
-/** staticmap ホストがブロックされる端末向け: 1枚の OSM タイル（会場周辺の目安） */
-function buildOsmTileImageUrl(
-  lat: number,
-  lng: number,
-  z: number = 14
-) {
-  const n = 2 ** z;
-  const x = Math.floor(((lng + 180) / 360) * n);
-  const latRad = (lat * Math.PI) / 180;
-  const y = Math.floor(
-    ((1 -
-      Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) /
-      2) *
-      n
-  );
-  return `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
-}
 
 /** 端末・ブラウザの測位（Geolocation API）失敗を人が直せる文言に */
 function messageForGeolocationFailure(error: unknown): string {
@@ -160,6 +67,7 @@ export default function LocationButton({
   const [isSending, setIsSending] = useState(false);
   const [isRefreshingMap, setIsRefreshingMap] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [aiReport, setAiReport] = useState<string | null>(null);
   const [mapPayload, setMapPayload] = useState<LiveMapPayload | null>(null);
   const [mapApiError, setMapApiError] = useState<string | null>(null);
   /** 0: 静的地図(WMS) 1: OSMタイル1枚 2: 画像なし */
@@ -190,18 +98,35 @@ export default function LocationButton({
       });
 
       if (!res.ok) {
-        throw new Error(
-          await readFetchErrorMessage(res, "ライブマップの取得に失敗しました")
-        );
+        const message = await readFetchErrorMessage(res, "ライブマップの取得に失敗しました");
+        throw new Error(`HTTP ${res.status}: ${message}`);
       }
 
       const data = (await res.json()) as LiveMapPayload;
       setMapPayload(data);
       setMapApiError(null);
+      setAiReport(null);
     } catch (error) {
       const text =
         error instanceof Error ? error.message : "ライブマップ取得エラー";
       setMapApiError(text);
+      setAiReport(
+        buildAiErrorReport({
+          feature: "dashboard/live-map",
+          userMessage: text,
+          error,
+          request: {
+            method: "GET",
+            url: "/api/chokaigi/live-map",
+          },
+          context: {
+            manualRefresh: manual,
+            authSyncing,
+            authSyncError,
+            authUuidMasked: maskToken(resolveUuid()),
+          },
+        })
+      );
       if (manual) {
         setMessage({ type: "error", text });
       }
@@ -267,11 +192,12 @@ export default function LocationButton({
       if (!res.ok) {
         const errorMsg = await readFetchErrorMessage(res, "位置情報の送信に失敗しました");
         console.error(`[位置送信エラー] ステータス: ${res.status}, メッセージ: ${errorMsg}`);
-        throw new Error(errorMsg);
+        throw new Error(`HTTP ${res.status}: ${errorMsg}`);
       }
 
       console.log(`[位置送信成功] 座標: (${position.latitude}, ${position.longitude})`);
       setMessage({ type: "success", text: "位置情報を送信しました（500mグリッドで共有）" });
+      setAiReport(null);
       await fetchLiveMap();
     } catch (error) {
       const isGeo =
@@ -286,6 +212,31 @@ export default function LocationButton({
           ? error.message
           : "位置情報送信エラー";
       setMessage({ type: "error", text: errorMsg });
+      setAiReport(
+        buildAiErrorReport({
+          feature: "dashboard/location-submit",
+          userMessage: errorMsg,
+          error,
+          request: {
+            method: "POST",
+            url: "/api/locations",
+          },
+          context: {
+            authSyncing,
+            authSyncError,
+            authUuidMasked: maskToken(resolveUuid()),
+            geolocationCode:
+              typeof error === "object" &&
+              error !== null &&
+              "code" in error &&
+              typeof (error as GeolocationPositionError).code === "number"
+                ? (error as GeolocationPositionError).code
+                : null,
+            geolocationSupported:
+              typeof navigator !== "undefined" && Boolean(navigator.geolocation),
+          },
+        })
+      );
       messageDismissMs = 9000;
     } finally {
       setIsSending(false);
@@ -297,15 +248,15 @@ export default function LocationButton({
     fetchLiveMap();
     const timer = setInterval(() => {
       fetchLiveMap();
-    }, 15000);
+    }, LIVE_MAP_POLL_MS);
     return () => clearInterval(timer);
   }, [fetchLiveMap]);
 
-  const venue = mapPayload?.venue ?? FALLBACK_VENUE;
+  const venue = mapPayload?.venue ?? LIVE_MAP_FALLBACK_VENUE;
   const points = useMemo(
     () =>
       (mapPayload?.users ?? [])
-        .map((user) => toMapPoint(user, venue, MAP_ZOOM))
+        .map((user) => liveMapToMapPoint(user, venue, LIVE_MAP_ZOOM))
         .filter((value): value is MapPoint => value !== null),
     [mapPayload?.users, venue]
   );
@@ -326,7 +277,7 @@ export default function LocationButton({
       <div className={styles.mapActionRow}>
         <button
           onClick={handleLocationSubmit}
-          disabled={isSending || authSyncing || !authUuidProp}
+          disabled={isSending || authSyncing || !resolveUuid()}
           className={styles.button}
         >
           {isSending ? "送信中..." : "現在地を送信"}
@@ -351,6 +302,7 @@ export default function LocationButton({
           ライブマップ: {mapApiError}
         </p>
       )}
+      {(message?.type === "error" || mapApiError) && <AiErrorShare report={aiReport} />}
 
       <div className={styles.liveMapWrap}>
         <div className={styles.liveMapHeaderRow}>
@@ -369,8 +321,8 @@ export default function LocationButton({
             <img
               src={
                 staticMapImageVariant === 0
-                  ? buildMapImageUrl(venue)
-                  : buildOsmTileImageUrl(venue.lat, venue.lng, 14)
+                  ? liveMapBuildStaticImageUrl(venue)
+                  : liveMapBuildOsmTileImageUrl(venue.lat, venue.lng, 14)
               }
               alt="幕張メッセ周辺地図"
               className={styles.liveMapImage}
@@ -399,8 +351,8 @@ export default function LocationButton({
                 left: `${point.leftPct}%`,
                 top: `${point.topPct}%`,
               }}
-              title={`${point.nickname}${point.twitterHandle ? ` (${point.twitterHandle})` : ""} · ${formatAgo(point.updatedAtMs)}`}
-              aria-label={`${point.nickname} ${formatAgo(point.updatedAtMs)}`}
+              title={`${point.nickname}${point.twitterHandle ? ` (${point.twitterHandle})` : ""} · ${liveMapFormatAgo(point.updatedAtMs)}`}
+              aria-label={`${point.nickname} ${liveMapFormatAgo(point.updatedAtMs)}`}
             >
               <span className={styles.liveMapPinDot} />
               {point.isMe && <span className={styles.liveMapPinLabel}>あなた</span>}
@@ -418,7 +370,7 @@ export default function LocationButton({
                 <span className={styles.liveMapListArea}>
                   {user.municipality ?? "幕張周辺"}
                 </span>
-                <span className={styles.liveMapListTime}>{formatAgo(user.updatedAtMs)}</span>
+                <span className={styles.liveMapListTime}>{liveMapFormatAgo(user.updatedAtMs)}</span>
               </li>
             ))}
           </ul>

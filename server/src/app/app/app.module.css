@@ -106,6 +106,10 @@
   filter: brightness(1.05);
 }
 
+.syncErrorReport {
+  width: 100%;
+}
+
 .content {
   max-width: 1200px;
   margin: 0 auto;

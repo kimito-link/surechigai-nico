@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import styles from "./admin.module.css";
 
 interface Stats {
   overview: {
@@ -54,7 +55,9 @@ export default function AdminPage() {
   const fetchReports = () => {
     fetch("/api/admin/reports", { headers: adminHeaders })
       .then((r) => r.json())
-      .then((data) => { if (data.reports) setReports(data.reports); })
+      .then((data) => {
+        if (data.reports) setReports(data.reports);
+      })
       .catch(() => {});
   };
 
@@ -78,17 +81,16 @@ export default function AdminPage() {
     fetchReports();
   };
 
-  if (error) return <div style={styles.error}>{error}</div>;
-  if (!stats) return <div style={styles.loading}>読み込み中...</div>;
+  if (error) return <div className={styles.error}>{error}</div>;
+  if (!stats) return <div className={styles.loading}>読み込み中...</div>;
 
   const maxDau = Math.max(...stats.daily_dau.map((d) => d.count), 1);
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>すれちがいライト 管理ダッシュボード</h1>
+    <div className={styles.container}>
+      <h1 className={styles.title}>すれちがいライト 管理ダッシュボード</h1>
 
-      {/* 概要カード */}
-      <div style={styles.cardGrid}>
+      <div className={styles.cardGrid}>
         <Card label="総ユーザー数" value={stats.overview.total_users} />
         <Card label="総すれ違い数" value={stats.overview.total_encounters} />
         <Card label="DAU (今日)" value={stats.overview.dau} highlight />
@@ -97,101 +99,95 @@ export default function AdminPage() {
         <Card label="非アクティブ (7日+)" value={stats.overview.inactive_7d} warn />
       </div>
 
-      {/* D1継続率 */}
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>D1継続率</h2>
-        <div style={styles.card}>
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>D1継続率</h2>
+        <div className={styles.card}>
           {stats.retention.d1_registered > 0 ? (
             <div>
-              <span style={styles.bigNumber}>
-                {stats.retention.d1_rate}%
-              </span>
-              <span style={styles.subText}>
-                {" "}({stats.retention.d1_retained} / {stats.retention.d1_registered})
+              <span className={styles.bigNumber}>{stats.retention.d1_rate}%</span>
+              <span className={styles.subText}>
+                {" "}
+                ({stats.retention.d1_retained} / {stats.retention.d1_registered})
               </span>
             </div>
           ) : (
-            <span style={styles.subText}>昨日の新規登録なし</span>
+            <span className={styles.subText}>昨日の新規登録なし</span>
           )}
         </div>
       </div>
 
-      {/* DAU推移 */}
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>DAU推移 (直近14日)</h2>
-        <div style={styles.card}>
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>DAU推移 (直近14日)</h2>
+        <div className={styles.card}>
           {stats.daily_dau.length > 0 ? (
-            <div style={styles.chart}>
+            <div className={styles.chart}>
               {stats.daily_dau.map((d) => (
-                <div key={d.date} style={styles.chartCol}>
-                  <div style={styles.chartBarWrap}>
+                <div key={d.date} className={styles.chartCol}>
+                  <div className={styles.chartBarWrap}>
                     <div
-                      style={{
-                        ...styles.chartBar,
-                        height: `${(d.count / maxDau) * 100}%`,
-                      }}
+                      className={styles.chartBar}
+                      style={{ height: `${(d.count / maxDau) * 100}%` }}
                     />
                   </div>
-                  <div style={styles.chartLabel}>{d.date.slice(5)}</div>
-                  <div style={styles.chartValue}>{d.count}</div>
+                  <div className={styles.chartLabel}>{d.date.slice(5)}</div>
+                  <div className={styles.chartValue}>{d.count}</div>
                 </div>
               ))}
             </div>
           ) : (
-            <span style={styles.subText}>データなし</span>
+            <span className={styles.subText}>データなし</span>
           )}
         </div>
       </div>
 
-      {/* 通報ユーザー */}
       {reports.length > 0 && (
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>通報ユーザー ({reports.length}件)</h2>
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>通報ユーザー ({reports.length}件)</h2>
           {reports.map((r) => (
-            <div key={r.user_id} style={{
-              ...styles.card,
-              marginBottom: 12,
-              borderLeft: r.is_suspended ? "4px solid #FF3B30" : "4px solid #FFB347",
-            }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>
+            <div
+              key={r.user_id}
+              className={`${styles.card} ${styles.reportCard} ${
+                r.is_suspended ? styles.reportCardSuspended : styles.reportCardPending
+              }`}
+            >
+              <div className={styles.reportRow}>
+                <div className={styles.reportMain}>
+                  <div className={styles.reportName}>
                     {r.nickname}
                     {r.is_suspended ? (
-                      <span style={{ color: "#FF3B30", fontSize: 12, marginLeft: 8 }}>ひとこと非表示中</span>
+                      <span className={styles.badgeSuspended}>ひとこと非表示中</span>
                     ) : (
-                      <span style={{ color: "#FFB347", fontSize: 12, marginLeft: 8 }}>要確認</span>
+                      <span className={styles.badgePending}>要確認</span>
                     )}
                   </div>
-                  <div style={{ fontSize: 13, color: "#666", marginBottom: 4 }}>
+                  <div className={styles.reportMeta}>
                     ID: {r.user_id} / 通報数: {r.report_count}件 (異なるユーザーから)
                   </div>
-                  {r.hitokoto && (
-                    <div style={{ fontSize: 14, color: "#333", margin: "8px 0", padding: "8px 12px", background: "#FFF", borderRadius: 8 }}>
-                      ひとこと: 「{r.hitokoto}」
-                    </div>
-                  )}
-                  <div style={{ fontSize: 12, color: "#999" }}>
-                    理由: {r.reasons} / 最終通報: {new Date(r.last_reported_at).toLocaleString("ja-JP")}
+                  {r.hitokoto ? (
+                    <div className={styles.hitokotoBox}>ひとこと: 「{r.hitokoto}」</div>
+                  ) : null}
+                  <div className={styles.reportReason}>
+                    理由: {r.reasons} / 最終通報:{" "}
+                    {new Date(r.last_reported_at).toLocaleString("ja-JP")}
                   </div>
-                  {r.latest_detail && (
-                    <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
-                      詳細: {r.latest_detail}
-                    </div>
-                  )}
+                  {r.latest_detail ? (
+                    <div className={styles.reportDetail}>詳細: {r.latest_detail}</div>
+                  ) : null}
                 </div>
                 <div>
                   {r.is_suspended ? (
                     <button
+                      type="button"
                       onClick={() => handleModAction(r.user_id, "unsuspend")}
-                      style={{ ...styles.modButton, background: "#4A90D9" }}
+                      className={`${styles.modButton} ${styles.modButtonUnsuspend}`}
                     >
                       非表示を解除
                     </button>
                   ) : (
                     <button
+                      type="button"
                       onClick={() => handleModAction(r.user_id, "suspend")}
-                      style={{ ...styles.modButton, background: "#FF3B30" }}
+                      className={`${styles.modButton} ${styles.modButtonSuspend}`}
                     >
                       ひとこと非表示にする
                     </button>
@@ -203,23 +199,24 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* 今日のイベント */}
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>今日のイベント</h2>
-        <div style={styles.card}>
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>今日のイベント</h2>
+        <div className={styles.card}>
           {stats.today_events.length > 0 ? (
-            <table style={styles.table}>
+            <table className={styles.table}>
               <tbody>
                 {stats.today_events.map((e) => (
                   <tr key={e.event_type}>
-                    <td style={styles.td}>{EVENT_LABELS[e.event_type] || e.event_type}</td>
-                    <td style={{ ...styles.td, textAlign: "right", fontWeight: 700 }}>{e.count}</td>
+                    <td className={styles.td}>
+                      {EVENT_LABELS[e.event_type] || e.event_type}
+                    </td>
+                    <td className={`${styles.td} ${styles.tdNumeric}`}>{e.count}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           ) : (
-            <span style={styles.subText}>データなし</span>
+            <span className={styles.subText}>データなし</span>
           )}
         </div>
       </div>
@@ -227,38 +224,31 @@ export default function AdminPage() {
   );
 }
 
-function Card({ label, value, highlight, warn }: { label: string; value: number; highlight?: boolean; warn?: boolean }) {
+function Card({
+  label,
+  value,
+  highlight,
+  warn,
+}: {
+  label: string;
+  value: number;
+  highlight?: boolean;
+  warn?: boolean;
+}) {
   return (
-    <div style={{ ...styles.statCard, borderColor: highlight ? "#E8734A" : warn ? "#FF3B30" : "#E0E0E0" }}>
-      <div style={styles.statLabel}>{label}</div>
-      <div style={{ ...styles.statValue, color: highlight ? "#E8734A" : warn ? "#FF3B30" : "#333" }}>
+    <div
+      className={`${styles.statCard} ${
+        highlight ? styles.statCardHighlight : warn ? styles.statCardWarn : ""
+      }`}
+    >
+      <div className={styles.statLabel}>{label}</div>
+      <div
+        className={`${styles.statValue} ${
+          highlight ? styles.statValueHighlight : warn ? styles.statValueWarn : ""
+        }`}
+      >
         {value}
       </div>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: { maxWidth: 800, margin: "0 auto", padding: 24, fontFamily: "-apple-system, sans-serif" },
-  title: { fontSize: 24, fontWeight: 700, marginBottom: 24, color: "#333" },
-  loading: { textAlign: "center", padding: 100, color: "#999" },
-  error: { textAlign: "center", padding: 100, color: "#FF3B30" },
-  cardGrid: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 32 },
-  statCard: { border: "2px solid #E0E0E0", borderRadius: 12, padding: 16, textAlign: "center" },
-  statLabel: { fontSize: 12, color: "#999", marginBottom: 4 },
-  statValue: { fontSize: 28, fontWeight: 800 },
-  section: { marginBottom: 32 },
-  sectionTitle: { fontSize: 16, fontWeight: 700, color: "#333", marginBottom: 12 },
-  card: { background: "#F9F9F9", borderRadius: 12, padding: 20 },
-  bigNumber: { fontSize: 36, fontWeight: 800, color: "#E8734A" },
-  subText: { fontSize: 14, color: "#999" },
-  chart: { display: "flex", gap: 4, alignItems: "flex-end", height: 120 },
-  chartCol: { flex: 1, display: "flex", flexDirection: "column", alignItems: "center" },
-  chartBarWrap: { width: "100%", height: 80, display: "flex", alignItems: "flex-end" },
-  chartBar: { width: "100%", background: "#E8734A", borderRadius: 4, minHeight: 2 },
-  chartLabel: { fontSize: 10, color: "#999", marginTop: 4 },
-  chartValue: { fontSize: 10, fontWeight: 700, color: "#333" },
-  table: { width: "100%", borderCollapse: "collapse" },
-  td: { padding: "8px 0", borderBottom: "1px solid #EEE", fontSize: 14 },
-  modButton: { color: "#FFF", border: "none", borderRadius: 8, padding: "8px 16px", fontSize: 13, fontWeight: 600, cursor: "pointer" },
-};

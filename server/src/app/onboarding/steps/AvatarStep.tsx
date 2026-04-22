@@ -8,6 +8,7 @@ interface AvatarStepProps {
   nickname: string;
   onComplete: (avatarConfig: Record<string, unknown>) => void;
   onBack: (() => void) | null;
+  onSkip?: () => void;
 }
 
 interface AvatarOption {
@@ -28,6 +29,7 @@ export default function AvatarStep({
   nickname,
   onComplete,
   onBack,
+  onSkip,
 }: AvatarStepProps) {
   const [selectedStyle, setSelectedStyle] = useState(AVATAR_PRESETS[0].id);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -128,6 +130,17 @@ export default function AvatarStep({
           {isSubmitting ? "保存中..." : "次へ"}
         </button>
       </div>
+
+      {onSkip ? (
+        <button
+          type="button"
+          onClick={onSkip}
+          className={styles.skipButton}
+          disabled={isSubmitting}
+        >
+          あとで設定（スキップ）
+        </button>
+      ) : null}
     </form>
   );
 }

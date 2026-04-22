@@ -3,7 +3,7 @@
   font-family: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic UI", sans-serif;
   color: #1e1510;
   background: #f5f0e8;
-  padding-top: 52px; /* StickyXSearchBar の高さ分 */
+  padding-top: var(--layout-sticky-x-h, 0px);
   overflow-x: hidden;
   max-width: 100vw;
 }
@@ -11,11 +11,12 @@
 /* ===== Sticky X 検索バー ===== */
 .stickyXBar {
   position: fixed;
-  top: 64px; /* SiteHeader の高さ */
+  top: var(--layout-header-h, 64px);
   left: 0;
   right: 0;
   z-index: 999;
-  height: 52px;
+  height: var(--layout-sticky-x-h, 52px);
+  min-height: var(--layout-sticky-x-h, 52px);
   display: flex;
   align-items: center;
   background: rgba(248, 243, 234, 0.97);
@@ -141,12 +142,63 @@
   position: fixed;
   inset: 0;
   z-index: 997;
+  margin: 0;
+  padding: 0;
+  border: none;
   background: rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  appearance: none;
+}
+
+.stickyXOverlay:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -4px;
+}
+
+.stickyXLoadingBox {
+  padding: 0.5rem 2.25rem 0.75rem 0;
+}
+
+.stickyXLoadingText {
+  margin: 0 0 0.65rem;
+  font-size: 0.88rem;
+  color: #5c5248;
+  line-height: 1.5;
+}
+
+.stickyXLoadingActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.stickyXCancelBtn {
+  height: 2rem;
+  padding: 0 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(26, 88, 152, 0.35);
+  background: #fff;
+  color: #1a5898;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.stickyXCancelBtn:hover {
+  background: rgba(26, 88, 152, 0.06);
+}
+
+.stickyXCancelBtn:focus-visible {
+  outline: 2px solid rgba(26, 88, 152, 0.5);
+  outline-offset: 2px;
 }
 
 .stickyXPanel {
   position: fixed;
-  top: 116px; /* 64 + 52 */
+  top: calc(var(--layout-header-h, 64px) + var(--layout-sticky-x-h, 52px));
   left: 0;
   right: 0;
   z-index: 998;
@@ -1130,6 +1182,12 @@ details[open] .detailMapSummary::before {
   border-radius: 0.85rem;
   border: 1px solid rgba(26, 88, 152, 0.18);
   background: #fff;
+}
+
+.creatorSearchLoading {
+  margin: 0;
+  font-size: 0.92rem;
+  color: rgba(26, 58, 92, 0.75);
 }
 
 .creatorSearchControls {

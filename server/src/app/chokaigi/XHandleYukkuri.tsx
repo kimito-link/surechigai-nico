@@ -1,11 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import {
-  fetchYukkuriExplain,
-  yukkuriExplainUserMessage,
-  type YukkuriDialogue,
-} from "@/lib/yukkuriExplainClient";
+import type { YukkuriDialogue } from "@/lib/yukkuriExplainClient";
+import { useYukkuriExplain } from "@/lib/useYukkuriExplain";
 import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
 import styles from "./chokaigi.module.css";
 
@@ -18,26 +15,14 @@ const CHARS: Array<{ key: keyof Dialogue; label: string; speaker: "rink" | "kont
 ];
 
 export function XHandleYukkuri() {
-  const [handle, setHandle]   = useState("");
-  const [dialogue, setDialogue] = useState<Dialogue | null>(null);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
+  const [handle, setHandle] = useState("");
+  const { dialogue, loading, error, explain } = useYukkuriExplain();
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const raw = handle.trim().replace(/^@+/, "");
     if (!raw) return;
-    setLoading(true);
-    setError("");
-    setDialogue(null);
-    try {
-      const data = await fetchYukkuriExplain({ xHandle: raw, name: `@${raw}` });
-      setDialogue(data);
-    } catch (e) {
-      setError(yukkuriExplainUserMessage(e));
-    } finally {
-      setLoading(false);
-    }
+    void explain({ xHandle: raw, name: `@${raw}` });
   };
 
   return (

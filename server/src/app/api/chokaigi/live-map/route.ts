@@ -52,36 +52,32 @@ export async function GET(req: NextRequest) {
     params.push(MAX_USERS);
 
     const [rows] = await pool.execute<LiveMapRow[]>(
-       `WITH latest AS (
-         SELECT l.user_id, l.lat_grid, l.lng_grid, l.municipality, l.created_at
-         FROM locations l
-         INNER JOIN (
-           SELECT user_id, MAX(created_at) AS max_created_at
-           FROM locations
-           WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${ACTIVE_WINDOW_MINUTES} MINUTE)
-           GROUP BY user_id
-         ) last_loc
-           ON last_loc.user_id = l.user_id
-          AND last_loc.max_created_at = l.created_at
-       )
-       SELECT
-         latest.user_id,
+      `SELECT
+         l.user_id,
          u.nickname,
          u.twitter_handle,
-         latest.lat_grid,
-         latest.lng_grid,
-         latest.municipality,
-         CAST(UNIX_TIMESTAMP(latest.created_at) * 1000 AS UNSIGNED) AS created_at_ms
-       FROM latest
-       INNER JOIN users u ON u.id = latest.user_id
+         l.lat_grid,
+         l.lng_grid,
+         l.municipality,
+         CAST(UNIX_TIMESTAMP(l.created_at) * 1000 AS UNSIGNED) AS created_at_ms
+       FROM locations l
+       INNER JOIN (
+         SELECT user_id, MAX(created_at) AS max_created_at
+         FROM locations
+         WHERE created_at >= DATE_SUB(NOW(), INTERVAL ${ACTIVE_WINDOW_MINUTES} MINUTE)
+         GROUP BY user_id
+       ) latest_times
+         ON l.user_id = latest_times.user_id
+        AND l.created_at = latest_times.max_created_at
+       INNER JOIN users u ON u.id = l.user_id
        WHERE
          u.is_deleted = FALSE
          AND u.is_suspended = FALSE
-         AND CAST(latest.lat_grid AS DECIMAL(10,7)) BETWEEN ? AND ?
-         AND CAST(latest.lng_grid AS DECIMAL(10,7)) BETWEEN ? AND ?
+         AND l.lat_grid BETWEEN ? AND ?
+         AND l.lng_grid BETWEEN ? AND ?
          ${blockFilter}
-       ORDER BY latest.created_at DESC
-      LIMIT ?`,
+       ORDER BY l.created_at DESC
+       LIMIT ?`,
       params
     );
 

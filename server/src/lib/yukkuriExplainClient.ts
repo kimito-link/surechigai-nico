@@ -8,13 +8,16 @@ export type YukkuriDialogue = { rink: string; konta: string; tanunee: string };
 export const YUKKURI_EXPLAIN_TIMEOUT_MS = 360_000;
 
 export async function fetchYukkuriExplain(
-  body: Record<string, unknown>
+  body: Record<string, unknown>,
+  options?: { signal?: AbortSignal }
 ): Promise<YukkuriDialogue> {
+  const signal =
+    options?.signal ?? AbortSignal.timeout(YUKKURI_EXPLAIN_TIMEOUT_MS);
   const res = await fetch("/api/yukkuri-explain", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(YUKKURI_EXPLAIN_TIMEOUT_MS),
+    signal,
   });
   const data = (await res.json().catch(() => ({}))) as {
     error?: string;

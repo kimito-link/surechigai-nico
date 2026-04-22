@@ -87,6 +87,12 @@ export default function ProfileStep({ initialData, onComplete }: ProfileStepProp
     <form onSubmit={handleSubmit} className={styles.stepCard}>
       <h2 className={styles.stepTitle}>プロフィール</h2>
 
+      <fieldset className={styles.formSection}>
+        <legend className={styles.formSectionTitle}>基本（最大3項目）</legend>
+        <p className={styles.formSectionHint}>
+          ニックネーム・年代・性別はこのブロックにまとめています（入力負荷を分散）。
+        </p>
+
       <div className={styles.formGroup}>
         <label htmlFor="nickname" className={styles.label}>
           ニックネーム <span className={styles.required}>*</span>
@@ -94,6 +100,8 @@ export default function ProfileStep({ initialData, onComplete }: ProfileStepProp
         <input
           id="nickname"
           type="text"
+          name="nickname"
+          autoComplete="nickname"
           maxLength={20}
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
@@ -143,6 +151,11 @@ export default function ProfileStep({ initialData, onComplete }: ProfileStepProp
           ))}
         </select>
       </div>
+      </fieldset>
+
+      <fieldset className={styles.formSection}>
+        <legend className={styles.formSectionTitle}>ひとこと</legend>
+        <p className={styles.formSectionHint}>任意。短い一言なら未入力のままでも次へ進めます。</p>
 
       <div className={styles.formGroup}>
         <label htmlFor="hitokoto" className={styles.label}>
@@ -160,6 +173,7 @@ export default function ProfileStep({ initialData, onComplete }: ProfileStepProp
         />
         <p className={styles.helperText}>{hitokoto.length} / 100 文字</p>
       </div>
+      </fieldset>
 
       <button
         type="submit"

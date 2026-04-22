@@ -57,6 +57,59 @@
   text-align: center;
 }
 
+/* 登録中フルスクリーン（page.tsx） */
+.registerLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #fff9f2;
+  font-size: 1.1rem;
+  color: #5c5248;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.registerLoadingActions {
+  margin-top: 1rem;
+}
+
+.narrowCtaButton {
+  width: auto;
+  min-width: 12rem;
+  margin-top: 1rem;
+}
+
+/* 3項目超フォームはセクション分割（fieldset） */
+.formSection {
+  margin: 0 0 1.5rem;
+  padding: 1.25rem 0 0;
+  border: none;
+  border-top: 1px solid #e8dfd3;
+}
+
+.formSection:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.formSectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #3a2f24;
+  margin: 0 0 1rem;
+  padding: 0;
+  width: 100%;
+}
+
+.formSectionHint {
+  font-size: 0.8rem;
+  color: #5c5248;
+  margin: -0.5rem 0 1rem;
+  line-height: 1.5;
+}
+
 /* フォームグループ */
 .formGroup {
   margin-bottom: 1.5rem;
@@ -87,12 +140,19 @@
   transition: border-color 0.2s;
 }
 
-.input:focus,
-.select:focus,
-.textarea:focus {
+.input:focus:not(:focus-visible),
+.select:focus:not(:focus-visible),
+.textarea:focus:not(:focus-visible) {
   outline: none;
+}
+
+.input:focus-visible,
+.select:focus-visible,
+.textarea:focus-visible {
+  outline: 2px solid rgba(37, 93, 155, 0.65);
+  outline-offset: 2px;
   border-color: #255d9b;
-  box-shadow: 0 0 0 3px rgba(37, 93, 155, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 93, 155, 0.12);
 }
 
 .input:disabled,

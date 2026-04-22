@@ -13,6 +13,7 @@ import {
   USAGE_SECTION_HEADING_ID,
 } from "./chokaigi/lp-content";
 import { HomeVenueWander } from "./HomeVenueWander";
+import { PrefetchChokaigiWhenVisible } from "./components/PrefetchChokaigiRoutes";
 import { CreatorCrossSearch } from "./chokaigi/CreatorCrossSearch";
 import { YukkuriHero } from "./chokaigi/YukkuriHero";
 import styles from "./page.module.css";
@@ -56,22 +57,24 @@ export default function Home() {
             </span>
             <h1 className={styles.title}>すれちがいライト</h1>
             <p className={styles.lead}>{HOME_HERO_LEAD}</p>
-            <div className={styles.ctaRow}>
-              <Link href="/chokaigi" className={styles.ctaPrimary}>
-                ニコニコ超会議 企画予告（LP）を見る
-              </Link>
-              <a
-                href="https://kimito-link.com/"
-                className={styles.ctaGhost}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                kimito-link 公式
-              </a>
-            </div>
+            <PrefetchChokaigiWhenVisible>
+              <div className={styles.ctaRow}>
+                <Link href="/chokaigi" className={styles.ctaPrimary}>
+                  ニコニコ超会議 企画予告（LP）を見る
+                </Link>
+                <a
+                  href="https://kimito-link.com/"
+                  className={styles.ctaGhost}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  kimito-link 公式
+                </a>
+              </div>
+            </PrefetchChokaigiWhenVisible>
           </div>
 
-          <div className={styles.heroStage} aria-hidden="false">
+          <div className={styles.heroStage}>
             <div className={styles.avatarRow}>
               {GUIDES.map((g, i) => {
                 const [frameClass, nameClass] = AVATAR_FRAME[i] ?? ["", ""];

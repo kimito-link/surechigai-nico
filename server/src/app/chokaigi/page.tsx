@@ -1,6 +1,5 @@
 /** viewport / canonical: chokaigi/layout.tsx */
 import Image from "next/image";
-import { Suspense } from "react";
 import {
   GUIDES,
   HERO_HEADING,
@@ -225,6 +224,7 @@ export default function ChokaigiPage() {
           <h3 className={styles.mapSubheading}>ホールをタップして詳細を見る</h3>
           <VenueMapInteractive />
           <VenueLiveMap />
+          <CreatorCrossSearch />
 
           <ol className={styles.mapHowToList}>
             {MAP_QUICK_STEPS.map((line, i) => (

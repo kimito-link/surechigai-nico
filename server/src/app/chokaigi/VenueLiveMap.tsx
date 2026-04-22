@@ -2,103 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getUuidToken } from "@/lib/clientAuth";
+import {
+  LIVE_MAP_FALLBACK_VENUE,
+  LIVE_MAP_POLL_MS,
+  LIVE_MAP_ZOOM,
+  liveMapBuildOsmTileImageUrl,
+  liveMapBuildStaticImageUrl,
+  liveMapFormatAgo,
+  liveMapToMapPoint,
+  type LiveMapPayload,
+  type MapPoint,
+} from "@/lib/liveMapShared";
 import styles from "./chokaigi.module.css";
-
-type LiveMapUser = {
-  id: number;
-  nickname: string;
-  twitterHandle: string | null;
-  lat: number;
-  lng: number;
-  municipality: string | null;
-  updatedAtMs: number;
-  isMe: boolean;
-};
-
-type LiveMapPayload = {
-  venue: {
-    name: string;
-    lat: number;
-    lng: number;
-  };
-  radiusMeters: number;
-  publicMode: boolean;
-  note: string;
-  users: LiveMapUser[];
-  generatedAtMs: number;
-};
-
-type MapPoint = LiveMapUser & {
-  leftPct: number;
-  topPct: number;
-};
-
-const MAP_WIDTH = 640;
-const MAP_HEIGHT = 420;
-const MAP_ZOOM = 15;
-const AUTO_REFRESH_MS = 15000;
-
-const FALLBACK_VENUE = {
-  name: "幕張メッセ（ニコニコ超会議）",
-  lat: 35.64831,
-  lng: 140.03459,
-};
-
-function toWorldPixel(lat: number, lng: number, zoom: number) {
-  const scale = 256 * Math.pow(2, zoom);
-  const x = ((lng + 180) / 360) * scale;
-  const sinLat = Math.sin((lat * Math.PI) / 180);
-  const y =
-    (0.5 - Math.log((1 + sinLat) / (1 - sinLat)) / (4 * Math.PI)) * scale;
-  return { x, y };
-}
-
-function toMapPoint(
-  user: LiveMapUser,
-  venue: { lat: number; lng: number },
-  zoom: number
-): MapPoint | null {
-  const venuePixel = toWorldPixel(venue.lat, venue.lng, zoom);
-  const userPixel = toWorldPixel(user.lat, user.lng, zoom);
-
-  const px = MAP_WIDTH / 2 + (userPixel.x - venuePixel.x);
-  const py = MAP_HEIGHT / 2 + (userPixel.y - venuePixel.y);
-
-  if (px < -24 || px > MAP_WIDTH + 24 || py < -24 || py > MAP_HEIGHT + 24) {
-    return null;
-  }
-
-  const jitterX = user.isMe ? 0 : ((user.id * 13) % 5) - 2;
-  const jitterY = user.isMe ? 0 : ((user.id * 7) % 5) - 2;
-
-  const leftPct = ((px + jitterX) / MAP_WIDTH) * 100;
-  const topPct = ((py + jitterY) / MAP_HEIGHT) * 100;
-
-  return { ...user, leftPct, topPct };
-}
-
-function formatAgo(updatedAtMs: number) {
-  const diffSec = Math.max(0, Math.floor((Date.now() - updatedAtMs) / 1000));
-  if (diffSec < 20) return "たった今";
-  if (diffSec < 60) return `${diffSec}秒前`;
-  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}分前`;
-  return `${Math.floor(diffSec / 3600)}時間前`;
-}
-
-function buildMapImageUrl(venue: { lat: number; lng: number }) {
-  const center = `${venue.lat},${venue.lng}`;
-  return `https://staticmap.openstreetmap.de/staticmap.php?center=${center}&zoom=${MAP_ZOOM}&size=${MAP_WIDTH}x${MAP_HEIGHT}&maptype=mapnik`;
-}
-
-function buildOsmTileImageUrl(lat: number, lng: number, z: number = 14) {
-  const n = 2 ** z;
-  const x = Math.floor(((lng + 180) / 360) * n);
-  const latRad = (lat * Math.PI) / 180;
-  const y = Math.floor(
-    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n
-  );
-  return `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
-}
 
 export function VenueLiveMap() {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -134,15 +49,15 @@ export function VenueLiveMap() {
     fetchLiveMap();
     const timer = setInterval(() => {
       fetchLiveMap();
-    }, AUTO_REFRESH_MS);
+    }, LIVE_MAP_POLL_MS);
     return () => clearInterval(timer);
   }, [fetchLiveMap]);
 
-  const venue = payload?.venue ?? FALLBACK_VENUE;
+  const venue = payload?.venue ?? LIVE_MAP_FALLBACK_VENUE;
   const points = useMemo(
     () =>
       (payload?.users ?? [])
-        .map((user) => toMapPoint(user, venue, MAP_ZOOM))
+        .map((user) => liveMapToMapPoint(user, venue, LIVE_MAP_ZOOM))
         .filter((value): value is MapPoint => value !== null),
     [payload?.users, venue]
   );
@@ -178,8 +93,8 @@ export function VenueLiveMap() {
           <img
             src={
               staticMapImageVariant === 0
-                ? buildMapImageUrl(venue)
-                : buildOsmTileImageUrl(venue.lat, venue.lng, 14)
+                ? liveMapBuildStaticImageUrl(venue)
+                : liveMapBuildOsmTileImageUrl(venue.lat, venue.lng, 14)
             }
             alt={`${venue.name}周辺の地図`}
             className={styles.venueLiveMapImage}
@@ -205,8 +120,8 @@ export function VenueLiveMap() {
             key={`${point.id}-${point.updatedAtMs}`}
             className={`${styles.venueLivePin} ${point.isMe ? styles.venueLivePinMe : ""}`}
             style={{ left: `${point.leftPct}%`, top: `${point.topPct}%` }}
-            title={`${point.nickname}${point.twitterHandle ? ` (${point.twitterHandle})` : ""} · ${formatAgo(point.updatedAtMs)}`}
-            aria-label={`${point.nickname} ${formatAgo(point.updatedAtMs)}`}
+            title={`${point.nickname}${point.twitterHandle ? ` (${point.twitterHandle})` : ""} · ${liveMapFormatAgo(point.updatedAtMs)}`}
+            aria-label={`${point.nickname} ${liveMapFormatAgo(point.updatedAtMs)}`}
           >
             <span className={styles.venueLivePinDot} />
             {point.isMe && <span className={styles.venueLivePinLabel}>あなた</span>}
@@ -216,7 +131,7 @@ export function VenueLiveMap() {
 
       <div className={styles.venueLiveSummaryRow}>
         <span>{points.length}人を表示中</span>
-        {payload?.generatedAtMs && <span>最終更新: {formatAgo(payload.generatedAtMs)}</span>}
+        {payload?.generatedAtMs && <span>最終更新: {liveMapFormatAgo(payload.generatedAtMs)}</span>}
       </div>
 
       {userList.length > 0 ? (
@@ -229,7 +144,7 @@ export function VenueLiveMap() {
               <span className={styles.venueLiveListArea}>
                 {user.municipality ?? "幕張周辺"}
               </span>
-              <span className={styles.venueLiveListTime}>{formatAgo(user.updatedAtMs)}</span>
+              <span className={styles.venueLiveListTime}>{liveMapFormatAgo(user.updatedAtMs)}</span>
             </li>
           ))}
         </ul>

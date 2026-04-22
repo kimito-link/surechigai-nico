@@ -2,12 +2,14 @@
 
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ProfileCard from "./components/ProfileCard";
 import LocationButton from "./components/LocationButton";
 import Stats from "./components/Stats";
 import styles from "./app.module.css";
 import { clearUuidToken, getUuidToken, setUuidToken } from "@/lib/clientAuth";
+import { AiErrorShare } from "@/app/components/AiErrorShare";
+import { buildAiErrorReport, maskToken } from "@/lib/aiErrorReport";
 
 export default function AppPage() {
   const router = useRouter();
@@ -133,6 +135,28 @@ export default function AppPage() {
   );
   const displayName = user?.fullName || user?.firstName || "匿名さん";
   const twitterHandle = xAccount?.username ? `@${xAccount.username}` : "";
+  const authSyncAiReport = useMemo(
+    () =>
+      authSyncError
+        ? buildAiErrorReport({
+            feature: "dashboard/auth-sync",
+            userMessage: authSyncError,
+            error: authSyncError,
+            request: {
+              method: "POST",
+              url: "/api/auth/register-direct",
+            },
+            context: {
+              isLoaded,
+              isSignedIn,
+              clerkUserId: user?.id ?? null,
+              authSyncState,
+              authUuidMasked: maskToken(resolvedUuid),
+            },
+          })
+        : null,
+    [authSyncError, authSyncState, isLoaded, isSignedIn, resolvedUuid, user?.id]
+  );
 
   return (
     <main className={styles.container}>
@@ -163,8 +187,8 @@ export default function AppPage() {
       </div>
 
       {authSyncState === "error" && authSyncError && (
-        <p className={styles.syncErrorBanner} role="alert">
-          {authSyncError}
+        <div className={styles.syncErrorBanner} role="alert">
+          <span>{authSyncError}</span>
           <button
             type="button"
             className={styles.syncRetryButton}
@@ -172,7 +196,10 @@ export default function AppPage() {
           >
             再読み込み
           </button>
-        </p>
+          <div className={styles.syncErrorReport}>
+            <AiErrorShare report={authSyncAiReport} />
+          </div>
+        </div>
       )}
 
       <div className={styles.content}>

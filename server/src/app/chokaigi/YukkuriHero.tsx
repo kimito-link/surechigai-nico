@@ -1,15 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import {
-  fetchYukkuriExplain,
-  yukkuriExplainUserMessage,
-  type YukkuriDialogue,
-} from "@/lib/yukkuriExplainClient";
+import type { YukkuriDialogue } from "@/lib/yukkuriExplainClient";
+import { useYukkuriExplain } from "@/lib/useYukkuriExplain";
 import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
+import { AUTH_LESS_FIRST_COPY } from "./lp-content";
 import styles from "./YukkuriHero.module.css";
 
 type Dialogue = YukkuriDialogue;
@@ -40,32 +38,32 @@ function buildTweetUrl(handle: string, d: Dialogue) {
 export function YukkuriHero() {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useUser();
-  const [handle, setHandle]     = useState("");
-  const [dialogue, setDialogue] = useState<Dialogue | null>(null);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
+  const [handle, setHandle] = useState("");
+  const { dialogue, loading, error, explain, reset, cancelInFlight } = useYukkuriExplain();
+  const [elapsedSec, setElapsedSec] = useState(0);
+
+  useEffect(() => {
+    if (!loading) {
+      setElapsedSec(0);
+      return;
+    }
+    setElapsedSec(0);
+    const t = window.setInterval(() => setElapsedSec((s) => s + 1), 1000);
+    return () => window.clearInterval(t);
+  }, [loading]);
 
   const raw = handle.trim().replace(/^@+/, "");
   const hasInput = raw.length > 0;
 
-  const handleYukkuri = async (e: FormEvent) => {
+  const handleYukkuri = (e: FormEvent) => {
     e.preventDefault();
     if (!raw) return;
-    setLoading(true);
-    setError("");
-    setDialogue(null);
-    try {
-      const data = await fetchYukkuriExplain({ xHandle: raw, name: `@${raw}` });
-      setDialogue(data);
-    } catch (e) {
-      setError(yukkuriExplainUserMessage(e));
-    } finally {
-      setLoading(false);
-    }
+    void explain({ xHandle: raw, name: `@${raw}` });
   };
 
   return (
     <section className={styles.hero} aria-label="ゆっくり解説ヒーロー">
+      <p className={styles.authLessFirst}>{AUTH_LESS_FIRST_COPY}</p>
       <p className={styles.headline}>
         誰を紹介してもらう？
       </p>
@@ -117,6 +115,17 @@ export function YukkuriHero() {
           {loading ? "解説中…" : "ゆっくり解説してもらう"}
         </button>
 
+        {loading && (
+          <div className={styles.loadingRow}>
+            <p className={styles.loadingHint}>
+              生成中… {elapsedSec}秒経過（長い場合は数分かかることがあります）
+            </p>
+            <button type="button" className={styles.btnCancelExplain} onClick={cancelInFlight}>
+              キャンセル
+            </button>
+          </div>
+        )}
+
         {!hasInput && (
           <p className={styles.hint}>
             自分でも他の人でも入力できます
@@ -151,7 +160,23 @@ export function YukkuriHero() {
       )}
 
       {/* エラー */}
-      {error && <p className={styles.error} role="alert">{error}</p>}
+      {error && (
+        <div className={styles.errorBlock}>
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
+          <button
+            type="button"
+            className={styles.btnRetryExplain}
+            onClick={() => {
+              reset();
+              if (raw) void explain({ xHandle: raw, name: `@${raw}` });
+            }}
+          >
+            再試行
+          </button>
+        </div>
+      )}
 
       {/* 結果後のシェア */}
       {dialogue && (

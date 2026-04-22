@@ -1,0 +1,4 @@
+.pageShell {
+  padding-top: var(--layout-header-h, 64px);
+  padding-bottom: var(--layout-footer-pad, 130px);
+}

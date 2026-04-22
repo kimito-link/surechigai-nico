@@ -1,5 +1,13 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+
+function withPathnameHeader(req: NextRequest) {
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", req.nextUrl.pathname);
+  return NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+}
 
 /**
  * path-to-regexp の解釈やデプロイ差に依存せず、UUID / optional 認証の API だけ常に通す
@@ -13,6 +21,15 @@ function isUnprotectedApiPath(pathname: string): boolean {
     pathname === "/api/chokaigi/live-map" ||
     pathname.startsWith("/api/chokaigi/live-map/")
   ) {
+    return true;
+  }
+  if (
+    pathname === "/api/chokaigi/creator-search" ||
+    pathname.startsWith("/api/chokaigi/creator-search/")
+  ) {
+    return true;
+  }
+  if (pathname === "/api/analytics/beacon" || pathname.startsWith("/api/analytics/beacon/")) {
     return true;
   }
   if (
@@ -44,14 +61,17 @@ const isPublicRoute = createRouteMatcher([
   "/api/locations(.*)",
   /** optional 認証（未ログインは publicMode）。パターン末尾 (.*) は Clerk 推奨。 */
   "/api/chokaigi/live-map(.*)",
+  "/api/chokaigi/creator-search(.*)",
+  "/api/analytics/beacon(.*)",
   "/yukkuri(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
   if (isUnprotectedApiPath(req.nextUrl.pathname) || isPublicRoute(req)) {
-    return;
+    return withPathnameHeader(req);
   }
   await auth.protect();
+  return withPathnameHeader(req);
 });
 
 export const config = {

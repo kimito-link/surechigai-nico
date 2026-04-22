@@ -1,9 +1,15 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
 import { jaJP } from "@clerk/localizations";
 import { SiteHeader } from "./components/SiteHeader";
 import { SiteFooterCta } from "./components/SiteFooterCta";
+import { PrefetchChokaigiRoutes } from "./components/PrefetchChokaigiRoutes";
+import { WebVitalsReporter } from "./components/WebVitalsReporter";
+import { AnalyticsNavigationTracker } from "./components/AnalyticsNavigationTracker";
+import layoutStyles from "./layout.module.css";
+import { LayoutSpacingEffect } from "./components/LayoutSpacingEffect";
 
 export const metadata: Metadata = {
   icons: {
@@ -41,10 +47,14 @@ export default function RootLayout({
             },
           }}
         >
+          <WebVitalsReporter />
+          <LayoutSpacingEffect />
+          <Suspense fallback={null}>
+            <AnalyticsNavigationTracker />
+          </Suspense>
+          <PrefetchChokaigiRoutes />
           <SiteHeader />
-          <div style={{ paddingTop: "64px", paddingBottom: "130px" }}>
-            {children}
-          </div>
+          <div className={layoutStyles.pageShell}>{children}</div>
           <SiteFooterCta />
         </ClerkProvider>
       </body>
