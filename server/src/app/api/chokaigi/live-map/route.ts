@@ -122,11 +122,13 @@ export async function GET(req: NextRequest) {
         : "公開モード: 匿名の500mグリッド位置を表示しています",
     });
   } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
     console.error("会場ライブマップ取得エラー:", error);
     return Response.json(
       {
         ok: false,
         error: "会場ライブマップの取得に失敗しました",
+        debug: msg,
       },
       { status: 503 }
     );
