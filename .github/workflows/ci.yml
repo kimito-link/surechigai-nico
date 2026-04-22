@@ -1,0 +1,45 @@
+name: CI
+
+# main への push / PR（main へのマージ前チェック）で回す軽量ゲート。
+# ここではシークレット不要な型検査 + ユニットテストだけに絞り、ビルドや E2E は
+# Vercel Preview / 手動で回す運用にして、CI 実行時間と失敗原因の切り分けを最短にする。
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# 連続 push で古い run を自動キャンセル（同一 ref 内のみ）
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck-and-test:
+    name: typecheck + unit test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        # server/ 配下に Next.js プロジェクトが入っているので、全ステップをそこで実行
+        working-directory: server
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript typecheck (noEmit)
+        run: npx tsc --noEmit
+
+      - name: Unit tests (node --test)
+        # tests/*.test.mjs はファイル内容ベースの契約テストなので DB / env は不要
+        run: npm test
