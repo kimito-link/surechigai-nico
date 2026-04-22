@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
     }
     params.push(MAX_USERS);
 
-    const [rows] = await pool.execute<LiveMapRow[]>(
+    const [rows] = await pool.query<LiveMapRow[]>(
       `SELECT
          l.user_id,
          u.nickname,
