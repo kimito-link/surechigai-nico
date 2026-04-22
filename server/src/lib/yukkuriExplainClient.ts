@@ -90,6 +90,12 @@ export function yukkuriExplainUserMessage(err: unknown): string {
         return "解説 AI のモデル設定が古くなっているかもしれません。運営にお知らせください。";
       case "E_YUKKURI_LLM_TIMEOUT":
         return "生成に時間がかかりすぎました。もう一度試すと早く返ることがあります。";
+      case "E_YUKKURI_LLM_UPSTREAM_5XX":
+        return "解説 AI の上流サービスが一時的に不安定です。少し待ってから再試行してください。";
+      case "E_YUKKURI_LLM_NETWORK":
+        return "解説 AI への接続に失敗しました。通信状況を確認して再試行してください。";
+      case "E_YUKKURI_LLM_MIXED_FAILED":
+        return "解説 AI の複数モデルで失敗しました。少し待ってから再試行してください。";
       case "E_YUKKURI_LLM_NOT_CONFIGURED":
         return "解説 AI が未設定です。運営にお知らせください。";
       case "E_YUKKURI_BAD_REQUEST":

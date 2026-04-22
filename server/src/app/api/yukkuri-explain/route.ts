@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 const CACHE_TTL_OK = 3600; // 1時間キャッシュ（成功）
-const CACHE_TTL_FAIL = 60; // 1分キャッシュ（失敗）— レート浪費防止
+const CACHE_TTL_FAIL = 20; // 20秒キャッシュ（失敗）— 一時障害時の再試行余地を残す
 
 /**
  * OpenRouter 無料モデル候補。
@@ -500,12 +500,32 @@ function buildUserFacingError(failures: CallResult[]): { status: number; body: U
       },
     };
   }
+  if (has("E_YUKKURI_LLM_UPSTREAM_429")) {
+    return {
+      status: 503,
+      body: {
+        error:
+          "解説 AI が混雑しています（一部モデルがレート制限中です）。30 秒ほど待ってから再試行してください。",
+        error_code: "E_YUKKURI_LLM_UPSTREAM_429",
+      },
+    };
+  }
   if (codes.length > 0 && codes.every((c) => c === "E_YUKKURI_LLM_TIMEOUT")) {
     return {
       status: 503,
       body: {
         error:
           "生成に時間がかかりすぎました。もう一度試すと早く返ることがあります。",
+        error_code: "E_YUKKURI_LLM_TIMEOUT",
+      },
+    };
+  }
+  if (has("E_YUKKURI_LLM_TIMEOUT")) {
+    return {
+      status: 503,
+      body: {
+        error:
+          "生成に時間がかかりすぎました（混在失敗）。少し時間をおいて再試行してください。",
         error_code: "E_YUKKURI_LLM_TIMEOUT",
       },
     };
@@ -520,11 +540,41 @@ function buildUserFacingError(failures: CallResult[]): { status: number; body: U
       },
     };
   }
+  if (has("E_YUKKURI_LLM_PARSE") && codes.every((c) => c === "E_YUKKURI_LLM_PARSE")) {
+    return {
+      status: 503,
+      body: {
+        error:
+          "解説 AI の応答形式が不正でした。再試行で改善することがあります。",
+        error_code: "E_YUKKURI_LLM_PARSE",
+      },
+    };
+  }
+  if (has("E_YUKKURI_LLM_UPSTREAM_5XX")) {
+    return {
+      status: 503,
+      body: {
+        error:
+          "解説 AI の上流サービスが一時的に不安定です。少し待ってから再試行してください。",
+        error_code: "E_YUKKURI_LLM_UPSTREAM_5XX",
+      },
+    };
+  }
+  if (codes.length > 0 && codes.every((c) => c === "E_YUKKURI_LLM_NETWORK")) {
+    return {
+      status: 503,
+      body: {
+        error:
+          "解説 AI へのネットワーク接続に失敗しました。通信状況を確認して再試行してください。",
+        error_code: "E_YUKKURI_LLM_NETWORK",
+      },
+    };
+  }
   return {
     status: 503,
     body: {
       error: "全モデルで解説の生成に失敗しました。しばらくしてから再試行してください。",
-      error_code: "E_YUKKURI_LLM_ALL_FAILED",
+      error_code: "E_YUKKURI_LLM_MIXED_FAILED",
       detail: failures.map((f) =>
         f.ok
           ? null
@@ -728,12 +778,32 @@ export async function POST(req: NextRequest) {
     )}`
   );
   // 負のキャッシュ（短期）
-  if (handle) {
+  // 一時的な混在失敗はキャッシュせず、即再試行で復帰しやすくする
+  const cacheableFailureCodes = new Set([
+    "E_YUKKURI_LLM_UPSTREAM_401",
+    "E_YUKKURI_LLM_UPSTREAM_402",
+    "E_YUKKURI_LLM_UPSTREAM_404",
+    "E_YUKKURI_LLM_UPSTREAM_429",
+    "E_YUKKURI_LLM_TIMEOUT",
+    "E_YUKKURI_LLM_PARSE",
+  ]);
+  if (handle && cacheableFailureCodes.has(errorBody.error_code)) {
     await setCached(handle, {
       ok: false,
       errorCode: errorBody.error_code,
       message: errorBody.error,
     });
   }
-  return NextResponse.json(errorBody, { status });
+  const headers: Record<string, string> = {};
+  if (errorBody.error_code === "E_YUKKURI_LLM_UPSTREAM_429") {
+    headers["Retry-After"] = "30";
+  } else if (errorBody.error_code === "E_YUKKURI_LLM_TIMEOUT") {
+    headers["Retry-After"] = "15";
+  } else if (errorBody.error_code === "E_YUKKURI_LLM_UPSTREAM_5XX") {
+    headers["Retry-After"] = "20";
+  } else if (errorBody.error_code === "E_YUKKURI_LLM_NETWORK") {
+    headers["Retry-After"] = "10";
+  }
+
+  return NextResponse.json(errorBody, { status, headers });
 }
