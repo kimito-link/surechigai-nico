@@ -3,6 +3,7 @@ import pool from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
 import { MUNICIPALITIES } from "@/lib/municipalities";
 import { reverseGeocodeToMunicipality } from "@/lib/geocoding";
+import { toGrid, toH3Cell } from "@/lib/locationGeom";
 import type { ResultSetHeader } from "mysql2";
 
 // 市区町村の代表座標(主要都市のみ、残りはランダムオフセット)
@@ -107,15 +108,16 @@ export async function POST(req: NextRequest) {
       const userId = result.insertId;
 
       // 位置情報を投入(municipality付き)
-      const latGrid = Math.floor(lat / 0.0045) * 0.0045;
-      const lngGrid = Math.floor(lng / 0.0055) * 0.0055;
+      // 軸順序: MySQL 8.0 SRID 4326 は (lat, lng) なので POINT(lat, lng) で統一する
+      const { latGrid, lngGrid } = toGrid(lat, lng);
+      const h3 = toH3Cell(lat, lng);
       const minutesAgo = Math.floor(Math.random() * 10);
       const locTime = new Date(now.getTime() - minutesAgo * 60 * 1000);
 
       await pool.execute(
-        `INSERT INTO locations (user_id, point, lat_grid, lng_grid, municipality, created_at)
-         VALUES (?, ST_SRID(POINT(?, ?), 4326), ?, ?, ?, ?)`,
-        [userId, lng, lat, latGrid, lngGrid, muni, locTime]
+        `INSERT INTO locations (user_id, point, lat_grid, lng_grid, h3_r8, municipality, created_at)
+         VALUES (?, ST_SRID(POINT(?, ?), 4326), ?, ?, ?, ?, ?)`,
+        [userId, lat, lng, latGrid, lngGrid, h3, muni, locTime]
       );
 
       // ダミーバッジをランダムに付与

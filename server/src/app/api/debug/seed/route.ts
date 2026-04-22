@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import pool from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
+import { toGrid, toH3Cell } from "@/lib/locationGeom";
 import type { ResultSetHeader } from "mysql2";
 
 const AGE_GROUPS = ["10s", "20s", "20s", "30s", "30s", "40s"] as const;
@@ -74,27 +75,28 @@ export async function POST(req: NextRequest) {
     const now = new Date();
 
     // 自分のlocationsも投入（基準点: 東京駅付近）
+    // MySQL SRID 4326 軸順序は (lat, lng) なので POINT(lat, lng) で統一する
     const myLoc = { lat: 35.6812, lng: 139.7671 };
-    const latGrid = Math.floor(myLoc.lat / 0.0045) * 0.0045;
-    const lngGrid = Math.floor(myLoc.lng / 0.0055) * 0.0055;
+    const { latGrid, lngGrid } = toGrid(myLoc.lat, myLoc.lng);
+    const myH3 = toH3Cell(myLoc.lat, myLoc.lng);
     await pool.execute(
-      `INSERT INTO locations (user_id, point, lat_grid, lng_grid, created_at)
-       VALUES (?, ST_SRID(POINT(?, ?), 4326), ?, ?, ?)`,
-      [authResult.id, myLoc.lng, myLoc.lat, latGrid, lngGrid, now]
+      `INSERT INTO locations (user_id, point, lat_grid, lng_grid, h3_r8, created_at)
+       VALUES (?, ST_SRID(POINT(?, ?), 4326), ?, ?, ?, ?)`,
+      [authResult.id, myLoc.lat, myLoc.lng, latGrid, lngGrid, myH3, now]
     );
 
     for (let i = 0; i < createdUsers.length; i++) {
       const loc = locations[i % locations.length];
       const minutesAgo = (i + 1) * 5;
       const locTime = new Date(now.getTime() - minutesAgo * 60 * 1000);
-      const locLatGrid = Math.floor(loc.lat / 0.0045) * 0.0045;
-      const locLngGrid = Math.floor(loc.lng / 0.0055) * 0.0055;
+      const { latGrid: locLatGrid, lngGrid: locLngGrid } = toGrid(loc.lat, loc.lng);
+      const locH3 = toH3Cell(loc.lat, loc.lng);
 
       // locationsテーブルに投入（matcherで検出させる）
       await pool.execute(
-        `INSERT INTO locations (user_id, point, lat_grid, lng_grid, created_at)
-         VALUES (?, ST_SRID(POINT(?, ?), 4326), ?, ?, ?)`,
-        [createdUsers[i], loc.lng, loc.lat, locLatGrid, locLngGrid, locTime]
+        `INSERT INTO locations (user_id, point, lat_grid, lng_grid, h3_r8, created_at)
+         VALUES (?, ST_SRID(POINT(?, ?), 4326), ?, ?, ?, ?)`,
+        [createdUsers[i], loc.lat, loc.lng, locLatGrid, locLngGrid, locH3, locTime]
       );
     }
 

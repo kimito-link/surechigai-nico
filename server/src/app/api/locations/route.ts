@@ -3,20 +3,19 @@ import pool from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
 import { mapDbErrorToUserMessage } from "@/lib/mapDbError";
 import { reverseGeocodeToMunicipality } from "@/lib/geocoding";
+import { toGrid, toH3Cell, assertFiniteLatLng } from "@/lib/locationGeom";
+import { publishLiveMapEvent } from "@/lib/liveMapBus";
 import type { RowDataPacket } from "mysql2";
 
 export const runtime = "nodejs";
 
 const MUNICIPALITY_MAX = 50;
 
-// 500mグリッドに丸める
-function toGrid(lat: number, lng: number) {
-  const LAT_GRID = 0.0045; // 約500m（緯度方向）
-  const LNG_GRID = 0.0055; // 約500m（経度方向 / 日本の緯度35度付近）
-  return {
-    latGrid: Math.floor(lat / LAT_GRID) * LAT_GRID,
-    lngGrid: Math.floor(lng / LNG_GRID) * LNG_GRID,
-  };
+function normalizeMunicipality(value: unknown): string | null {
+  if (value == null) return null;
+  const s = String(value).trim();
+  if (!s) return null;
+  return s.slice(0, MUNICIPALITY_MAX);
 }
 
 export async function POST(req: NextRequest) {
@@ -33,18 +32,37 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const { lat, lng } = body as { lat?: unknown; lng?: unknown };
+    const {
+      lat: rawLat,
+      lng: rawLng,
+      accuracy,
+      municipality: clientMunicipality,
+    } = body as {
+      lat?: unknown;
+      lng?: unknown;
+      accuracy?: unknown;
+      municipality?: unknown;
+    };
 
-    if (typeof lat !== "number" || typeof lng !== "number") {
+    const coords = assertFiniteLatLng(rawLat, rawLng);
+    if (!coords) {
       return Response.json(
-        { error: "lat, lng は数値で指定してください" },
+        { error: "lat, lng は有限の数値で指定してください" },
         { status: 400 }
       );
     }
+    const { lat, lng } = coords;
     if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
       return Response.json(
         { error: "緯度経度の範囲が不正です" },
         { status: 400 }
+      );
+    }
+    // 極端に粗い位置情報は捨てる（> 10km は IP ベースの可能性が高く事故の元）
+    if (typeof accuracy === "number" && Number.isFinite(accuracy) && accuracy > 10_000) {
+      return Response.json(
+        { error: "位置精度が粗すぎるため保存をスキップしました", skipped: true },
+        { status: 200 }
       );
     }
 
@@ -56,10 +74,8 @@ export async function POST(req: NextRequest) {
     if (userRows.length > 0 && userRows[0].location_paused_until) {
       const pausedUntil = new Date(userRows[0].location_paused_until);
       if (pausedUntil > new Date()) {
-        console.log(`[位置送信] user_id=${authResult.id}: 一時停止中 (until: ${pausedUntil.toISOString()})`);
-        return Response.json({ ok: true, paused: true });
+        return Response.json({ ok: true, paused: true, paused_until: pausedUntil.toISOString() });
       }
-      // 一時停止期間が過ぎたらクリア
       await pool.execute(
         "UPDATE users SET location_paused_until = NULL WHERE id = ?",
         [authResult.id]
@@ -67,26 +83,50 @@ export async function POST(req: NextRequest) {
     }
 
     const { latGrid, lngGrid } = toGrid(lat, lng);
+    const h3 = toH3Cell(lat, lng);
 
-    // 市区町村を逆ジオコーディングで取得(失敗してもエラーにはしない)
-    const rawMunicipality = await reverseGeocodeToMunicipality(lat, lng).catch(
-      () => null
+    // 市区町村:
+    //  1) クライアント（Geolonia Open Reverse Geocoder）が付けてきたらそれを優先
+    //  2) なければ Nominatim を同期呼び出しせず、後で非同期に補完する
+    const eagerMunicipality = normalizeMunicipality(clientMunicipality);
+
+    // MySQL 8.0 + SRID 4326 の軸順序は (lat, lng)
+    const pointWkt = `POINT(${lat} ${lng})`;
+    const [insertResult] = await pool.execute(
+      `INSERT INTO locations (user_id, point, lat_grid, lng_grid, h3_r8, municipality)
+       VALUES (?, ST_GeomFromText(?, 4326), ?, ?, ?, ?)`,
+      [authResult.id, pointWkt, latGrid, lngGrid, h3, eagerMunicipality]
     );
-    const municipality =
-      rawMunicipality != null && String(rawMunicipality).trim() !== ""
-        ? String(rawMunicipality).trim().slice(0, MUNICIPALITY_MAX)
-        : null;
+    const insertedId = (insertResult as { insertId?: number }).insertId;
 
-    // WKT: MySQL 8.0 + SRID 4326 は軸順序が POINT(緯度 経度) = POINT(lat lng)
-    const pointWkt = `POINT(${Number(lat)} ${Number(lng)})`;
-    await pool.execute(
-      `INSERT INTO locations (user_id, point, lat_grid, lng_grid, municipality)
-       VALUES (?, ST_GeomFromText(?, 4326), ?, ?, ?)`,
-      [authResult.id, pointWkt, latGrid, lngGrid, municipality]
-    );
+    // ライブマップ購読者へブロードキャスト（SSE）
+    publishLiveMapEvent({
+      userId: authResult.id,
+      lat,
+      lng,
+      h3,
+      ts: Date.now(),
+    });
 
-    console.log(`[位置送信成功] user_id=${authResult.id}, lat=${lat}, lng=${lng}, grid=(${latGrid},${lngGrid}), municipality=${municipality}`);
-    return Response.json({ ok: true });
+    // Nominatim 逆ジオは非同期で補完（レスポンスをブロックしない）
+    if (!eagerMunicipality && insertedId) {
+      void (async () => {
+        try {
+          const raw = await reverseGeocodeToMunicipality(lat, lng);
+          const m = normalizeMunicipality(raw);
+          if (m) {
+            await pool.execute(
+              "UPDATE locations SET municipality = ? WHERE id = ?",
+              [m, insertedId]
+            );
+          }
+        } catch (err) {
+          console.warn("[逆ジオ非同期補完失敗]", err);
+        }
+      })();
+    }
+
+    return Response.json({ ok: true, h3, municipality: eagerMunicipality });
   } catch (error) {
     console.error("位置情報保存エラー:", error);
     if (error instanceof SyntaxError) {

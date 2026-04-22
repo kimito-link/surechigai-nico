@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { clientReverseGeocode } from "@/lib/clientReverseGeocode";
 import styles from "../onboarding.module.css";
 
 interface LocationStepProps {
@@ -27,13 +28,19 @@ export default function LocationStep({
       const position = await new Promise<GeolocationPosition>(
         (resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject, {
-            timeout: 10000,
+            enableHighAccuracy: true,
+            timeout: 25_000,
             maximumAge: 0,
           });
         }
       );
 
-      const { latitude, longitude } = position.coords;
+      const { latitude, longitude, accuracy } = position.coords;
+
+      // クライアント側逆ジオコーディング（Nominatim 同期依存を排除）
+      const reverseResult = await clientReverseGeocode(latitude, longitude).catch(
+        () => null
+      );
 
       // /api/locations に送信
       const res = await fetch("/api/locations", {
@@ -45,6 +52,8 @@ export default function LocationStep({
         body: JSON.stringify({
           lat: latitude,
           lng: longitude,
+          accuracy,
+          municipality: reverseResult?.municipality ?? null,
         }),
       });
 

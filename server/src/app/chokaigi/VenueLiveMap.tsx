@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getUuidToken } from "@/lib/clientAuth";
+import { useLiveMapStream } from "@/lib/useLiveMapStream";
 import {
   LIVE_MAP_FALLBACK_VENUE,
   LIVE_MAP_POLL_MS,
@@ -45,13 +46,55 @@ export function VenueLiveMap() {
     }
   }, []);
 
+  // Page Visibility 対応: タブが非表示の間はポーリングを止め、可視復帰時に即時フェッチ。
   useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setInterval> | null = null;
+
+    const stop = () => {
+      if (timer !== null) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+    const start = () => {
+      if (timer !== null) return;
+      timer = setInterval(() => {
+        if (!cancelled) fetchLiveMap();
+      }, LIVE_MAP_POLL_MS);
+    };
+
+    const handleVisibility = () => {
+      if (typeof document === "undefined") return;
+      if (document.visibilityState === "visible") {
+        fetchLiveMap();
+        start();
+      } else {
+        stop();
+      }
+    };
+
     fetchLiveMap();
-    const timer = setInterval(() => {
-      fetchLiveMap();
-    }, LIVE_MAP_POLL_MS);
-    return () => clearInterval(timer);
+    if (typeof document === "undefined" || document.visibilityState === "visible") {
+      start();
+    }
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", handleVisibility);
+    }
+
+    return () => {
+      cancelled = true;
+      stop();
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", handleVisibility);
+      }
+    };
   }, [fetchLiveMap]);
+
+  // SSE が接続できれば push でも更新する（polling は保険として継続）。
+  useLiveMapStream(() => {
+    fetchLiveMap();
+  });
 
   const venue = payload?.venue ?? LIVE_MAP_FALLBACK_VENUE;
   const points = useMemo(

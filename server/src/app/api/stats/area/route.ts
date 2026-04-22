@@ -13,11 +13,17 @@ export async function GET(req: NextRequest) {
   const lat = Number(url.searchParams.get("lat"));
   const lng = Number(url.searchParams.get("lng"));
 
-  if (isNaN(lat) || isNaN(lng)) {
+  if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng) ||
+    Math.abs(lat) > 90 ||
+    Math.abs(lng) > 180
+  ) {
     return Response.json({ error: "lat, lngが必要です" }, { status: 400 });
   }
 
   try {
+    // MySQL 8.0 SRID 4326 の軸順序は (lat, lng)。POINT(lat, lng) で統一する。
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT COUNT(DISTINCT l.user_id) AS active_count
        FROM locations l
@@ -25,7 +31,7 @@ export async function GET(req: NextRequest) {
        WHERE l.created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
          AND ST_Distance_Sphere(l.point, ST_SRID(POINT(?, ?), 4326)) <= 50000
          AND l.user_id != ?`,
-      [lng, lat, authResult.id]
+      [lat, lng, authResult.id]
     );
 
     return Response.json({

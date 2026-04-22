@@ -63,18 +63,44 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS locations (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT UNSIGNED NOT NULL,
-  point GEOMETRY NOT NULL SRID 4326 COMMENT '正確な緯度経度（POINT型）',
+  point GEOMETRY NOT NULL SRID 4326 COMMENT '正確な緯度経度（POINT型, 軸順序は (lat, lng)）',
   lat_grid DECIMAL(10,6) NOT NULL COMMENT '500mグリッド丸め緯度',
   lng_grid DECIMAL(10,6) NOT NULL COMMENT '500mグリッド丸め経度',
+  h3_r8 CHAR(15) NULL COMMENT 'Uber H3 cell index, resolution 8 (edge ~460m)',
   municipality VARCHAR(50) NULL COMMENT '市区町村名（逆ジオコーディング）',
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   SPATIAL INDEX idx_point (point),
   INDEX idx_user_created (user_id, created_at),
   INDEX idx_created_at (created_at),
   INDEX idx_grid (lat_grid, lng_grid, created_at),
+  INDEX idx_h3_r8 (h3_r8, created_at),
   INDEX idx_municipality (municipality, created_at),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+-- 既存環境向けマイグレーション（冪等）: h3_r8 カラムとインデックスを後付けする
+SET @db := DATABASE();
+SET @col_exists := (
+  SELECT COUNT(*) FROM information_schema.columns
+  WHERE table_schema = @db AND table_name = 'locations' AND column_name = 'h3_r8'
+);
+SET @add_col_sql := IF(
+  @col_exists = 0,
+  'ALTER TABLE locations ADD COLUMN h3_r8 CHAR(15) NULL COMMENT ''Uber H3 cell index, resolution 8'' AFTER lng_grid',
+  'SELECT 1'
+);
+PREPARE stmt FROM @add_col_sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @idx_exists := (
+  SELECT COUNT(*) FROM information_schema.statistics
+  WHERE table_schema = @db AND table_name = 'locations' AND index_name = 'idx_h3_r8'
+);
+SET @add_idx_sql := IF(
+  @idx_exists = 0,
+  'ALTER TABLE locations ADD INDEX idx_h3_r8 (h3_r8, created_at)',
+  'SELECT 1'
+);
+PREPARE stmt FROM @add_idx_sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
 -- ============================================================
 -- encounters テーブル（すれちがい記録）

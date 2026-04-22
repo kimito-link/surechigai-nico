@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { getUuidToken } from "@/lib/clientAuth";
 import { AiErrorShare } from "@/app/components/AiErrorShare";
 import { buildAiErrorReport, maskToken } from "@/lib/aiErrorReport";
+import { clientReverseGeocode } from "@/lib/clientReverseGeocode";
+import { useLiveMapStream } from "@/lib/useLiveMapStream";
 import {
   LIVE_MAP_FALLBACK_VENUE,
   LIVE_MAP_POLL_MS,
@@ -176,6 +178,12 @@ export default function LocationButton({
         );
       });
 
+      // クライアント側でベクトルタイル逆ジオコーディング（Nominatim 依存を回避）
+      const reverseResult = await clientReverseGeocode(
+        position.latitude,
+        position.longitude
+      ).catch(() => null);
+
       const res = await fetch("/api/locations", {
         method: "POST",
         credentials: "include",
@@ -186,6 +194,8 @@ export default function LocationButton({
         body: JSON.stringify({
           lat: position.latitude,
           lng: position.longitude,
+          accuracy: position.accuracy,
+          municipality: reverseResult?.municipality ?? null,
         }),
       });
 
@@ -244,13 +254,59 @@ export default function LocationButton({
     }
   };
 
+  // Page Visibility に応じてポーリングを一時停止する。
+  // 画面非表示タブからの無駄なリクエストを避け、
+  // 画面復帰時は即時 1 回再取得して鮮度を担保する。
   useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setInterval> | null = null;
+
+    const stop = () => {
+      if (timer !== null) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+    const start = () => {
+      if (timer !== null) return;
+      timer = setInterval(() => {
+        if (cancelled) return;
+        fetchLiveMap();
+      }, LIVE_MAP_POLL_MS);
+    };
+
+    const handleVisibility = () => {
+      if (typeof document === "undefined") return;
+      if (document.visibilityState === "visible") {
+        fetchLiveMap();
+        start();
+      } else {
+        stop();
+      }
+    };
+
     fetchLiveMap();
-    const timer = setInterval(() => {
-      fetchLiveMap();
-    }, LIVE_MAP_POLL_MS);
-    return () => clearInterval(timer);
+    if (typeof document === "undefined" || document.visibilityState === "visible") {
+      start();
+    }
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", handleVisibility);
+    }
+
+    return () => {
+      cancelled = true;
+      stop();
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", handleVisibility);
+      }
+    };
   }, [fetchLiveMap]);
+
+  // SSE で他ユーザーの送信を push 受信。届くたびに最新の live-map を取り直して反映する。
+  // polling は残してあるので SSE が接続できない環境でも致命的ではない。
+  useLiveMapStream(() => {
+    fetchLiveMap();
+  });
 
   const venue = mapPayload?.venue ?? LIVE_MAP_FALLBACK_VENUE;
   const points = useMemo(
