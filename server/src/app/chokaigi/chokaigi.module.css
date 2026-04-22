@@ -2513,10 +2513,13 @@ details[open] .detailMapSummary::before {
   width: 0.95em;
   height: 0.95em;
   flex: none;
+  fill: #fff;
+  color: #fff;
 }
 
 .footerThanksLinkLabel {
   white-space: nowrap;
+  color: #fff;
 }
 
 .footerThanksMore {
@@ -2636,7 +2639,14 @@ details[open] .detailMapSummary::before {
   display: block;
 }
 
-.footer a {
+/*
+ * フッター内のリンクの既定色。
+ * `:where()` で詳細度を (0,0,0) に落としているのは、
+ * `.footerThanksLink`（黒ピルの X バッジ）や Special Thanks
+ * プロフィールカード内の `.xBadge` (`color: #fff`) のような
+ * 単一クラスのルールを“普通に”上書き勝ちさせるため。
+ */
+:where(.footer a) {
   color: #1a5898;
   text-underline-offset: 3px;
 }

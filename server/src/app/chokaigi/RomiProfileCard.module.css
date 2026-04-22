@@ -82,10 +82,13 @@
   width: 0.95em;
   height: 0.95em;
   flex: none;
+  fill: #fff;
+  color: #fff;
 }
 
 .xBadgeLabel {
   white-space: nowrap;
+  color: #fff;
 }
 
 .sitesTitle {
