@@ -275,7 +275,8 @@ async function callOpenRouter(
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "HTTP-Referer": "https://surechigai-nico.link/",
-        "X-Title": "すれちがいライト ゆっくり解説",
+        // Header values must be ASCII-safe in some runtimes (ByteString requirement).
+        "X-Title": "surechigai-yukkuri-explain",
       },
       body: JSON.stringify({
         model,
