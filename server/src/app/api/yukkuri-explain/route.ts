@@ -73,6 +73,7 @@ type CallResult =
       errorCode: LlmErrorCode;
       status?: number;
       bodySnippet?: string;
+      errorMessage?: string;
     };
 
 type CachedPayload =
@@ -319,6 +320,7 @@ async function callOpenRouter(
       model,
       elapsedMs,
       errorCode: isTimeout ? "E_YUKKURI_LLM_TIMEOUT" : "E_YUKKURI_LLM_NETWORK",
+      errorMessage: `${name}: ${(err as Error).message}`.slice(0, 300),
     };
   } finally {
     clearTimeout(timer);
@@ -389,6 +391,7 @@ async function callOllama(
       model,
       elapsedMs,
       errorCode: isTimeout ? "E_YUKKURI_LLM_TIMEOUT" : "E_YUKKURI_LLM_NETWORK",
+      errorMessage: `${name}: ${(err as Error).message}`.slice(0, 300),
     };
   } finally {
     clearTimeout(timer);
@@ -567,6 +570,16 @@ function buildUserFacingError(failures: CallResult[]): { status: number; body: U
         error:
           "解説 AI へのネットワーク接続に失敗しました。通信状況を確認して再試行してください。",
         error_code: "E_YUKKURI_LLM_NETWORK",
+        detail: failures.map((f) =>
+          f.ok
+            ? null
+            : {
+                model: f.model,
+                code: f.errorCode,
+                elapsedMs: f.elapsedMs,
+                message: f.errorMessage ?? null,
+              }
+        ),
       },
     };
   }
