@@ -7,27 +7,27 @@ const STEPS = [
   {
     guideIndex: 0,
     screen: "start",
-    speech: "アプリを開いて「参加する」をタップ！すれ違い検出がオンになるよ",
+    speech: "Xでログインして「参加する」をタップ！すれ違い検出がオンになるよ",
   },
   {
     guideIndex: 1,
     screen: "detect",
-    speech: "位置情報を使って、近くにいるニコニコユーザーを見つけるんだ",
+    speech: "位置情報を使って、近くにいるニコニコユーザー（Xアカウント）を見つけるんだ",
   },
   {
     guideIndex: 2,
     screen: "match",
-    speech: "すれ違いが見つかると、匿名でマッチするわよ♪",
+    speech: "すれ違いが見つかると、相手のXプロフィールが見えるわよ♪ 気になったらタップしてね",
   },
   {
     guideIndex: 0,
     screen: "message",
-    speech: "短いメッセージでやりとり。気分が乗らなければスルーでOK！",
+    speech: "やりとりはX側で！ リプやDMで話しかけてみよう。気が乗らなければスルーでOK！",
   },
   {
     guideIndex: 1,
     screen: "safety",
-    speech: "ブロックや通報もできるから、自分のペースで楽しもう",
+    speech: "合わない人はブロックや通報もできるから、自分のペースで楽しもう",
   },
 ] as const;
 
@@ -96,19 +96,21 @@ function PhoneScreen({ type }: { type: string }) {
 
       {type === "match" && (
         <>
-          <text x="30" y="24" textAnchor="middle" fontSize="4" fill="#c98e2b" fontWeight="600">
-            マッチ！
+          <text x="30" y="22" textAnchor="middle" fontSize="4" fill="#c98e2b" fontWeight="600">
+            すれ違い！
           </text>
-          {/* 2人のアイコン */}
-          <circle cx="22" cy="45" r="6" fill="#e8dfd3" stroke="#c98e2b" strokeWidth="1" />
-          <circle cx="38" cy="45" r="6" fill="#e8dfd3" stroke="#255d9b" strokeWidth="1" />
-          {/* つながり線 */}
-          <path d="M 28 45 L 32 45" stroke="#5c5248" strokeWidth="1" strokeDasharray="2" />
-          <text x="30" y="70" textAnchor="middle" fontSize="3" fill="#5c5248">
-            同じ空気を共有中
+          {/* 相手のプロフィールカード */}
+          <circle cx="30" cy="40" r="6" fill="#e8dfd3" stroke="#255d9b" strokeWidth="1" />
+          <text x="30" y="54" textAnchor="middle" fontSize="3.5" fill="#3a2f24" fontWeight="700">
+            @niconiko_user
           </text>
-          <text x="30" y="78" textAnchor="middle" fontSize="2.5" fill="#888">
-            匿名ユーザー
+          <text x="30" y="60" textAnchor="middle" fontSize="2.5" fill="#888">
+            Xアカウント
+          </text>
+          {/* X へのリンクボタン */}
+          <rect x="16" y="70" width="28" height="9" rx="4.5" fill="#0f1419" />
+          <text x="30" y="76.5" textAnchor="middle" fontSize="3.2" fill="#fff" fontWeight="700">
+            Xで見る
           </text>
         </>
       )}
@@ -116,17 +118,32 @@ function PhoneScreen({ type }: { type: string }) {
       {type === "message" && (
         <>
           <text x="30" y="20" textAnchor="middle" fontSize="3.5" fill="#5c5248">
-            メッセージ
+            Xプロフィール
           </text>
-          {/* チャット風 */}
-          <rect x="10" y="28" width="22" height="10" rx="3" fill="#e0e8f0" />
-          <text x="12" y="35" fontSize="3" fill="#3a2f24">こんにちは！</text>
-          <rect x="28" y="42" width="18" height="10" rx="3" fill="#255d9b" />
-          <text x="30" y="49" fontSize="3" fill="#fff">よろしく〜</text>
-          <rect x="10" y="56" width="26" height="10" rx="3" fill="#e0e8f0" />
-          <text x="12" y="63" fontSize="3" fill="#3a2f24">いい天気ですね</text>
-          <text x="30" y="82" textAnchor="middle" fontSize="2.5" fill="#888">
-            短く・気軽に
+          {/* X ロゴ風バナー */}
+          <rect x="8" y="26" width="44" height="14" rx="2" fill="#0f1419" />
+          <text x="30" y="35" textAnchor="middle" fontSize="6" fill="#fff" fontWeight="900">
+            𝕏
+          </text>
+          {/* ハンドル */}
+          <text x="30" y="48" textAnchor="middle" fontSize="3" fill="#3a2f24" fontWeight="700">
+            @niconiko_user
+          </text>
+          {/* アクションボタン（フォロー / リプ / DM） */}
+          <rect x="10" y="54" width="12" height="8" rx="4" fill="#1d9bf0" />
+          <text x="16" y="59.5" textAnchor="middle" fontSize="2.8" fill="#fff" fontWeight="700">
+            フォロー
+          </text>
+          <rect x="24" y="54" width="12" height="8" rx="4" fill="#fff" stroke="#1d9bf0" strokeWidth="0.6" />
+          <text x="30" y="59.5" textAnchor="middle" fontSize="2.8" fill="#1d9bf0" fontWeight="700">
+            リプ
+          </text>
+          <rect x="38" y="54" width="12" height="8" rx="4" fill="#fff" stroke="#1d9bf0" strokeWidth="0.6" />
+          <text x="44" y="59.5" textAnchor="middle" fontSize="2.8" fill="#1d9bf0" fontWeight="700">
+            DM
+          </text>
+          <text x="30" y="78" textAnchor="middle" fontSize="2.5" fill="#888">
+            やりとりはX側で
           </text>
         </>
       )}
