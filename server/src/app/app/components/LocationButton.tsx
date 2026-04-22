@@ -75,6 +75,7 @@ export default function LocationButton({
   const [staticMapImageVariant, setStaticMapImageVariant] = useState<0 | 1 | 2>(
     0
   );
+  const [alwaysAvailableReport, setAlwaysAvailableReport] = useState<string | null>(null);
 
   const resolveUuid = useCallback(() => {
     if (authUuidProp !== undefined) return authUuidProp;
@@ -306,7 +307,6 @@ export default function LocationButton({
   );
 
   const listUsers = mapPayload?.users ?? [];
-  const [alwaysAvailableReport, setAlwaysAvailableReport] = useState<string | null>(null);
   useEffect(() => {
     setAlwaysAvailableReport(
       buildAiErrorReport({

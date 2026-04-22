@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ProfileCard from "./components/ProfileCard";
 import LocationButton from "./components/LocationButton";
+import LocationButtonBoundary from "./components/LocationButtonBoundary";
 import Stats from "./components/Stats";
 import styles from "./app.module.css";
 import { clearUuidToken, getUuidToken, setUuidToken } from "@/lib/clientAuth";
@@ -116,25 +117,6 @@ export default function AppPage() {
     };
   }, [isLoaded, isSignedIn, user?.id]);
 
-  if (!isLoaded) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.content}>
-          <div className={styles.card}>読み込み中...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isSignedIn) {
-    return null;
-  }
-
-  const xAccount = user?.externalAccounts?.find(
-    (a) => (a.provider as string) === "oauth_x" || (a.provider as string) === "oauth_twitter"
-  );
-  const displayName = user?.fullName || user?.firstName || "匿名さん";
-  const twitterHandle = xAccount?.username ? `@${xAccount.username}` : "";
   const authSyncAiReport = useMemo(
     () =>
       authSyncError
@@ -157,6 +139,26 @@ export default function AppPage() {
         : null,
     [authSyncError, authSyncState, isLoaded, isSignedIn, resolvedUuid, user?.id]
   );
+
+  if (!isLoaded) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.content}>
+          <div className={styles.card}>読み込み中...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    return null;
+  }
+
+  const xAccount = user?.externalAccounts?.find(
+    (a) => (a.provider as string) === "oauth_x" || (a.provider as string) === "oauth_twitter"
+  );
+  const displayName = user?.fullName || user?.firstName || "匿名さん";
+  const twitterHandle = xAccount?.username ? `@${xAccount.username}` : "";
 
   return (
     <main className={styles.container}>
@@ -204,13 +206,15 @@ export default function AppPage() {
 
       <div className={styles.content}>
         <ProfileCard />
-        <LocationButton
-          authUuid={resolvedUuid}
-          authSyncing={
-            authSyncState === "syncing" || !registerSettled
-          }
-          authSyncError={authSyncError}
-        />
+        <LocationButtonBoundary>
+          <LocationButton
+            authUuid={resolvedUuid}
+            authSyncing={
+              authSyncState === "syncing" || !registerSettled
+            }
+            authSyncError={authSyncError}
+          />
+        </LocationButtonBoundary>
         <Stats authUuid={resolvedUuid} statsReady={registerSettled} />
       </div>
     </main>
