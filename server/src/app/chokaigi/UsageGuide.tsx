@@ -26,8 +26,9 @@ const STEPS = [
   },
   {
     guideIndex: 1,
-    screen: "safety",
-    speech: "合わない人はブロックや通報もできるから、自分のペースで楽しもう",
+    screen: "cheer",
+    speech:
+      "お互いのXでいいねやリプを送りあって、励ましあって応援しあおう！",
   },
 ] as const;
 
@@ -148,20 +149,33 @@ function PhoneScreen({ type }: { type: string }) {
         </>
       )}
 
-      {type === "safety" && (
+      {type === "cheer" && (
         <>
-          <text x="30" y="22" textAnchor="middle" fontSize="3.5" fill="#5c5248">
-            設定
+          <text x="30" y="22" textAnchor="middle" fontSize="4" fill="#c98e2b" fontWeight="600">
+            応援しあおう！
           </text>
-          {/* メニュー項目 */}
-          <rect x="10" y="30" width="40" height="12" rx="2" fill="#fff" stroke="#ddd" strokeWidth="0.5" />
-          <text x="14" y="38" fontSize="3" fill="#3a2f24">🔕 ブロック管理</text>
-          <rect x="10" y="46" width="40" height="12" rx="2" fill="#fff" stroke="#ddd" strokeWidth="0.5" />
-          <text x="14" y="54" fontSize="3" fill="#3a2f24">🚨 通報する</text>
-          <rect x="10" y="62" width="40" height="12" rx="2" fill="#fff" stroke="#ddd" strokeWidth="0.5" />
-          <text x="14" y="70" fontSize="3" fill="#3a2f24">⏸️ 一時停止</text>
-          <text x="30" y="82" textAnchor="middle" fontSize="2.5" fill="#888">
-            自分のペースで
+          {/* 2人のXアバター */}
+          <circle cx="18" cy="46" r="6" fill="#e8dfd3" stroke="#255d9b" strokeWidth="1" />
+          <circle cx="42" cy="46" r="6" fill="#e8dfd3" stroke="#c98e2b" strokeWidth="1" />
+          {/* 飛び交うハート（いいね） */}
+          <text x="28" y="38" fontSize="5" fill="#e0245e">♥</text>
+          <text x="32" y="44" fontSize="4" fill="#e0245e">♥</text>
+          {/* リプ吹き出し */}
+          <path
+            d="M 26 52 Q 30 52 30 55 Q 30 57 28 57 L 26 59 L 26 57 Q 24 57 24 55 Q 24 52 26 52 Z"
+            fill="#1d9bf0"
+          />
+          {/* アクションバー（いいね / リプ） */}
+          <rect x="10" y="68" width="18" height="9" rx="4.5" fill="#fff" stroke="#e0245e" strokeWidth="0.6" />
+          <text x="19" y="74.3" textAnchor="middle" fontSize="3.2" fill="#e0245e" fontWeight="700">
+            ♥ いいね
+          </text>
+          <rect x="32" y="68" width="18" height="9" rx="4.5" fill="#fff" stroke="#1d9bf0" strokeWidth="0.6" />
+          <text x="41" y="74.3" textAnchor="middle" fontSize="3.2" fill="#1d9bf0" fontWeight="700">
+            💬 リプ
+          </text>
+          <text x="30" y="85" textAnchor="middle" fontSize="2.5" fill="#888">
+            Xで励ましあおう
           </text>
         </>
       )}
