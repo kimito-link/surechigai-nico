@@ -169,6 +169,20 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
       { label: "@shirase_0404", href: "https://x.com/shirase_0404" },
     ],
   },
+  {
+    id: "yuzuchi",
+    name: "ゆずち さん（@yuzuchis_mammy）",
+    title:
+      "あぶそりゅーと☆せぶん 青担当／ニコ生主発の “絶対アイドル”（演技も歌もベテラン感）",
+    intro: [
+      "あぶそりゅーと☆せぶん（@abuso2525）の青担当、ゆずちさん。ニコ生主としてすでに活躍しつつ、中高生ニコ生主を集めた『絶対アイドル』ユニットのメンバーとしてステージにも立っています。",
+      "ゆずちさんを見て、まず驚くのが——もう、演技も歌も“ベテラン感”があるんです。まだ若いのに、舞台に立ったときの佇まいや、歌い上げる時の呼吸の使い方、表情の付け方まで、ふつうに“プロっぽい”。『上手い』で終わらず、“聴かせる／見せる”ところまで持っていけるタイプで、すでに出来上がっている空気をまとっています。",
+      "あぶそりゅーと☆せぶンの中でも、ステージに並ぶとゆずちさんのところで目が止まる——そのくらいの存在感があります。ぼくらはこの先、もっと大きなステージでも必ず通用する方だと本気で思っています。下の X バッジをクリックすると、ゆっくり 3 人がそのあたりの『存在感／ベテラン感』も熱めに語ってくれます。",
+    ],
+    xHandles: [
+      { label: "@yuzuchis_mammy", href: "https://x.com/yuzuchis_mammy" },
+    ],
+  },
 ] as const;
 
 /**
@@ -178,7 +192,6 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
 export const SPECIAL_THANKS_X_ONLY: ReadonlyArray<SpecialThanksXLink> = [
   { label: "@abuso2525", href: "https://x.com/abuso2525" },
   { label: "@sinseinaru", href: "https://x.com/sinseinaru" },
-  { label: "@yuzuchis_mammy", href: "https://x.com/yuzuchis_mammy" },
   { label: "@m20210411", href: "https://x.com/m20210411" },
   { label: "@flap_shizuku", href: "https://x.com/flap_shizuku" },
 ] as const;

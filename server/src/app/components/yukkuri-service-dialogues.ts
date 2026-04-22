@@ -507,6 +507,71 @@ export const SHIRASE_DIALOGUE: YukkuriDialogue = {
   ctaLabel: "しらせさんの X プロフィールを開く",
 };
 
+/**
+ * ゆずちさん（@yuzuchis_mammy）— あぶそりゅーと☆せぶん の青担当。
+ * ニコ生主として活躍しつつ、演技・歌に『ベテラン感／プロっぽさ』が
+ * すでにある存在感タイプ。ユニットの中でも一際目立つ、という軸で紹介。
+ */
+export const YUZUCHI_DIALOGUE: YukkuriDialogue = {
+  title:
+    "💙 ゆずちさん（@yuzuchis_mammy） — 演技も歌もすでにベテラン感、存在感で魅せる“絶対アイドル”",
+  lines: [
+    {
+      who: "rink",
+      text: "今日ご紹介するのは、あぶそりゅーと☆せぶん（@abuso2525）の青担当、ゆずちさん（@yuzuchis_mammy）だよ！",
+    },
+    {
+      who: "konta",
+      text: "あっ、ニコ生でよく見るあの子にゃね〜！",
+    },
+    {
+      who: "tanunee",
+      text: "そうなのだー。ニコ生主として活躍しながら、あぶそりゅーと☆せぶンでもアイドル活動をしている、中高生ニコ生主発 “絶対アイドル” のひとりなのだー。",
+    },
+    {
+      who: "rink",
+      text: "で、ゆずちさんを見てまずびっくりするのが……もう、演技も歌も、“ベテラン感”があるんだよね。まだ若いのに、舞台に立ったときの佇まいとか、歌い上げる時の呼吸の使い方とかが、もうふつうに“プロっぽい”。",
+    },
+    {
+      who: "konta",
+      text: "わかる〜！ 歌ってる時の“背中”というか、空気の作り方がもう仕上がってる感じするにゃ〜。",
+    },
+    {
+      who: "tanunee",
+      text: "『上手い』で終わらず、“聴かせる／見せる”ところまで持っていける子はそうそういないのだー。ゆずちさんは、もうその域に入っているのだー。",
+    },
+    {
+      who: "rink",
+      text: "あぶそりゅーと☆せぶンのメンバーとしても、ほんとに存在感があるの。ステージに並ぶと、ゆずちさんのところで目が止まるタイプ——って言えば伝わるかな。",
+    },
+    {
+      who: "konta",
+      text: "センターじゃなくても、画面の中でちゃんと“見える”タイプにゃね〜。",
+    },
+    {
+      who: "tanunee",
+      text: "そうそう。アイドルは“かわいい”だけでなく、“そこに居る”だけで場をつくれるかが大事なのだー。ゆずちさんはまさにそれができるタイプなのだー。",
+    },
+    {
+      who: "rink",
+      text: "だからぼくらは、ゆずちさんはこの先、もっと大きなステージでも絶対にやっていけると思ってる。今からちゃんと追いかけておくと、ぜったいに楽しい推し活になるよ！",
+    },
+    {
+      who: "konta",
+      text: "これは……今のうちから、全力で推しておいたほうがいいやつにゃね〜！",
+    },
+    {
+      who: "tanunee",
+      text: "まずは X プロフィールから覗いて、ゆずちさんの空気感に触れてみてほしいのだー。ニコ生のアーカイブも併せて見ると、『すでに出来上がってる感』がよくわかるのだー。",
+    },
+    {
+      who: "rink",
+      text: "@yuzuchis_mammy をフォローして、一緒に沼ろう〜！ゆずちさんの“存在感”、ぜひその目で確かめてほしいです！",
+    },
+  ],
+  ctaLabel: "ゆずちさんの X プロフィールを開く",
+};
+
 const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://socialxup.com/": SOCIALXUP_DIALOGUE,
   "https://threads.socialxup.com/": SOCIALXUP_THREADS_DIALOGUE,
@@ -520,6 +585,7 @@ const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://x.com/Tottokotokobusi": IMAGAWA_DIALOGUE,
   "https://x.com/ewbcwj_lv": SHIRAICCHAN_DIALOGUE,
   "https://x.com/shirase_0404": SHIRASE_DIALOGUE,
+  "https://x.com/yuzuchis_mammy": YUZUCHI_DIALOGUE,
 };
 
 export function getYukkuriDialogue(href: string): YukkuriDialogue | undefined {
