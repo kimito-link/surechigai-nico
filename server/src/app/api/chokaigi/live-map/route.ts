@@ -38,7 +38,14 @@ export async function GET(req: NextRequest) {
          )`
       : "";
 
-    const params: Array<number> = [VENUE.lng, VENUE.lat, RADIUS_METERS];
+    // 5000m を度数に変換（幕張付近 lat35度）
+    const LAT_DELTA = RADIUS_METERS / 111320;
+    const LNG_DELTA = RADIUS_METERS / (111320 * Math.cos((VENUE.lat * Math.PI) / 180));
+
+    const params: Array<number> = [
+      VENUE.lat - LAT_DELTA, VENUE.lat + LAT_DELTA,
+      VENUE.lng - LNG_DELTA, VENUE.lng + LNG_DELTA,
+    ];
     if (authUser) {
       params.push(authUser.id, authUser.id);
     }
@@ -70,10 +77,8 @@ export async function GET(req: NextRequest) {
        WHERE
          u.is_deleted = FALSE
          AND u.is_suspended = FALSE
-         AND ST_Distance_Sphere(
-           POINT(latest.lng_grid, latest.lat_grid),
-           POINT(?, ?)
-         ) <= ?
+         AND CAST(latest.lat_grid AS DECIMAL(10,7)) BETWEEN ? AND ?
+         AND CAST(latest.lng_grid AS DECIMAL(10,7)) BETWEEN ? AND ?
          ${blockFilter}
        ORDER BY latest.created_at DESC
       LIMIT ?`,
