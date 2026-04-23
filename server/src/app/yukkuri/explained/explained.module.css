@@ -279,11 +279,19 @@
   color: #666;
 }
 
+/* LP (YukkuriHero) のベージュ地＋白吹き出しに揃える。
+   以前はダーク背景（#0f172a）だったが、/chokaigi のヒーロー雰囲気と
+   ぶつかって「硬い・怖い」印象になっていたので、明るいベージュ地に変更。
+   - 背景はベージュ (#faf6eb) 、ほんのりオレンジ枠で LP の温度感を共有
+   - 吹き出しは白背景、ダーク文字
+   - バッジ（.badgeRink/Konta/Tanunee）の彩度はそのまま活きる
+   - 保存ページに飛んできたときも「LP の延長」として違和感が無い */
 .dialogueBlock {
-  background: #0f172a;
+  background: #faf6eb;
+  border: 1px solid rgba(194, 65, 12, 0.14);
   border-radius: 16px;
   padding: 20px 16px;
-  color: #f1f5f9;
+  color: #2c2117;
 }
 
 .dialogueRow {
@@ -297,16 +305,16 @@
   margin-bottom: 0;
 }
 
-/* キャラアイコン（48×48 円形）。LP の YukkuriHero と統一感を出すため
-   白の半透明ボーダーでダーク背景に浮かせる。 */
+/* キャラアイコン（48×48 円形）。LP と同じトーンの「ベージュ地に白が浮く」構図で、
+   境界線は控えめなオレンジ系にする（以前は白半透明＝ダーク背景前提だった）。 */
 .charAvatar {
   width: 48px;
   height: 48px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  border: 2px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(194, 65, 12, 0.18);
+  background: #fff;
 }
 
 /* キャラアイコンの右側：ラベル（バッジ）とバブルを縦に積む。 */
@@ -348,14 +356,20 @@
   background: #a8e6a3;
 }
 
+/* LP の .charBubble と同等の「白地・ダーク文字・薄いボーダー・淡い影」。
+   尻尾（::after）は付けない — 縦並びレイアウトだとアバター横位置がブレて
+   尻尾がズレやすいため、シンプルな丸角パネルに留める。 */
 .bubble {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 8px 12px;
-  font-size: 0.92rem;
+  background: #fff;
+  border: 1px solid rgba(34, 34, 34, 0.12);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
   line-height: 1.65;
+  color: #2c2117;
   flex: 1;
   min-width: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .shareRow {
@@ -462,10 +476,12 @@
   opacity: 0.95;
 }
 
+/* 保存時ソースの小さいメモ。現状 UI では非表示だが、将来的に admin 用途で
+   出す可能性があるためクラスは残す。ベージュ背景でも読めるよう文字色をダーク寄せに。 */
 .sourceNote {
   margin: 12px 0 0;
   font-size: 11px;
-  color: #94a3b8;
+  color: #888;
   text-align: center;
 }
 
