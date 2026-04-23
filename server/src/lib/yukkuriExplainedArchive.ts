@@ -6,6 +6,7 @@ import pool from "@/lib/db";
 export type YukkuriExplainedArchiveRow = {
   x_handle: string;
   display_name: string | null;
+  avatar_url: string | null;
   rink: string;
   konta: string;
   tanunee: string;
@@ -29,6 +30,7 @@ function normalizeHandle(handle: string): string {
 export async function upsertYukkuriExplainedArchive(input: {
   xHandle: string;
   displayName?: string | null;
+  avatarUrl?: string | null;
   rink: string;
   konta: string;
   tanunee: string;
@@ -38,10 +40,11 @@ export async function upsertYukkuriExplainedArchive(input: {
   if (!h) return;
   try {
     await pool.execute(
-      `INSERT INTO yukkuri_explained (x_handle, display_name, rink, konta, tanunee, source)
-       VALUES (?, ?, ?, ?, ?, ?)
+      `INSERT INTO yukkuri_explained (x_handle, display_name, avatar_url, rink, konta, tanunee, source)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
-         display_name = VALUES(display_name),
+         display_name = COALESCE(VALUES(display_name), display_name),
+         avatar_url = COALESCE(VALUES(avatar_url), avatar_url),
          rink = VALUES(rink),
          konta = VALUES(konta),
          tanunee = VALUES(tanunee),
@@ -50,6 +53,7 @@ export async function upsertYukkuriExplainedArchive(input: {
       [
         h,
         input.displayName && input.displayName.length > 0 ? input.displayName.slice(0, 200) : null,
+        input.avatarUrl && input.avatarUrl.length > 0 ? input.avatarUrl.slice(0, 500) : null,
         input.rink,
         input.konta,
         input.tanunee,
@@ -78,7 +82,7 @@ export async function listYukkuriExplainedArchive(
   const cap = Math.min(2000, Math.max(1, limit));
   try {
     const [rows] = await pool.query(
-      `SELECT x_handle, display_name, rink, konta, tanunee, source,
+      `SELECT x_handle, display_name, avatar_url, rink, konta, tanunee, source,
               DATE_FORMAT(first_explained_at, '%Y-%m-%d %H:%i:%s') AS first_explained_at,
               DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at
        FROM yukkuri_explained
@@ -99,7 +103,7 @@ export async function getYukkuriExplainedArchive(
   if (!h) return null;
   try {
     const [rows] = await pool.query(
-      `SELECT x_handle, display_name, rink, konta, tanunee, source,
+      `SELECT x_handle, display_name, avatar_url, rink, konta, tanunee, source,
               DATE_FORMAT(first_explained_at, '%Y-%m-%d %H:%i:%s') AS first_explained_at,
               DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at
        FROM yukkuri_explained

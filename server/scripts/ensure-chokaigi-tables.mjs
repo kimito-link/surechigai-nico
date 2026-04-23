@@ -194,5 +194,40 @@ for (const st of statements) {
     console.log("[ensure-chokaigi] ok: users.avatar_url already present");
   }
 }
+
+// yukkuri_explained.avatar_url はアーカイブ一覧/詳細で参照するため、既存DBにも揃える
+{
+  const [rows] = await conn.query(
+    `
+      SELECT DATA_TYPE, COLUMN_TYPE
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME = 'yukkuri_explained'
+        AND COLUMN_NAME = 'avatar_url'
+      LIMIT 1
+    `
+  );
+  const col = rows?.[0];
+  const dataType = String(col?.DATA_TYPE || "").toLowerCase();
+  const isVarchar = dataType === "varchar";
+  const lengthMatch = String(col?.COLUMN_TYPE || "").match(/\((\d+)\)/);
+  const currentLength = lengthMatch ? Number.parseInt(lengthMatch[1], 10) : 0;
+
+  if (!col) {
+    await conn.query(
+      "ALTER TABLE yukkuri_explained ADD COLUMN avatar_url VARCHAR(500) NULL COMMENT 'Xプロフィール画像URL' AFTER display_name"
+    );
+    console.log("[ensure-chokaigi] ok: added yukkuri_explained.avatar_url");
+  } else if (!isVarchar || currentLength < 500) {
+    await conn.query(
+      "ALTER TABLE yukkuri_explained MODIFY COLUMN avatar_url VARCHAR(500) NULL COMMENT 'Xプロフィール画像URL' AFTER display_name"
+    );
+    console.log(
+      `[ensure-chokaigi] ok: widened yukkuri_explained.avatar_url (${col?.COLUMN_TYPE || "unknown"} -> varchar(500))`
+    );
+  } else {
+    console.log("[ensure-chokaigi] ok: yukkuri_explained.avatar_url already present");
+  }
+}
 await conn.end();
 console.log(`[ensure-chokaigi] 完了 (${statements.length} 文)`);

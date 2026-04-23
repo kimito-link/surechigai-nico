@@ -81,18 +81,38 @@ const SYSTEM_PROMPT = `あなたはニコニコ超会議2026「すれちがい�
 
 type Dialogue = { rink: string; konta: string; tanunee: string };
 
+/**
+ * アーカイブへの保存とRedis集合への記録をまとめて行う。
+ *
+ * 表示名の決め方:
+ * - X API から取った `profile.name`（例: 「Quma(クーマ)」「ほしのろみ」）を最優先。
+ *   これが一番正しい。会場で入力された name は `@handle` のような ad-hoc な値が
+ *   混ざるし、外部シェル経由の curl では文字化けリスクもあるため。
+ * - 次点で呼び出し側の `body.name`（`@handle` が多い）。
+ * - どちらも無ければ null（UI 側で `@handle` を代用表示する）。
+ */
 async function scheduleArchiveSave(
   handleRaw: string,
   dialogue: Dialogue,
   body: { name?: string },
-  source: string
+  source: string,
+  profile?: XProfile | null
 ) {
   const h = handleRaw.replace(/^@+/, "").trim();
   if (!h) return;
+  const profileName = profile?.name?.trim();
+  const bodyName = body.name?.trim();
+  const displayName =
+    profileName && profileName.length > 0
+      ? profileName
+      : bodyName && bodyName.length > 0
+        ? bodyName
+        : null;
   await Promise.all([
     upsertYukkuriExplainedArchive({
       xHandle: h,
-      displayName: body.name?.trim() || null,
+      displayName,
+      avatarUrl: profile?.profileImageUrl?.trim() || null,
       rink: dialogue.rink,
       konta: dialogue.konta,
       tanunee: dialogue.tanunee,
@@ -293,6 +313,7 @@ type XProfile = {
   id?: string;
   name?: string;
   description?: string;
+  profileImageUrl?: string;
   followersCount?: number;
   tweetCount?: number;
   /**
@@ -501,7 +522,7 @@ async function fetchXProfile(
   bearerToken: string
 ): Promise<XProfile | null> {
   try {
-    const url = `https://api.twitter.com/2/users/by/username/${encodeURIComponent(handle)}?user.fields=name,description,public_metrics`;
+    const url = `https://api.twitter.com/2/users/by/username/${encodeURIComponent(handle)}?user.fields=name,description,public_metrics,profile_image_url`;
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${bearerToken}` },
     });
@@ -516,6 +537,7 @@ async function fetchXProfile(
         id?: string;
         name?: string;
         description?: string;
+        profile_image_url?: string;
         public_metrics?: { followers_count?: number; tweet_count?: number };
       };
     };
@@ -524,6 +546,7 @@ async function fetchXProfile(
       id: data.data.id,
       name: data.data.name,
       description: data.data.description,
+      profileImageUrl: normalizeXAvatarUrl(data.data.profile_image_url),
       followersCount: data.data.public_metrics?.followers_count,
       tweetCount: data.data.public_metrics?.tweet_count,
     };
@@ -533,6 +556,13 @@ async function fetchXProfile(
     );
     return null;
   }
+}
+
+function normalizeXAvatarUrl(input: string | undefined): string | undefined {
+  if (!input) return undefined;
+  const trimmed = input.trim();
+  if (!trimmed) return undefined;
+  return trimmed.replace("_normal.", "_400x400.");
 }
 
 /**
@@ -1150,12 +1180,19 @@ export async function POST(req: NextRequest) {
   const handle = body.xHandle?.replace(/^@+/, "").trim() ?? "";
   const official = findOfficialCreatorContext(handle, body.name);
 
+  // X プロフィールは「キャッシュ判定より前」で取っておく。
+  // - cache hit 経路でも display_name を最新の profile.name で更新できる
+  //   （過去 curl 等で保存された壊れた表示名を、UI 経由で解説された時点で自動修復する）。
+  // - 取得コストは 1 API 呼び出し / 数百ms 程度。cache hit の体感は維持できる。
+  const bearerToken = process.env.TWITTER_BEARER_TOKEN;
+  const profile = bearerToken && handle ? await fetchXProfile(handle, bearerToken) : null;
+
   // キャッシュ確認（成功 / 失敗いずれもヒットさせてレート浪費を防ぐ）
   const cached = await getCached(handle);
   if (cached) {
     if (cached.ok) {
       const dialogue = clampYukkuriDialogue(cached.dialogue);
-      await scheduleArchiveSave(handle, dialogue, body, "cache_hit");
+      await scheduleArchiveSave(handle, dialogue, body, "cache_hit", profile);
       return NextResponse.json(dialogue);
     }
     if (!useOllama && !useOpenRouter) {
@@ -1163,7 +1200,7 @@ export async function POST(req: NextRequest) {
       if (handle) {
         await setCached(handle, { ok: true, dialogue: fallback });
       }
-      await scheduleArchiveSave(handle, fallback, body, "fallback_no_llm");
+      await scheduleArchiveSave(handle, fallback, body, "fallback_no_llm", profile);
       return NextResponse.json({
         ...fallback,
         degraded: true,
@@ -1177,11 +1214,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // X プロフィール
-  const bearerToken = process.env.TWITTER_BEARER_TOKEN;
-  const profile = bearerToken && handle ? await fetchXProfile(handle, bearerToken) : null;
-
-  // Option B: bio が薄い人だけ、直近ツイートも取得して LLM に渡す。
+  // Option B: bio が薄い人だけ、直近ツイートも取得して LLM に渡す（非キャッシュ経路限定）。
   // - 厚い bio の人（固有名や数字が bio にある）はこの追加呼び出しをスキップしてコスト節約。
   // - 取得失敗時は握りつぶしてプロフィールのみで続行。
   if (profile?.id && bearerToken && isBioThin(profile.description)) {
@@ -1200,7 +1233,7 @@ export async function POST(req: NextRequest) {
     if (handle) {
       await setCached(handle, { ok: true, dialogue: fallback });
     }
-    await scheduleArchiveSave(handle, fallback, body, "fallback_no_llm");
+    await scheduleArchiveSave(handle, fallback, body, "fallback_no_llm", profile);
     return NextResponse.json({
       ...fallback,
       degraded: true,
@@ -1223,7 +1256,7 @@ export async function POST(req: NextRequest) {
       if (raw) {
         const dialogue = clampYukkuriDialogue(raw);
         await setCached(handle, { ok: true, dialogue });
-        await scheduleArchiveSave(handle, dialogue, body, "ollama");
+        await scheduleArchiveSave(handle, dialogue, body, "ollama", profile);
         return NextResponse.json(dialogue);
       }
       failures.push({
@@ -1271,7 +1304,7 @@ export async function POST(req: NextRequest) {
             const dialogue = clampYukkuriDialogue(raw);
             resetGlobalBackoffStrike();
             await setCached(handle, { ok: true, dialogue });
-            await scheduleArchiveSave(handle, dialogue, body, "openrouter");
+            await scheduleArchiveSave(handle, dialogue, body, "openrouter", profile);
             return NextResponse.json(dialogue);
           }
           failures.push({
@@ -1305,7 +1338,7 @@ export async function POST(req: NextRequest) {
     if (handle) {
       await setCached(handle, { ok: true, dialogue: fallback });
     }
-    await scheduleArchiveSave(handle, fallback, body, "fallback_llm");
+    await scheduleArchiveSave(handle, fallback, body, "fallback_llm", profile);
     console.warn(
       `[yukkuri-explain] fallback_llm handle=${handle || "-"} failures=${JSON.stringify(
         failures.map((f) => (f.ok ? null : { m: f.model, c: f.errorCode, s: f.status, e: f.elapsedMs }))

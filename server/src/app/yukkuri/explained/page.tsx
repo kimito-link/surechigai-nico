@@ -66,10 +66,23 @@ export default async function YukkuriExplainedIndexPage() {
                   className={styles.cardLink}
                 >
                   <div className={styles.cardTop}>
-                    <span className={styles.cardHandle}>@{row.x_handle}</span>
-                    {row.display_name ? (
-                      <span className={styles.cardName}>{row.display_name}</span>
-                    ) : null}
+                    <div className={styles.cardIdentity}>
+                      {row.avatar_url ? (
+                        <img
+                          src={row.avatar_url}
+                          alt=""
+                          className={styles.cardAvatar}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <span className={styles.cardAvatarFallback} aria-hidden="true">
+                          @{row.x_handle.slice(0, 1).toUpperCase()}
+                        </span>
+                      )}
+                      <span className={styles.cardHandle}>@{row.x_handle}</span>
+                    </div>
+                    {row.display_name ? <span className={styles.cardName}>{row.display_name}</span> : null}
                   </div>
                   <p className={styles.cardExcerpt}>{excerpt(row.rink)}</p>
                   <div className={styles.cardMeta}>

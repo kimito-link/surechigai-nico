@@ -71,7 +71,22 @@ export default async function YukkuriExplainedDetailPage({
           <span aria-hidden="true">›</span>
           <span>@{row.x_handle}</span>
         </nav>
-        <h1 className={styles.detailTitle}>@{row.x_handle}</h1>
+        <div className={styles.detailIdentity}>
+          {row.avatar_url ? (
+            <img
+              src={row.avatar_url}
+              alt=""
+              className={styles.detailAvatar}
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <span className={styles.detailAvatarFallback} aria-hidden="true">
+              @{row.x_handle.slice(0, 1).toUpperCase()}
+            </span>
+          )}
+          <h1 className={styles.detailTitle}>@{row.x_handle}</h1>
+        </div>
         {row.display_name ? (
           <p className={styles.detailSub}>{row.display_name}</p>
         ) : null}

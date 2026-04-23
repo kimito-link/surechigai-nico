@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS blocks (
 CREATE TABLE IF NOT EXISTS yukkuri_explained (
   x_handle VARCHAR(30) NOT NULL COMMENT 'X ハンドル（小文字・@なし）',
   display_name VARCHAR(200) NULL COMMENT '解説リクエスト時の表示名',
+  avatar_url VARCHAR(500) NULL COMMENT 'Xプロフィール画像URL',
   rink TEXT NOT NULL,
   konta TEXT NOT NULL,
   tanunee TEXT NOT NULL,
