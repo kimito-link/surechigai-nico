@@ -16,7 +16,7 @@
 | **P0** | B-2 | `/api/auth/register-direct` が body の `clerkId` を信用 | **アカウント乗っ取り級**: 他人の clerk_id を知っていればその人の `nickname` / `twitter_handle` / `avatar_url` / `email` を上書きできる |
 | **P0** | B-3 | `/api/users/me` GET で `hitokoto_set_at` を SELECT し忘れ | 24 時間経過後の「ひとこと期限切れ」判定が **永久に false** |
 | P1 | B-4 | `/api/chokaigi/live-map` がエラー時に SQL メッセージを leak | 攻撃者に DB 構造ヒントを渡す |
-| P1 | B-5 | `/api/voicevox/synthesize` が無認証・レート制限無し | 内部 VOICEVOX エンジンの濫用可能 |
+| ~~P1~~ | ~~B-5~~ | ~~`/api/voicevox/synthesize` が無認証・レート制限無し~~ → **2026-04 音声読み上げ機能ごと削除して解消** |
 | P1 | B-6 | `/api/encounters` で `LIMIT ?` に `String(n)` を渡している | `mysql2.execute()` で `ER_WRONG_ARGUMENTS` になりうる（稀にランタイム落ち） |
 | P2 | B-7 | `ProfileCard.tsx` に `(xAccount as any)` キャスト | 型安全性の穴 |
 | P2 | B-8 | `/api/users/me` PATCH で `age_group` / `gender` enum を未検証 | 不正値で DB エラー、ユーザ体験が壊れる |
@@ -206,15 +206,11 @@ if (user.hitokoto && user.hitokoto_set_at) {   // ← 常に undefined で false
 
 **修正方針**: `NODE_ENV === "production"` のときだけ `debug` を返さない、または常にサーバ側だけに残す。
 
-### B-5: VOICEVOX の公開・無認証
+### ~~B-5: VOICEVOX の公開・無認証~~ → 2026-04 音声読み上げ機能ごと削除して解消
 
-- `POST /api/voicevox/synthesize` は誰でも叩ける（middleware で `/api/voicevox` を unprotected 指定）。
-- 内部 VOICEVOX エンジン URL（`VOICEVOX_BASE_URL`）をプロキシする形で使うため、**サーバ帯域と内部エンジンを削る DoS ベクタ**。
-- `MAX_TEXT_LEN = 500` の制限はあるが、単発あたりの上限のみ。
-
-**修正方針（段階）**
-1. **P1**: `authenticateRequest(req)` で UUID Bearer を要求（未ログインは 401）。
-2. **P2**: ユーザ毎のレート制限（Upstash Redis で `INCR + EXPIRE`、例: 10 req/min）。
+- 2026-04-23: 超会議版で音声読み上げ機能は不要と判断し、`/api/voicevox/synthesize`
+  エンドポイント・クライアントコンポーネント・環境変数・middleware 公開登録
+  すべてを削除した。本項目は修正不要。
 
 ### B-6: `LIMIT ?` に `String(limit)` を渡している
 
@@ -304,7 +300,7 @@ Clerk の `ExternalAccountResource` 型には `externalId` ではなく `provide
 ### 次スプリント（別 PR）
 
 - B-4 live-map error debug 抑制
-- B-5 VOICEVOX 認証
+- ~~B-5 VOICEVOX 認証~~（機能削除で対応済み）
 - B-6 LIMIT を integer 化
 - B-8 enum 検証
 - B-9 moderation wire-up

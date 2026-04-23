@@ -54,13 +54,11 @@ scripts/ops/health-admin.sh
 ```json
 {
   "upstashRedis": { "hasUrl": <bool>, "hasToken": <bool>, "configured": <bool>, "redisScard": { ... } },
-  "voicevox":    { "hasBaseUrl": <bool> },
   "twitter":     { "hasBearerToken": <bool> }
 }
 ```
 
 - `twitter.hasBearerToken: false` → Vercel に `TWITTER_BEARER_TOKEN` 再設定
-- `voicevox.hasBaseUrl: false` → フロントは Web Speech フォールバック運用
 - `redisScard.ok: false` → Upstash トークン失効の可能性
 
 ## 4. バックフィル dry-run（DB は変わらない）

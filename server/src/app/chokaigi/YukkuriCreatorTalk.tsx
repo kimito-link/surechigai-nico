@@ -2,7 +2,6 @@
 
 import type { YukkuriDialogue } from "@/lib/yukkuriExplainClient";
 import { useYukkuriExplain } from "@/lib/useYukkuriExplain";
-import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
 import styles from "./chokaigi.module.css";
 
 type Dialogue = YukkuriDialogue;
@@ -56,7 +55,6 @@ export function YukkuriCreatorTalk({ creator }: { creator: CreatorInfo }) {
               </div>
             ))}
           </div>
-          <YukkuriVoicePlayer dialogue={dialogue} compact />
         </>
       )}
     </div>

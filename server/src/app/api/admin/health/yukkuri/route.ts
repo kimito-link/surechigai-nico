@@ -10,7 +10,6 @@ export const dynamic = "force-dynamic";
  *
  * 公開版 `/api/health/yukkuri` に加えて、以下の「環境変数の有無」フラグを返す:
  * - upstashRedis.hasUrl / hasToken / configured / redisScard
- * - voicevox.hasBaseUrl
  * - twitter.hasBearerToken
  *
  * これらは外部に列挙されると弱い情報開示になるため Basic 認証を要求する。

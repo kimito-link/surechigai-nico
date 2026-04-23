@@ -54,7 +54,7 @@ function normalizeXAvatarUrl(input: string | null | undefined): string | null {
   if (!input) return null;
   const trimmed = input.trim();
   if (!trimmed) return null;
-  // VOICEVOX/アーカイブ側は _400x400 を想定。
+  // アーカイブ側は _400x400 を想定。
   return trimmed.replace("_normal.", "_400x400.");
 }
 

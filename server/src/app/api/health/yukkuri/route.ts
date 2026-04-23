@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  * - yukkuri_explained テーブルの件数とカバレッジ
  * - activeNow30min（LP ヒーロー表示に使う既知の公開情報）
  *
- * 返さない: Upstash/VOICEVOX/Twitter の環境変数有無（どの外部サービスを
+ * 返さない: Upstash/Twitter の環境変数有無（どの外部サービスを
  * 使っているかの弱い情報開示を避ける）。詳細版は Basic 認証付きで
  * `/api/admin/health/yukkuri` から参照する。
  */

@@ -27,9 +27,7 @@
     "test:e2e:ui": "playwright test --ui",
     "matcher": "npx tsx src/cron/matcher.ts",
     "yukkuri:status": "node scripts/check-yukkuri-llm.mjs",
-    "voicevox:status": "node scripts/check-voicevox.mjs",
-    "preflight": "node scripts/dev-preflight.mjs",
-    "voicevox:launch": "node scripts/launch-voicevox-win.mjs"
+    "preflight": "node scripts/dev-preflight.mjs"
   },
   "dependencies": {
     "@clerk/localizations": "^4.5.2",

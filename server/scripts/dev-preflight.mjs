@@ -1,5 +1,5 @@
 /**
- * ローカル開発の前提チェック（.env.local を読み、VOICEVOX / LLM / 任意で Next プロキシを確認）
+ * ローカル開発の前提チェック（.env.local を読み、LLM / 任意で Next プロキシを確認）
  * npm run preflight
  */
 import dotenv from "dotenv";
@@ -20,15 +20,6 @@ if (fs.existsSync(path.join(root, ".env.local"))) {
 function flag(name) {
   const v = process.env[name];
   return v != null && String(v).trim() !== "";
-}
-
-async function pingUrl(label, url, ms = 4000) {
-  try {
-    const r = await fetch(url, { signal: AbortSignal.timeout(ms) });
-    return { ok: r.ok, status: r.status };
-  } catch (e) {
-    return { ok: false, err: e instanceof Error ? e.message : String(e) };
-  }
 }
 
 console.log("=== すれちがいライト / 開発 preflight ===\n");
@@ -52,56 +43,6 @@ if (!hasLlm && !hasOpenRouter) {
 } else {
   console.log("");
 }
-
-const vxBase = process.env.VOICEVOX_BASE_URL?.trim();
-console.log("[VOICEVOX]");
-if (!vxBase) {
-  console.log("  … VOICEVOX_BASE_URL 未設定 → 本番では読み上げ UI は出ません");
-} else {
-  console.log(`  参照先: ${vxBase}`);
-  const v = await pingUrl("engine", `${vxBase.replace(/\/$/, "")}/version`);
-  if (v.ok) {
-    console.log("  ✓ エンジン /version に応答あり");
-  } else if (v.err) {
-    console.log(`  ⚠ エンジンに届かない: ${v.err}`);
-    console.log("     → npm run voicevox:launch を実行してから再確認してください");
-  } else {
-    console.log(`  ⚠ HTTP ${v.status}`);
-  }
-}
-console.log("");
-
-const nextBase = (process.env.YUKKURI_BASE || "http://localhost:3010").replace(/\/$/, "");
-console.log(`[Next プロキシ（任意・サーバー起動中なら）] ${nextBase}`);
-try {
-  const r = await fetch(`${nextBase}/api/voicevox/synthesize`, {
-    signal: AbortSignal.timeout(8000),
-  });
-  const txt = await r.text();
-  if (r.ok) {
-    try {
-      const j = JSON.parse(txt);
-      console.log("  GET /api/voicevox/synthesize:", JSON.stringify(j));
-    } catch {
-      console.log("  ⚠ HTTP 200 だが JSON 以外:", txt.slice(0, 120));
-    }
-  } else {
-    console.log(`  ⚠ HTTP ${r.status}（このプロジェクトの next dev なら通常 200）`);
-    if (r.status === 500 || r.status === 404) {
-      console.log("     → ポートが別アプリを掴んでいる可能性があります。");
-      console.log("        npm run dev:3011 で別ポート起動、または YUKKURI_BASE=http://localhost:3011 npm run preflight");
-      console.log("        PowerShell 例: Get-NetTCPConnection -LocalPort 3010 | Select-Object OwningProcess");
-    } else {
-      console.log("     → npm run dev 実行後に再試行してください");
-    }
-  }
-} catch (e) {
-  console.log(
-    "  … 接続できません（dev 未起動）:",
-    e instanceof Error ? e.message : e
-  );
-}
-console.log("");
 
 console.log("[Clerk / DB]");
 console.log(flag("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY") && flag("CLERK_SECRET_KEY") ? "  ✓ Clerk キーあり" : "  … Clerk 未設定（LP だけなら問題ない場合あり）");

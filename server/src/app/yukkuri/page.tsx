@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { YukkuriShareVoice } from "./YukkuriShareVoice";
 import styles from "./page.module.css";
 
 type Props = { searchParams: Promise<Record<string, string>> };
@@ -69,8 +68,6 @@ export default async function YukkuriSharePage({ searchParams }: Props) {
           </div>
         ))}
       </div>
-
-      <YukkuriShareVoice rink={rink} konta={konta} tanunee={tanunee} />
 
       <div className={styles.ctaRow}>
         <Link href="/chokaigi" className={styles.cta}>

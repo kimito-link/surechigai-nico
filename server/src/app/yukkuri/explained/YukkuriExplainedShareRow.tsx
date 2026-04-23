@@ -62,30 +62,37 @@ export function YukkuriExplainedShareRow({ handle }: Props) {
 
   const handleShareClick = useCallback(
     async (e: React.MouseEvent<HTMLAnchorElement>) => {
-      // まずクリップボードに仕込んでおく（どの経路でも「貼り付け」で復旧できる）。
-      void copy(clipboardBundle, "share");
+      // 重要: デフォルト遷移を先に止める。こうしないと X デスクトップアプリが
+      // intent URL を先取りして起動し、クリップボード書き込みが間に合わず
+      // 「空白の composer」で開かれる（Ctrl+V しても何も出ない）バグになる。
+      e.preventDefault();
+
+      // まずクリップボードに仕込む（await で書き込み完了を保証する）。
+      try {
+        await copy(clipboardBundle, "share");
+      } catch {}
 
       // モバイル（および対応ブラウザ）ではネイティブ共有シートを優先。
       // iOS/Android のシェアシート経由で X アプリに直接渡せるので、
       // intent URL が空白の composer で開く問題を回避できる。
       if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-        e.preventDefault(); // `<a target="_blank">` のデフォルト遷移を止める
         try {
           await navigator.share({
             title: `@${handle} のゆっくり解説`,
             text: tweetText,
             url: pageUrl,
           });
+          return;
         } catch {
           // ユーザーがキャンセル、または共有失敗。クリップボードに入っているので
-          // X アプリ等を自分で開いて貼り付けてもらう。何もしない。
+          // 後続の intent URL オープンに進む。
         }
-        return;
       }
-      // ネイティブ共有非対応環境（主にデスクトップ）では `<a target="_blank">` の
-      // デフォルト動作に任せ、新規タブで x.com/intent/post を開く。
+      // ネイティブ共有非対応環境（主にデスクトップ）または navigator.share 失敗時：
+      // クリップボード書き込み完了後に x.com/intent/post を明示的に新規タブで開く。
+      window.open(tweetUrl, "_blank", "noopener,noreferrer");
     },
-    [clipboardBundle, copy, handle, pageUrl, tweetText]
+    [clipboardBundle, copy, handle, pageUrl, tweetText, tweetUrl]
   );
 
   return (

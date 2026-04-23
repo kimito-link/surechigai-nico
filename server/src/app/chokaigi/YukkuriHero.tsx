@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import type { YukkuriDialogue } from "@/lib/yukkuriExplainClient";
 import { useYukkuriExplain } from "@/lib/useYukkuriExplain";
-import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
 import {
   yukkuriExplainedPagePath,
   yukkuriExplainedPageUrl,
@@ -110,7 +109,12 @@ export function YukkuriHero() {
   const handleShareClick = useCallback(
     async (e: React.MouseEvent<HTMLAnchorElement>) => {
       if (!raw) return;
-      // 1) クリップボード先入れ（どの経路でも「貼り付け」で復旧可能にする）
+      // 重要: デフォルト遷移を先に止める。こうしないと X デスクトップアプリが
+      // intent URL を先取りして起動し、クリップボード書き込みが間に合わず
+      // 「空白の composer」で開かれる（Ctrl+V しても何も出ない）バグになる。
+      e.preventDefault();
+
+      // 1) クリップボード先入れ（await で書き込み完了を保証する）
       const bundle = yukkuriShareClipboardBundle(BASE_URL, raw);
       try {
         await navigator.clipboard.writeText(bundle);
@@ -123,19 +127,20 @@ export function YukkuriHero() {
 
       // 2) モバイル優先：ネイティブ共有シート
       if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-        e.preventDefault();
         try {
           await navigator.share({
             title: `@${raw} のゆっくり解説`,
             text: yukkuriShareTweetText(raw),
             url: yukkuriExplainedPageUrl(BASE_URL, raw),
           });
+          return;
         } catch {
-          // キャンセル / 共有失敗：クリップボードに入っているので何もしない
+          // キャンセル / 共有失敗：クリップボードに入っているので intent URL を手動で開く
         }
-        return;
       }
-      // 3) デスクトップ：<a target="_blank"> のデフォルト動作で新規タブを開く
+      // 3) デスクトップ・または navigator.share 失敗時：
+      //    クリップボード書き込み完了後に intent URL を明示的に新規タブで開く。
+      window.open(buildTweetUrl(raw), "_blank", "noopener,noreferrer");
     },
     [raw]
   );
@@ -321,7 +326,6 @@ export function YukkuriHero() {
             })}
 
             <div className={styles.talkingFooter}>
-              <YukkuriVoicePlayer dialogue={dialogue} autoPlayOnReady />
               <p className={styles.canonicalPageNote}>
                 この紹介は <strong>@{raw}</strong> 専用 URL に保存されています（同じ人を再解説すると本文が更新）。
               </p>

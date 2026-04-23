@@ -27,7 +27,6 @@ const CREDIT_CATEGORY_HEADINGS: Record<
   string
 > = {
   map: "地図・地理データ",
-  voice: "音声合成（VOICEVOX）",
   data: "データ・ライブラリ",
   character: "キャラクター・アートワーク",
   other: "その他",

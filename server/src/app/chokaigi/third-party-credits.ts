@@ -2,7 +2,7 @@
  * 第三者の素材・ライブラリ・API を使っている箇所のクレジット集約。
  *
  * 追加するときは「何を / どこで / ライセンス / 必要な帰属表示」の 4 点セットで
- * 書くこと。特に CC BY-SA / CC BY / VOICEVOX のように帰属が必須なものは、
+ * 書くこと。特に CC BY-SA / CC BY のように帰属が必須なものは、
  * 表示漏れがないよう `required: true` を明示する。
  */
 
@@ -10,7 +10,7 @@ export type ThirdPartyCredit = {
   /** 画面表示用ラベル */
   label: string;
   /** 種別（画面上のグルーピングにも使う） */
-  category: "map" | "voice" | "data" | "character" | "other";
+  category: "map" | "data" | "character" | "other";
   /** ライセンス名 */
   license: string;
   /** 帰属表示が必須か */
@@ -54,44 +54,6 @@ export const THIRD_PARTY_CREDITS: readonly ThirdPartyCredit[] = [
     href: "https://github.com/uber/h3-js",
     licenseHref: "https://www.apache.org/licenses/LICENSE-2.0",
     usedFor: "すれちがい判定のための空間インデックス",
-  },
-
-  // ===== 音声合成（VOICEVOX） =====
-  // VOICEVOX は「利用キャラクター単位」で帰属表示が必要。
-  // 既定スピーカー ID は /api/voicevox/synthesize/route.ts の DEFAULT_SPEAKERS 参照。
-  {
-    label: "VOICEVOX:ずんだもん",
-    category: "voice",
-    license: "VOICEVOX 利用規約（帰属表示必須）",
-    required: true,
-    href: "https://zunko.jp/con_ongen_kiyaku.html",
-    usedFor: "ゆっくり解説のこん太の音声（speaker=3）",
-  },
-  {
-    label: "VOICEVOX:四国めたん",
-    category: "voice",
-    license: "VOICEVOX 利用規約（帰属表示必須）",
-    required: true,
-    href: "https://zunko.jp/con_ongen_kiyaku.html",
-    usedFor: "ゆっくり解説のりんくの音声（speaker=2, 推定）",
-  },
-  {
-    label: "VOICEVOX:春日部つむぎ",
-    category: "voice",
-    license: "VOICEVOX 利用規約（帰属表示必須）",
-    required: true,
-    href: "https://tsukushinyoki10.wixsite.com/ktsumugiofficial/terms-of-use",
-    usedFor: "ゆっくり解説のたぬ姉の音声（speaker=8, 推定）",
-    note: "実際に使用しているスピーカー ID に応じて、該当キャラクターのクレジットに変更してください。",
-  },
-  {
-    label: "VOICEVOX（エンジン・コアソフトウェア）",
-    category: "voice",
-    license: "LGPL v3（エンジン）",
-    required: true,
-    href: "https://voicevox.hiroshiba.jp/",
-    licenseHref: "https://github.com/VOICEVOX/voicevox/blob/main/LICENSE",
-    usedFor: "音声合成 API",
   },
 
   // ===== キャラクター・アートワーク =====

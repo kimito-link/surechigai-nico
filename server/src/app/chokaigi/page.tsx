@@ -254,8 +254,7 @@ export default function ChokaigiPage() {
                   ゆっくり超解説（3 人の掛け合い）
                 </h3>
                 <p className={styles.featureDesc}>
-                  <strong>りんく・こん太・たぬ姉</strong> の 3 人が、会場の回り方・ホールごとの見どころ・よくある質問までテンポよく解説。
-                  <strong>VOICEVOX 音声</strong>で読み上げにも対応。
+                  <strong>りんく・こん太・たぬ姉</strong> の 3 人が、会場の回り方・ホールごとの見どころ・よくある質問までテンポよく解説します。
                 </p>
                 <span className={styles.featureCta}>掛け合いを見る →</span>
               </div>
@@ -801,7 +800,7 @@ export default function ChokaigiPage() {
                 Special Thanks・クレジット一覧を見る
               </Link>
               <p className={styles.footerThanksMoreSubText}>
-                地図・VOICEVOX 等の外部素材・ライブラリのクレジットも
+                地図 等の外部素材・ライブラリのクレジットも
                 こちらのページにまとめています。
               </p>
             </div>

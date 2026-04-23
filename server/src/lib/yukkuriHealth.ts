@@ -7,7 +7,7 @@ import type { RowDataPacket } from "mysql2";
  *
  * `detailed: false`（公開用）では、外部から列挙可能な環境変数の
  * 有無フラグ（hasUrl, hasToken, hasBearerToken 等）を返さない。
- * これらは攻撃者に「このサービスは Upstash / VOICEVOX / Twitter を使っている」
+ * これらは攻撃者に「このサービスは Upstash / Twitter を使っている」
  * を教える弱い情報開示になるため、詳細版は Basic 認証の admin 配下へ分離する。
  */
 export async function gatherYukkuriHealth(
@@ -121,9 +121,6 @@ export async function gatherYukkuriHealth(
     }
   }
 
-  result.voicevox = {
-    hasBaseUrl: Boolean(process.env.VOICEVOX_BASE_URL),
-  };
   result.twitter = {
     hasBearerToken: Boolean(process.env.TWITTER_BEARER_TOKEN),
   };

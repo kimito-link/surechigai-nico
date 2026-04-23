@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { YukkuriDialogue } from "@/lib/yukkuriExplainClient";
 import { useYukkuriExplain } from "@/lib/useYukkuriExplain";
-import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
 import {
   yukkuriExplainedPagePath,
   yukkuriShareClipboardBundle,
@@ -251,14 +250,26 @@ export function StickyXSearchBar() {
                     </div>
                   ))}
                 </div>
-                <YukkuriVoicePlayer dialogue={dialogue} compact />
                 <div className={styles.stickyXShareRow}>
                   <a
                     href={buildTweetUrl(rawHandle)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.stickyXShareBtn}
-                    onClick={() => void primeClipboardForShare(rawHandle)}
+                    // onMouseDown で先回りしてクリップボード書き込みを開始（保険）。
+                    onMouseDown={() => {
+                      void primeClipboardForShare(rawHandle);
+                    }}
+                    // onClick で確実に書き込み完了を待ってから window.open。
+                    // X デスクトップアプリが intent URL を先取りする前にクリップボードに
+                    // 本文＋URL を仕込むことで、「空白の composer で開いたら Ctrl+V」で復旧できる。
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      try {
+                        await primeClipboardForShare(rawHandle);
+                      } catch {}
+                      window.open(buildTweetUrl(rawHandle), "_blank", "noopener,noreferrer");
+                    }}
                   >
                     Xでシェア
                   </a>
