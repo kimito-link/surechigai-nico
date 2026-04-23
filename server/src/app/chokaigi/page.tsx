@@ -68,11 +68,7 @@ import { YuriponThanksXListItem } from "./YuriponThanksXListItem";
 import { RomiProfileCard } from "./RomiProfileCard";
 import { SpecialThanksProfileCard } from "./SpecialThanksProfileCard";
 import { XLogoIcon } from "./XLogoIcon";
-import YukkuriIntroLink from "@/app/components/YukkuriIntroLink";
-import {
-  TSUIOKU_NO_KIRAMEKI_DIALOGUE,
-  TSUIOKU_NO_KIRAMEKI_LP_HREF,
-} from "@/app/components/yukkuri-service-dialogues";
+import { TSUIOKU_NO_KIRAMEKI_LP_HREF } from "@/app/components/yukkuri-service-dialogues";
 
 const SPECIAL_THANKS_HIGHLIGHT_PROFILES = SPECIAL_THANKS_PROFILES.filter(
   (profile) => profile.highlight
@@ -293,10 +289,10 @@ export default function ChokaigiPage() {
                   追憶の煌めき（君斗リンク工房）
                 </h3>
                 <p className={styles.featureDesc}>
-                  ニコ生コメント記録の Chrome 拡張。概要・ゆっくり長尺解説・公式LPへの導線は、
-                  <strong>下のひとかたまりの専用ブロック</strong>にまとめてあります。
+                  ニコ生コメント記録の Chrome 拡張。初めての人向けの<strong>長い文章ガイド</strong>と公式へのボタンは、
+                  <strong>下の専用ブロック</strong>にまとめてあります。
                 </p>
-                <span className={styles.featureCta}>専用ブロックへジャンプ →</span>
+                <span className={styles.featureCta}>特大ガイドへジャンプ →</span>
               </div>
             </a>
 
@@ -417,57 +413,116 @@ export default function ChokaigiPage() {
             <span className={styles.kimitoKiramekiSubtitle}>(きらめき)</span>
           </h2>
           <p className={styles.sectionLead}>
-            このブロックは、君斗リンク工房のプロダクト「追憶の煌めき」を
-            <strong>ひとつの大きなコンテンツ</strong>としてまとめたコーナーです（このすれちがいライト本体の機能とは別レーン）。
-            ニコニコ生放送の視聴ページから応援コメントを手元に残す Chrome 拡張で、公式サイトでは記録の考え方・HTML 保存・マーケ分析・試用までが章でつながっています。
+            ここは<strong>初めて見る人向け</strong>の、長めの説明コーナーです。
+            キャラの掛け合いではなく、文章だけで「何のサービスか」「自分に関係あるか」「次に何をすればいいか」がわかるように書きました。
+            このページのメインである<strong>すれちがいライト（位置のすれちがい）</strong>とは別の、
+            <strong>君斗リンク工房</strong>の Chrome 拡張の紹介です。
           </p>
-          <CharacterTip
-            character="rink"
-            message="まずは下の白い箱のなかを上から順に見てもらえると、全体の地図が頭に入りやすいよ。長いゆっくりは、コーヒーでも飲みながらで大丈夫。"
-          />
+
           <div className={styles.kimitoKiramekiPanel}>
-            <p className={styles.kimitoKiramekiPanelLead}>
-              公式 LP（tsuioku-no-kirameki.com）では、たとえば次のようなテーマが章として用意されています。
-              用語の定義や画面の見え方は、そちらの本文が正です。
+            <h3 className={styles.kimitoKiramekiH3}>30秒でいうと</h3>
+            <p className={styles.kimitoKiramekiP}>
+              <strong>ニコニコ生放送を見ているときに流れてくる応援コメントを、あなたのパソコン側に記録しておくための Chrome 拡張</strong>です。
+              配信が終わったあとでも、「誰がどんな言葉をくれたか」を一覧やファイルとして振り返りやすくする、というのが大まかな目的です。
             </p>
-            <ul className={styles.tipList}>
-              <li>記録の安定性・改善の透明性・七夕プレビューなど、設計の考え方</li>
-              <li>HTML 保存、配信マーケ分析、分析ページの .html ダウンロード</li>
-              <li>拡張の見え方、コメント／音声コメント、Identicon まわり</li>
-              <li>導入・試用の手順（環境によっては Chrome ウェブストア経由）</li>
+
+            <h3 className={styles.kimitoKiramekiH3}>なぜ必要なの？（よくあるモヤモヤ）</h3>
+            <p className={styles.kimitoKiramekiP}>
+              コメント欄はどんどん流れます。配信者さんは、時間の都合で全員に返信できないことも普通にあります。
+              それ自体は誰のせいでもないのですが、「ちゃんと届いていたのかな」「自分の応援、空振りだったのかな」と感じると、応援がしんどくなることがあります。
+            </p>
+            <p className={styles.kimitoKiramekiP}>
+              この拡張は、<strong>数を競うため</strong>ではなく、
+              <strong>「書いた」「そこにいた」という事実を、自分の手元に残す</strong>ことに寄り添う発想で作られています（公式サイトの言葉の要約です）。
+            </p>
+
+            <h3 className={styles.kimitoKiramekiH3}>具体的にできること（イメージ）</h3>
+            <p className={styles.kimitoKiramekiP}>
+              細かい画面や用語の定義は<strong>公式サイトの文章が正</strong>ですが、イメージだけ先に共有します。
+            </p>
+            <ul className={styles.kimitoKiramekiBullets}>
+              <li>
+                <strong>視聴ページで流れる応援コメントを、PC に蓄積していく</strong>
+                （あとから一覧で眺められるイメージ）
+              </li>
+              <li>
+                <strong>HTML として保存</strong>して、ブラウザで開き直したり共有したりする流れ（手順は公式 LP）
+              </li>
+              <li>
+                <strong>配信の振り返り向けの分析ページ</strong>があり、グラフなど入りのページを{" "}
+                <strong>.html ファイルとしてダウンロード</strong>できる、という説明があります（公式 LP の「マーケ分析」まわり）
+              </li>
             </ul>
-            <YukkuriIntroLink
-              href={TSUIOKU_NO_KIRAMEKI_LP_HREF}
-              className={`${styles.featureCard} ${styles.kimitoKiramekiYukkuriCard}`}
-              title={TSUIOKU_NO_KIRAMEKI_DIALOGUE.title}
-              lines={TSUIOKU_NO_KIRAMEKI_DIALOGUE.lines}
-              ctaLabel={TSUIOKU_NO_KIRAMEKI_DIALOGUE.ctaLabel}
-              ctaHref={TSUIOKU_NO_KIRAMEKI_DIALOGUE.ctaHref}
-            >
-              <span className={styles.featureIcon} aria-hidden="true">
-                ✨
-              </span>
-              <div className={styles.featureBody}>
-                <h3 className={styles.featureTitle}>
-                  ゆっくり解説（長め）を開いてから公式へ
-                </h3>
-                <p className={styles.featureDesc}>
-                  <strong>りんく・こん太・たぬ姉</strong>の掛け合いで、拡張の位置づけと公式 LP の読み方まで話します。
-                  終わったあとのオレンジのボタンから、本家サイトへ飛べます。
+            <p className={styles.kimitoKiramekiP}>
+              対応ブラウザやインストール方法（Chrome ウェブストアなど）は、PC の環境によって変わります。
+              <strong>実際に押すボタンや注意書きは、必ず公式サイト側で確認してください。</strong>
+            </p>
+
+            <h3 className={styles.kimitoKiramekiH3}>すれちがいライトとのちがい（混同しやすいので）</h3>
+            <div className={styles.kimitoKiramekiCompare} role="region" aria-label="ふたつのサービスの比較">
+              <div className={styles.kimitoKiramekiCompareCol}>
+                <p className={styles.kimitoKiramekiCompareTitle}>このページのすれちがいライト</p>
+                <p className={styles.kimitoKiramekiCompareBody}>
+                  イベントや日常で、<strong>近くにいる参加者と位置情報ベースですれちがい記録</strong>ができるアプリ企画です。
+                  X でつながる前提で、超会議向けのマップや検索などもここにあります。
                 </p>
-                <span className={styles.featureCta}>モーダルで解説を読む →</span>
               </div>
-            </YukkuriIntroLink>
+              <div className={styles.kimitoKiramekiCompareCol}>
+                <p className={styles.kimitoKiramekiCompareTitle}>追憶の煌めき（工房）</p>
+                <p className={styles.kimitoKiramekiCompareBody}>
+                  <strong>ニコ生の視聴画面</strong>を見ながら、
+                  <strong>応援コメントを自分の PC に残す</strong> Chrome 拡張です。配信アーカイブとは別の「記録の仕方」が主役になります。
+                </p>
+              </div>
+            </div>
+
+            <h3 className={styles.kimitoKiramekiH3}>公式サイトの読み方（迷子にならない順番）</h3>
+            <ol className={styles.kimitoKiramekiSteps}>
+              <li>
+                <span className={styles.kimitoKiramekiStepLabel}>1</span>
+                <span>
+                  まず LP をひらいて、上の<strong>ページ内リンク（章）</strong>から「知りたいこと」に飛ぶ（用語が多いので、いちばん気になる章からでOK）
+                </span>
+              </li>
+              <li>
+                <span className={styles.kimitoKiramekiStepLabel}>2</span>
+                <span>
+                  「拡張の見え方」「HTML 保存」「マーケ分析」など、目的に近い章を読む
+                </span>
+              </li>
+              <li>
+                <span className={styles.kimitoKiramekiStepLabel}>3</span>
+                <span>
+                  最後に<strong>導入・試用</strong>の章へ進み、自分の環境に合わせてインストールや試用の手順を踏む
+                </span>
+              </li>
+            </ol>
+
+            <h3 className={styles.kimitoKiramekiH3}>この先のロードマップについて</h3>
+            <p className={styles.kimitoKiramekiP}>
+              公式の説明では、今後 <strong>YouTube</strong> など<strong>他の配信プラットフォーム</strong>にも広げていく構想が触れられています。
+              ただし「いつ」「どの形で」は変わりうるので、<strong>最新の一文は公式サイトを見るのが確実</strong>です。
+            </p>
+
+            <div className={styles.kimitoKiramekiCtaWrap}>
+              <a
+                href={TSUIOKU_NO_KIRAMEKI_LP_HREF}
+                className={styles.kimitoKiramekiCta}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                公式サイトを開く（追憶の煌めき）
+              </a>
+              <p className={styles.kimitoKiramekiCtaNote}>
+                別タブで tsuioku-no-kirameki.com が開きます。スマホの X アプリ内ブラウザでは表示が制限されることがあるので、必要なら通常のブラウザで開き直してください。
+              </p>
+            </div>
+
             <p className={styles.mapFinePrint}>
-              仕様・価格・対応環境の最終確認は、必ず公式サイトの表示に従ってください。
-              他配信プラットフォーム対応などのロードマップ表現も、公式の最新情報が優先です。
+              本ブロックは有志の超会議 LP からの案内であり、拡張の開発・サポート窓口ではありません。
+              不具合・契約・削除方法などは、公式サイトの案内に従ってください。
             </p>
           </div>
-          <CharacterTip
-            character="tanunee"
-            message="ハンバーガーメニューの『追憶の煌めき』からも、このブロックに直行できるのだー。機能一覧のカードからもジャンプできるのだ。"
-            position="right"
-          />
         </section>
 
         <ChokaigiExperienceSection />

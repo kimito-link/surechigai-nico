@@ -760,10 +760,154 @@ a.featureCard:focus-visible {
   color: #5c4a3d;
 }
 
-.kimitoKiramekiYukkuriCard {
+.kimitoKiramekiH3 {
+  margin: 1.35rem 0 0.55rem;
+  font-size: clamp(1.02rem, 2.6vw, 1.18rem);
+  font-weight: 800;
+  color: #1a3d66;
+  letter-spacing: -0.02em;
+  border-bottom: 2px solid rgba(227, 140, 30, 0.35);
+  padding-bottom: 0.35rem;
+}
+
+.kimitoKiramekiPanel > .kimitoKiramekiH3:first-child {
+  margin-top: 0;
+}
+
+.kimitoKiramekiP {
+  margin: 0 0 0.85rem;
+  font-size: clamp(0.92rem, 2.35vw, 1.02rem);
+  line-height: 1.75;
+  color: #4a3d32;
+}
+
+.kimitoKiramekiBullets {
+  margin: 0 0 1rem;
+  padding-left: 1.35rem;
+  font-size: clamp(0.9rem, 2.3vw, 1rem);
+  line-height: 1.72;
+  color: #4a3d32;
+}
+
+.kimitoKiramekiBullets li {
+  margin-bottom: 0.55rem;
+}
+
+.kimitoKiramekiBullets li:last-child {
+  margin-bottom: 0;
+}
+
+.kimitoKiramekiCompare {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0.5rem 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .kimitoKiramekiCompare {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+}
+
+.kimitoKiramekiCompareCol {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: 0.75rem;
+  background: rgba(248, 243, 234, 0.9);
+  border: 1px solid rgba(26, 88, 152, 0.12);
+  min-width: 0;
+}
+
+.kimitoKiramekiCompareTitle {
+  margin: 0 0 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #1a5898;
+}
+
+.kimitoKiramekiCompareBody {
+  margin: 0;
+  font-size: clamp(0.86rem, 2.2vw, 0.95rem);
+  line-height: 1.65;
+  color: #5c4a3d;
+}
+
+.kimitoKiramekiSteps {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: kkr;
+}
+
+.kimitoKiramekiSteps li {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  font-size: clamp(0.9rem, 2.3vw, 1rem);
+  line-height: 1.65;
+  color: #4a3d32;
+}
+
+.kimitoKiramekiSteps li:last-child {
+  margin-bottom: 0;
+}
+
+.kimitoKiramekiStepLabel {
+  flex-shrink: 0;
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e3500a, #c94a0a);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  margin-top: 0.12rem;
+}
+
+.kimitoKiramekiCtaWrap {
+  margin: 1.25rem 0 0.25rem;
+  padding-top: 1rem;
+  border-top: 1px dashed rgba(227, 140, 30, 0.35);
+}
+
+.kimitoKiramekiCta {
+  display: block;
   width: 100%;
-  margin-top: 0.25rem;
   box-sizing: border-box;
+  text-align: center;
+  padding: 0.95rem 1.25rem;
+  border-radius: 0.85rem;
+  font-size: clamp(0.98rem, 2.5vw, 1.08rem);
+  font-weight: 800;
+  text-decoration: none;
+  color: #fff;
+  background: linear-gradient(180deg, #f06718 0%, #e3500a 100%);
+  border: 1px solid rgba(180, 60, 0, 0.35);
+  box-shadow: 0 4px 14px rgba(221, 101, 0, 0.28);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.kimitoKiramekiCta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(221, 101, 0, 0.35);
+}
+
+.kimitoKiramekiCta:focus-visible {
+  outline: 2px solid #1a5898;
+  outline-offset: 3px;
+}
+
+.kimitoKiramekiCtaNote {
+  margin: 0.65rem 0 0;
+  font-size: clamp(0.78rem, 2vw, 0.86rem);
+  line-height: 1.55;
+  color: #7a6558;
 }
 
 .section h2 {

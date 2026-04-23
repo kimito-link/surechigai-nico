@@ -18,7 +18,7 @@ export const MOBILE_PRIMARY_LINKS: readonly HeaderNavLink[] = [
   {
     href: "/chokaigi#kimito-tsuioku-kirameki",
     label: "追憶の煌めき（工房）",
-    description: "ゆっくり紹介→公式LP・拡張",
+    description: "初見向け長文ガイド・公式",
   },
   {
     href: "/creators",
@@ -58,7 +58,7 @@ export const MOBILE_CHOKAIGI_SECTION_LINKS: readonly HeaderNavLink[] = [
   {
     href: "/chokaigi#kimito-tsuioku-kirameki",
     label: "追憶の煌めき（工房）",
-    description: "ゆっくり→公式LP・拡張DL",
+    description: "文章ガイド・公式LP",
   },
   {
     href: "/chokaigi#venue-tour-3d-heading",
