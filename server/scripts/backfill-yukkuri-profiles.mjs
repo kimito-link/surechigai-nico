@@ -50,6 +50,15 @@ function pickFirstMysqlUri() {
   return undefined;
 }
 
+function hostFromUri(u) {
+  try {
+    const s = u.startsWith("mysql2://") ? `mysql://${u.slice("mysql2://".length)}` : u;
+    return new URL(s).hostname;
+  } catch {
+    return "";
+  }
+}
+
 function normalizeXAvatarUrl(input) {
   if (!input || typeof input !== "string") return null;
   const trimmed = input.trim();
@@ -117,15 +126,40 @@ async function main() {
     process.exit(1);
   }
 
+  // SSL は ensure-chokaigi-tables.mjs と同じ判定に揃える:
+  // - localhost 相当なら使わない（TLS を必須にすると接続失敗する開発環境がある）
+  // - DATABASE_SSL=0/false で明示的に OFF
+  // - DATABASE_SSL=1 または Railway 系ホスト判定で ON
+  const resolvedHost = mysqlUri ? hostFromUri(mysqlUri) : host || "";
+  const isLocalhost =
+    resolvedHost === "127.0.0.1" ||
+    resolvedHost === "localhost" ||
+    resolvedHost === "::1";
+  const hostSuggestsCloudTls =
+    resolvedHost.includes("rlwy.net") ||
+    resolvedHost.includes("railway") ||
+    resolvedHost.includes("proxy.rlwy.net");
+  const explicitSslOff =
+    process.env.DATABASE_SSL === "0" || process.env.DATABASE_SSL === "false";
+  const useSsl =
+    !isLocalhost &&
+    !explicitSslOff &&
+    (process.env.DATABASE_SSL === "1" || hostSuggestsCloudTls);
+
+  const baseOpts = {
+    connectTimeout: 20000,
+    timezone: "+09:00",
+    charset: "utf8mb4",
+    ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
+  };
+
   const conn =
     mysqlUri && (mysqlUri.startsWith("mysql://") || mysqlUri.startsWith("mysql2://"))
       ? await mysql.createConnection({
           uri: mysqlUri.startsWith("mysql2://")
             ? `mysql://${mysqlUri.slice("mysql2://".length)}`
             : mysqlUri,
-          connectTimeout: 20000,
-          timezone: "+09:00",
-          ssl: { rejectUnauthorized: false },
+          ...baseOpts,
         })
       : await mysql.createConnection({
           host,
@@ -133,8 +167,7 @@ async function main() {
           user,
           password,
           database,
-          connectTimeout: 20000,
-          timezone: "+09:00",
+          ...baseOpts,
         });
 
   const [rows] = await conn.query(
