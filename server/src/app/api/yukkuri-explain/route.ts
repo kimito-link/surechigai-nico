@@ -290,10 +290,17 @@ function resetGlobalBackoffStrike() {
 // ---------------- X プロフィール ----------------
 
 type XProfile = {
+  id?: string;
   name?: string;
   description?: string;
   followersCount?: number;
   tweetCount?: number;
+  /**
+   * 直近の投稿（ツイート本文のサマリ）。bio が薄い人でも
+   * 「何をしているか / 誰を紹介しているか」の実態を LLM に渡すために取る。
+   * 取得できなかった場合は undefined（呼び出し側でスキップ）。
+   */
+  recentTweets?: string[];
 };
 
 type OfficialCreatorContext = {
@@ -506,6 +513,7 @@ async function fetchXProfile(
     }
     const data = (await res.json()) as {
       data?: {
+        id?: string;
         name?: string;
         description?: string;
         public_metrics?: { followers_count?: number; tweet_count?: number };
@@ -513,6 +521,7 @@ async function fetchXProfile(
     };
     if (!data.data) return null;
     return {
+      id: data.data.id,
       name: data.data.name,
       description: data.data.description,
       followersCount: data.data.public_metrics?.followers_count,
@@ -521,6 +530,81 @@ async function fetchXProfile(
   } catch (err) {
     console.warn(
       `[yukkuri-explain] x-profile threw=${(err as Error).name} message=${(err as Error).message}`
+    );
+    return null;
+  }
+}
+
+/**
+ * bio が「実質的に薄い」判定。
+ *
+ * 背景:
+ * - X API で取れる bio が短い、または「生きがい / 趣味 / 好き」等の一般名詞だけだと、
+ *   LLM が人物像を作れず定型文に寄る（例: くーまさん「配信監視が生きがいです」12文字）。
+ * - そういう人だけ `fetchRecentTweets()` を追加で叩き、最近の投稿テキストを入力に混ぜる。
+ *
+ * 判定:
+ * - 空 or 30 文字以下: 薄い
+ * - 30 文字超でも「固有名詞 / 数字 / @ / URL / ハッシュタグ」が1つも無い: 薄い
+ *   （固有性の signal がゼロだと LLM が「公開プロフィールと会場データをもとに」型の
+ *   定型文を出しやすい、というのが本番運用で見えた傾向）
+ */
+function isBioThin(description: string | null | undefined): boolean {
+  const bio = (description ?? "").trim();
+  if (bio.length <= 30) return true;
+  // 以下いずれかがあれば「厚い」とみなす: 数字 / @mention / URL / ハッシュタグ /
+  // カタカナ4連以上（固有名詞の目印）/ 英単語2文字以上
+  const hasDigit = /[0-9０-９]/.test(bio);
+  const hasMention = /@[A-Za-z0-9_]+/.test(bio);
+  const hasUrl = /https?:\/\//.test(bio);
+  const hasHash = /#[^\s#]+/.test(bio);
+  const hasKataRun = /[ァ-ヴー]{4,}/.test(bio);
+  const hasAscii = /[A-Za-z]{2,}/.test(bio);
+  const hasSignal = hasDigit || hasMention || hasUrl || hasHash || hasKataRun || hasAscii;
+  return !hasSignal;
+}
+
+/**
+ * ユーザーの直近ツイートを取得し、本文を最大 N 件まで返す。
+ *
+ * 仕様:
+ * - エンドポイント: `GET /2/users/:id/tweets`
+ * - `exclude=replies`: 返信（他人への reply）は voice が薄いので除外。
+ * - リツイート（RT）は残す。「誰を紹介しているか」「何を拡散しているか」
+ *   がそのまま信号になるため（例: くーまさん = 女性配信者を RT で紹介）。
+ * - 失敗してもプロフィールだけで続行できるよう、例外は握りつぶして null を返す。
+ */
+async function fetchRecentTweets(
+  userId: string,
+  bearerToken: string
+): Promise<string[] | null> {
+  try {
+    const url = `https://api.twitter.com/2/users/${encodeURIComponent(userId)}/tweets?max_results=10&exclude=replies&tweet.fields=text`;
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${bearerToken}` },
+    });
+    if (!res.ok) {
+      console.warn(
+        `[yukkuri-explain] x-timeline fetch failed status=${res.status} userId=${userId}`
+      );
+      return null;
+    }
+    const data = (await res.json()) as {
+      data?: Array<{ id?: string; text?: string }>;
+    };
+    const items = data.data ?? [];
+    if (items.length === 0) return null;
+    const texts = items
+      .map((t) => (t.text ?? "").trim())
+      // URL / 改行 / 連続空白 を整理して 1 行化（プロンプトに埋めるため）
+      .map((t) => t.replace(/https?:\/\/\S+/g, "").replace(/\s+/g, " ").trim())
+      .filter((t) => t.length > 0)
+      .slice(0, 6) // 多すぎるとコンテキスト食うので最大 6 件
+      .map((t) => (t.length > 120 ? `${t.slice(0, 120)}…` : t));
+    return texts.length > 0 ? texts : null;
+  } catch (err) {
+    console.warn(
+      `[yukkuri-explain] x-timeline threw=${(err as Error).name} message=${(err as Error).message}`
     );
     return null;
   }
@@ -565,11 +649,23 @@ function buildUserMessage(
   ]
     .filter(Boolean)
     .join("\n");
-  return `以下のXユーザーを3人でゆっくり個別紹介してください:\n${lines}
+
+  // bio が薄い人だけ直近ツイートが入っている（Option B）。
+  // LLM にそのまま「この人の実際の発信内容」として渡し、bio だけでは見えない
+  // 活動実態（例: 女性配信者の紹介、特定ジャンルの応援など）を掴ませる。
+  const tweetBlock =
+    profile?.recentTweets && profile.recentTweets.length > 0
+      ? `\n\n最近の投稿サンプル（本人の Xタイムラインから、リツイートを含む直近の抜粋。語尾や話題から人物像を読み取る材料として使ってよい。個別のツイート ID や URL への言及はしないこと）:\n${profile.recentTweets
+          .map((t, i) => `${i + 1}. ${t}`)
+          .join("\n")}`
+      : "";
+
+  return `以下のXユーザーを3人でゆっくり個別紹介してください:\n${lines}${tweetBlock}
 
 【追加ルール】
 - 3人のセリフで同じ形容・同じ事実の繰り返しを避け、それぞれ別の角度から話す。
-- 上に数値や固有名がある場合は必ず文中に取り込む。薄い場合はハンドルの形からの推測をこん太が一言入れる。`;
+- 上に数値や固有名がある場合は必ず文中に取り込む。薄い場合はハンドルの形からの推測をこん太が一言入れる。
+- 「最近の投稿サンプル」がある場合はそこに出てくる具体的な話題・人名・趣味・雰囲気を **どれかひとつは** 引用または言い換えして入れる（生の URL は貼らない）。`;
 }
 
 // ---------------- 応答パース ----------------
@@ -1084,6 +1180,19 @@ export async function POST(req: NextRequest) {
   // X プロフィール
   const bearerToken = process.env.TWITTER_BEARER_TOKEN;
   const profile = bearerToken && handle ? await fetchXProfile(handle, bearerToken) : null;
+
+  // Option B: bio が薄い人だけ、直近ツイートも取得して LLM に渡す。
+  // - 厚い bio の人（固有名や数字が bio にある）はこの追加呼び出しをスキップしてコスト節約。
+  // - 取得失敗時は握りつぶしてプロフィールのみで続行。
+  if (profile?.id && bearerToken && isBioThin(profile.description)) {
+    const tweets = await fetchRecentTweets(profile.id, bearerToken);
+    if (tweets && tweets.length > 0) {
+      profile.recentTweets = tweets;
+      console.log(
+        `[yukkuri-explain] x-timeline enriched handle=${handle} count=${tweets.length}`
+      );
+    }
+  }
 
   // Ollama も OpenRouter もない場合のみ静的フォールバック
   if (!useOllama && !useOpenRouter) {
