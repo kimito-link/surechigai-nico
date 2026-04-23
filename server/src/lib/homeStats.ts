@@ -89,7 +89,8 @@ async function loadYukkuriExplainedRedis(): Promise<number> {
  * キャッシュヒット時は setCached が呼ばれないため、ここでも記録して TOP の件数と揃える。
  */
 export async function recordYukkuriExplainedHandleRedis(handle: string): Promise<void> {
-  const h = handle.replace(/^@+/, "").trim().toLowerCase();
+  // trim を先に行う。逆順だと「先頭空白 + @」の入力で `^@+` が一致せず @ が残る。
+  const h = handle.trim().replace(/^@+/, "").toLowerCase();
   if (!h) return;
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;

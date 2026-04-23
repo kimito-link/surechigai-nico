@@ -34,7 +34,8 @@ export type YukkuriExplainedTweetRow = {
 type CountRow = RowDataPacket & { cnt: number };
 
 function normalizeHandle(handle: string): string {
-  return handle.replace(/^@+/, "").trim().toLowerCase();
+  // trim を先に行う。逆順だと「先頭空白 + @」の入力で `^@+` が一致せず @ が残る。
+  return handle.trim().replace(/^@+/, "").toLowerCase();
 }
 
 function normalizeTweetId(tweetId: string): string {

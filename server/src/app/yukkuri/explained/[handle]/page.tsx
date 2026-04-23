@@ -21,7 +21,8 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { handle } = await params;
-  const decoded = decodeURIComponent(handle).replace(/^@/, "").trim();
+  // trim を先に行う。逆順だと「先頭空白 + @」の入力で `^@` が一致せず @ が残る。
+  const decoded = decodeURIComponent(handle).trim().replace(/^@+/, "");
   const row = await getYukkuriExplainedArchive(decoded);
   if (!row) {
     return { title: "解説が見つかりませんでした | すれちがいライト" };
@@ -67,7 +68,8 @@ export default async function YukkuriExplainedDetailPage({
   params: Promise<Params>;
 }) {
   const { handle } = await params;
-  const decoded = decodeURIComponent(handle).replace(/^@/, "").trim();
+  // trim を先に行う。逆順だと「先頭空白 + @」の入力で `^@` が一致せず @ が残る。
+  const decoded = decodeURIComponent(handle).trim().replace(/^@+/, "");
   const row = await getYukkuriExplainedArchive(decoded);
   if (!row) notFound();
 

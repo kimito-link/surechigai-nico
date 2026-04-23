@@ -31,7 +31,8 @@ function truncate(s: string, n: number): string {
 }
 
 function initialOf(handle: string): string {
-  const h = (handle ?? "?").replace(/^@+/, "").trim();
+  // trim を先に行う。逆順だと「先頭空白 + @」の入力で `^@+` が一致せず @ が残る。
+  const h = (handle ?? "?").trim().replace(/^@+/, "");
   return (h[0] ?? "?").toUpperCase();
 }
 

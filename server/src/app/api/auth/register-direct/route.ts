@@ -24,7 +24,8 @@ function clipNicknameForDb(raw: string | null | undefined, fallback: string): st
 
 function clipTwitterHandleForDb(h: string | null | undefined): string | null {
   if (h == null) return null;
-  const t = String(h).replace(/^@/, "").trim();
+  // trim を先に行う。逆順だと「先頭空白 + @」の入力で `^@` が一致せず @ が残る。
+  const t = String(h).trim().replace(/^@/, "");
   if (!t) return null;
   const chars = Array.from(t);
   if (chars.length <= DB_TWITTER_MAX) return t;

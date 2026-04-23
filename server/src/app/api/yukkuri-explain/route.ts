@@ -101,7 +101,8 @@ async function scheduleArchiveSave(
   source: string,
   profile?: XProfile | null
 ) {
-  const h = handleRaw.replace(/^@+/, "").trim();
+  // trim を先に行う。逆順だと「先頭空白 + @」の入力で `^@+` が一致せず @ が残る。
+  const h = handleRaw.trim().replace(/^@+/, "");
   if (!h) return;
   const profileName = profile?.name?.trim();
   const bodyName = body.name?.trim();
@@ -437,7 +438,8 @@ function buildFallbackDialogue(
   profile: XProfile | null,
   official: OfficialCreatorContext | null
 ): Dialogue {
-  const rawHandle = body.xHandle?.replace(/^@+/, "").trim() ?? "";
+  // trim を先に行う。逆順だと「先頭空白 + @」の入力で `^@+` が一致せず @ が残る。
+  const rawHandle = body.xHandle?.trim().replace(/^@+/, "") ?? "";
   const seed = hashHandleSeed(rawHandle.toLowerCase() || "_");
   const handleText = rawHandle ? `@${rawHandle}` : "この方";
   const displayName = compactText(profile?.name || official?.name || body.name, 32) || handleText;
@@ -706,7 +708,8 @@ function buildUserMessage(
   profile: XProfile | null,
   official: OfficialCreatorContext | null
 ): string {
-  const handle = body.xHandle?.replace(/^@+/, "").trim() ?? "";
+  // trim を先に行う。逆順だと「先頭空白 + @」の入力で `^@+` が一致せず @ が残る。
+  const handle = body.xHandle?.trim().replace(/^@+/, "") ?? "";
   const lines = [
     handle ? `Xアカウント: @${handle}` : null,
     profile?.name
@@ -1234,7 +1237,8 @@ export async function POST(req: NextRequest) {
   const useOpenRouter = !OPENROUTER_DISABLED && Boolean(openRouterKey);
   // 全ての先頭 @ を取り除いて trim。キャッシュキー / Redis SADD / DB PK の
   // 正規化ロジックと揃えて、`@@handle` のような入力で二重登録されないようにする。
-  const handle = body.xHandle?.replace(/^@+/, "").trim() ?? "";
+  // trim を先に行う。逆順だと「先頭空白 + @」の入力で `^@+` が一致せず @ が残る。
+  const handle = body.xHandle?.trim().replace(/^@+/, "") ?? "";
   const official = findOfficialCreatorContext(handle, body.name);
 
   // X プロフィールは「キャッシュ判定より前」で取っておく。

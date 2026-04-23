@@ -120,3 +120,26 @@ test("classifyYukkuriInput: 記号混じり・空白・日本語混じりは unk
   assert.deepEqual(classifyYukkuriInput("a.b"), { kind: "unknown" });
   assert.deepEqual(classifyYukkuriInput(""), { kind: "unknown" });
 });
+
+// --- 正規化の順序リグレッション防止 ---------------------------------
+// 旧実装は `.replace(/^@+/, "").trim()` の順で、先頭に空白がある場合は
+// `^@+` が一致せず @ が残っていた（結果 kind: unknown に落ちていた）。
+// `.trim().replace(/^@+/, "")` の順に揃えることで、貼り付け由来の前後空白や
+// モバイルの自動スペース挿入でも正しくハンドルを拾えるようになる。
+test("classifyYukkuriInput: 先頭に空白がある @handle も handle 扱い（正規化順リグレッション）", () => {
+  assert.deepEqual(classifyYukkuriInput("  @hosino_romi  "), {
+    kind: "handle",
+    handle: "hosino_romi",
+  });
+  assert.deepEqual(classifyYukkuriInput("\t@HOSINO_ROMI\n"), {
+    kind: "handle",
+    handle: "hosino_romi",
+  });
+});
+
+test("classifyYukkuriInput: 複数 @ で始まっても 1 つ目のハンドルだけ拾う", () => {
+  assert.deepEqual(classifyYukkuriInput(" @@hosino_romi"), {
+    kind: "handle",
+    handle: "hosino_romi",
+  });
+});
