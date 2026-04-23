@@ -14,21 +14,27 @@ export const maxDuration = 300;
 const CACHE_TTL_OK = 24 * 60 * 60; // 24時間キャッシュ（成功）
 const CACHE_TTL_FAIL = 20; // 20秒キャッシュ（失敗）— 一時障害時の再試行余地を残す
 const CACHE_TTL_MEM_OK_MS = 2 * 60 * 60 * 1000; // 2時間（インスタンス内）
-const OPENROUTER_DISABLED = true; // 方針: OpenRouter を使わず Ollama のみで運用
+// 超会議 2026 本番: Ollama（家庭内 PC）だけだと「たまに落ちる」「帯域不安定」で
+// 会場の体験が止まるので、OpenRouter を Ollama フォールバックとして有効化する。
+// 有料モデル（haiku / gpt-4o-mini）を主力に、:free をラストリゾートに配置。
+// コスト上限は OpenRouter ダッシュボード側で設定（¥10,000 相当）。
+// 緊急時に再封印したい場合はこのフラグを true にして commit すればすぐ止められる。
+const OPENROUTER_DISABLED = false;
 const OPENROUTER_GLOBAL_BACKOFF_KEY = "yukkuri:openrouter:backoff:global";
 const OPENROUTER_GLOBAL_BACKOFF_MAX_SEC = 180;
 const OPENROUTER_MODEL_COOLDOWN_MS = 120_000;
 
 /**
- * OpenRouter 無料モデル候補。
- * - `:free` 付きでも 20 req/min・200 req/day（未入金時）の制限がある。
- * - 2026 年 4 月時点で存在が確認できた slug のみ列挙する。
- * - 並び順は「速い/小さい → 大きく高品質」。
+ * OpenRouter モデル候補。
+ * - 超会議本番では「有料モデル（速くて安定）→ :free（コスト 0 だが 20 req/min・200 req/day の枠）」の順で試す。
+ * - 先頭が成功すれば終わるので、通常時は有料の claude-3-5-haiku / gpt-4o-mini で完結する。
+ * - 枠やバックオフで弾かれた場合だけ :free に落ちる多段防御。
+ * - コスト上限は OpenRouter ダッシュボード側（Credit limit ¥10,000）で Hard cap する。
  */
 const MODELS = [
-  "google/gemma-4-26b-a4b-it:free",
+  "anthropic/claude-3-5-haiku",
+  "openai/gpt-4o-mini",
   "google/gemma-4-31b-it:free",
-  "mistralai/mistral-small-3.2-24b-instruct:free",
   "meta-llama/llama-3.3-70b-instruct:free",
 ];
 
@@ -899,9 +905,10 @@ export async function GET() {
     ollamaSuspicious = process.env.NODE_ENV === "production" && localish;
   }
 
+  const openRouterKey = process.env.OPENROUTER_API_KEY?.trim();
   const openRouter = OPENROUTER_DISABLED
     ? { configured: false as const, disabled: true as const }
-    : { configured: false as const };
+    : { configured: Boolean(openRouterKey) };
 
   const now = Date.now();
   const globalBackoffUntilRedis = await getGlobalBackoffUntilRedis();
@@ -913,9 +920,22 @@ export async function GET() {
     })
   );
 
+  // provider ラベルは設定状態から動的に決定する。
+  // - ollama + openrouter 両方設定: "ollama+openrouter"
+  // - ollama だけ: "ollama_only"
+  // - openrouter だけ: "openrouter_only"
+  // - どちらもなし: "fallback_only"
+  const providerLabel = ollamaConfigured && !OPENROUTER_DISABLED && openRouterKey
+    ? "ollama+openrouter"
+    : ollamaConfigured
+      ? "ollama_only"
+      : !OPENROUTER_DISABLED && openRouterKey
+        ? "openrouter_only"
+        : "fallback_only";
+
   return NextResponse.json({
     yukkuriExplain: "ok",
-    provider: "ollama_only",
+    provider: providerLabel,
     ollama: ollamaConfigured
       ? { configured: true, model: ollamaModel, reachable: ollamaReachable, suspicious: ollamaSuspicious }
       : { configured: false },
@@ -959,6 +979,8 @@ export async function POST(req: NextRequest) {
   }
 
   const useOllama = Boolean(ollamaBase && ollamaModel);
+  const openRouterKey = process.env.OPENROUTER_API_KEY?.trim();
+  const useOpenRouter = !OPENROUTER_DISABLED && Boolean(openRouterKey);
   // 全ての先頭 @ を取り除いて trim。キャッシュキー / Redis SADD / DB PK の
   // 正規化ロジックと揃えて、`@@handle` のような入力で二重登録されないようにする。
   const handle = body.xHandle?.replace(/^@+/, "").trim() ?? "";
@@ -971,20 +993,20 @@ export async function POST(req: NextRequest) {
       await scheduleArchiveSave(handle, cached.dialogue, body, "cache_hit");
       return NextResponse.json(cached.dialogue);
     }
-    if (!useOllama) {
+    if (!useOllama && !useOpenRouter) {
       const fallback = buildFallbackDialogue(body, null, official);
       if (handle) {
         await setCached(handle, { ok: true, dialogue: fallback });
       }
-      await scheduleArchiveSave(handle, fallback, body, "fallback_no_ollama");
+      await scheduleArchiveSave(handle, fallback, body, "fallback_no_llm");
       return NextResponse.json({
         ...fallback,
         degraded: true,
-        source: "fallback_no_ollama",
+        source: "fallback_no_llm",
       });
     }
     // 過去バージョンで保存された失敗キャッシュが残っている場合でも、
-    // 現在の Ollama 経路で再試行して体験を止めない。
+    // 現在の LLM 経路で再試行して体験を止めない。
     console.warn(
       `[yukkuri-explain] ignore_stale_fail_cache handle=${handle || "-"} code=${cached.errorCode}`
     );
@@ -994,17 +1016,17 @@ export async function POST(req: NextRequest) {
   const bearerToken = process.env.TWITTER_BEARER_TOKEN;
   const profile = bearerToken && handle ? await fetchXProfile(handle, bearerToken) : null;
 
-  // Ollama 未設定でも、会場ではフォールバック解説を返して体験を止めない
-  if (!useOllama) {
+  // Ollama も OpenRouter もない場合のみ静的フォールバック
+  if (!useOllama && !useOpenRouter) {
     const fallback = buildFallbackDialogue(body, profile, official);
     if (handle) {
       await setCached(handle, { ok: true, dialogue: fallback });
     }
-    await scheduleArchiveSave(handle, fallback, body, "fallback_no_ollama");
+    await scheduleArchiveSave(handle, fallback, body, "fallback_no_llm");
     return NextResponse.json({
       ...fallback,
       degraded: true,
-      source: "fallback_no_ollama",
+      source: "fallback_no_llm",
     });
   }
 
@@ -1036,25 +1058,87 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Ollama が失敗した（or 未設定）の場合に OpenRouter をフォールバックとして試す。
+  // - グローバル 429 バックオフ中は全モデルをスキップ
+  // - モデル個別のクールダウン中のものはスキップ
+  // - 401 / 402（認証 / 残高不足）は次モデルでも直らないので即打ち切り
+  // - 429 は global backoff を上書きして以降のモデルもスキップ
+  // - 404 はそのモデル slug が消えた可能性、他モデルは続行
+  if (useOpenRouter && openRouterKey) {
+    const nowOuter = Date.now();
+    const globalBackoffUntilRedis = await getGlobalBackoffUntilRedis();
+    const globalBackoffUntil = Math.max(globalBackoffUntilLocal, globalBackoffUntilRedis);
+    if (globalBackoffUntil > nowOuter) {
+      console.warn(
+        `[yukkuri-explain] openrouter_global_backoff_active wait=${Math.ceil((globalBackoffUntil - nowOuter) / 1000)}s`
+      );
+    } else {
+      const eligible = MODELS.filter((m) => (modelCooldownUntil.get(m) ?? 0) <= nowOuter);
+      let remainingModels = eligible.length;
+      let hardStop = false;
+      for (const model of eligible) {
+        if (hardStop) break;
+        const budgetLeft = remainingBudget();
+        if (budgetLeft < PER_MODEL_MIN_MS) break;
+        const perModel = Math.max(
+          PER_MODEL_MIN_MS,
+          Math.floor(budgetLeft / Math.max(1, remainingModels))
+        );
+        const r = await callOpenRouter(openRouterKey, model, userMessage, perModel);
+        remainingModels -= 1;
+        if (r.ok) {
+          const dialogue = extractDialogue(r.text);
+          if (dialogue) {
+            resetGlobalBackoffStrike();
+            await setCached(handle, { ok: true, dialogue });
+            await scheduleArchiveSave(handle, dialogue, body, "openrouter");
+            return NextResponse.json(dialogue);
+          }
+          failures.push({
+            ok: false,
+            model: r.model,
+            elapsedMs: r.elapsedMs,
+            errorCode: "E_YUKKURI_LLM_PARSE",
+          });
+          continue;
+        }
+        failures.push(r);
+        if (r.errorCode === "E_YUKKURI_LLM_UPSTREAM_429") {
+          const seconds = nextGlobalBackoffSeconds();
+          await setGlobalBackoff(seconds);
+          modelCooldownUntil.set(model, Date.now() + OPENROUTER_MODEL_COOLDOWN_MS);
+          hardStop = true;
+        } else if (
+          r.errorCode === "E_YUKKURI_LLM_UPSTREAM_401" ||
+          r.errorCode === "E_YUKKURI_LLM_UPSTREAM_402"
+        ) {
+          hardStop = true;
+        } else if (r.errorCode === "E_YUKKURI_LLM_UPSTREAM_404") {
+          modelCooldownUntil.set(model, Date.now() + OPENROUTER_MODEL_COOLDOWN_MS);
+        }
+      }
+    }
+  }
+
   if (failures.length > 0) {
     const fallback = buildFallbackDialogue(body, profile, official);
     if (handle) {
       await setCached(handle, { ok: true, dialogue: fallback });
     }
-    await scheduleArchiveSave(handle, fallback, body, "fallback_ollama");
+    await scheduleArchiveSave(handle, fallback, body, "fallback_llm");
     console.warn(
-      `[yukkuri-explain] fallback_ollama handle=${handle || "-"} failures=${JSON.stringify(
+      `[yukkuri-explain] fallback_llm handle=${handle || "-"} failures=${JSON.stringify(
         failures.map((f) => (f.ok ? null : { m: f.model, c: f.errorCode, s: f.status, e: f.elapsedMs }))
       )}`
     );
     return NextResponse.json({
       ...fallback,
       degraded: true,
-      source: "fallback_ollama",
+      source: "fallback_llm",
     });
   }
 
-  // useOllama=true かつ failure なしでここに来るのは想定外
+  // どの provider も試されていない/成功もしていない（想定外）
   return NextResponse.json(
     { error: "解説生成に失敗しました", error_code: "E_YUKKURI_UNEXPECTED" },
     { status: 500 }
