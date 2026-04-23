@@ -4,7 +4,9 @@
  */
 
 export function normalizeYukkuriHandle(handle: string): string {
-  return handle.replace(/^@+/, "").trim().toLowerCase();
+  // 順序重要: trim() を先にしないと「  @hosino_romi  」のような
+  // 先頭空白 + @ の入力で @ が剥がれない（空白が先頭にあるため ^@+ に一致しない）。
+  return handle.trim().replace(/^@+/, "").toLowerCase();
 }
 
 /** サイト内パス（先頭スラッシュ付き） */
