@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import {
   VALID_PREFECTURE_NAMES,
   getCreatorsByPrefecture,
+  parseVisibilityMin,
 } from "@/lib/creators";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,8 @@ export async function GET(req: NextRequest) {
       { status: 400 }
     );
   }
-  const result = await getCreatorsByPrefecture(pref);
+  // prefecture-counts と同じく opt-in の visibilityMin を受ける。
+  const visibilityMin = parseVisibilityMin(url.searchParams.get("visibilityMin"));
+  const result = await getCreatorsByPrefecture(pref, { visibilityMin });
   return Response.json(result);
 }

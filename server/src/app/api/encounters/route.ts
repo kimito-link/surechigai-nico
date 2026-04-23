@@ -38,6 +38,9 @@ export async function GET(req: NextRequest) {
         u.spotify_track_id AS other_spotify_track_id,
         CASE WHEN u.show_age_group THEN u.age_group ELSE NULL END AS other_age_group,
         CASE WHEN u.show_gender THEN u.gender ELSE NULL END AS other_gender,
+        -- CODEX-NEXT.md §1: マッチ相手の参加県は location_visibility >= 1（マッチ相手のみ）
+        -- のときだけ返す。未設定 / 非公開 (=0) / 未ログインユーザー扱いの相手は NULL。
+        CASE WHEN u.location_visibility >= 1 THEN u.home_prefecture ELSE NULL END AS other_home_prefecture,
         (SELECT COUNT(*) FROM likes l WHERE l.encounter_id = e.id AND l.user_id = ?) AS my_like,
         (SELECT reaction_type FROM likes l WHERE l.encounter_id = e.id AND l.user_id = ? LIMIT 1) AS my_reaction_type,
         (SELECT COUNT(*) FROM likes l WHERE l.encounter_id = e.id AND l.user_id != ?) AS other_like,
