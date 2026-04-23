@@ -2,14 +2,29 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import type { YukkuriDialogue } from "@/lib/yukkuriExplainClient";
 import { useYukkuriExplain } from "@/lib/useYukkuriExplain";
 import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
-import { yukkuriExplainedPagePath, yukkuriShareTweetUrl } from "@/lib/yukkuriShareUrls";
-import { AUTH_LESS_FIRST_COPY } from "./lp-content";
+import {
+  yukkuriExplainedPagePath,
+  yukkuriExplainedPageUrl,
+  yukkuriShareClipboardBundle,
+  yukkuriShareTweetText,
+  yukkuriShareTweetUrl,
+} from "@/lib/yukkuriShareUrls";
+import {
+  HERO_PILLAR_SURECHIGAI,
+  HERO_PILLAR_YUKKURI,
+  HERO_POST_EXPLAIN_SYNERGY,
+  HERO_SYNERGY_DETAIL,
+  HERO_SYNERGY_LEAD,
+  HERO_SYNERGY_PRIVACY_NOTE,
+  HERO_TITLE_MAIN,
+  HERO_TITLE_SUB,
+} from "./lp-content";
 import { ChokaigiConceptBanner } from "./ChokaigiConceptBanner";
 import styles from "./YukkuriHero.module.css";
 
@@ -27,12 +42,29 @@ function buildTweetUrl(handle: string) {
   return yukkuriShareTweetUrl(BASE_URL, handle);
 }
 
+/**
+ * ファーストビュー（超会議 2026 LP）のヒーロー。
+ *
+ * 設計意図（ファーストビュー v3）:
+ *  - 「すれ違い通信」と「ゆっくり解説」を "同格の 2 本柱" として対等に並べる。
+ *    ゆっくり解説は誰かを即席で名刺化できる文化（星野ロミさん的文脈のオマージュ）、
+ *    すれ違い通信は企画の核。どちらも入口として機能する。
+ *  - 2 本柱の下に「↕ 2 つはつながっている」シナジー文を置き、
+ *    「解説された人が会場にいたら、すれ違いで見つかる」導線を言語化する。
+ *  - 参加県は任意公開・デフォルト非公開。超会議の「〇〇から来た」を
+ *    "見せたい人にだけ見せられる" 前提でコピーに書く（プライバシー配慮）。
+ *
+ * 解説実行中（`isTalking`）は全画面オーバーレイ（`.charsTalking`）に切り替わる。
+ * オーバーレイ内では「解説を見た人 → すれ違い参加」導線を最強調にする。
+ */
 export function YukkuriHero() {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useUser();
   const [handle, setHandle] = useState("");
   const { dialogue, loading, error, explain, reset, cancelInFlight } = useYukkuriExplain();
   const [elapsedSec, setElapsedSec] = useState(0);
+  /** X シェアボタン押下 → クリップボードに入れた直後の「コピーしました」表示トリガー */
+  const [shareCopied, setShareCopied] = useState(false);
 
   useEffect(() => {
     if (!loading) {
@@ -61,211 +93,317 @@ export function YukkuriHero() {
     void explain({ xHandle: raw, name: `@${raw}` });
   };
 
+  /**
+   * 「X でシェア（カード付き）」の onClick。
+   *
+   * 同じパターンを `YukkuriExplainedShareRow` でも使用している（共通化してもよいが、
+   * 現状は handle の扱いが微妙に違うのでインラインで保持）。
+   *
+   * 挙動:
+   *  1. 押した瞬間に「本文＋URL」をクリップボードに入れる
+   *     → X の Windows/Mac デスクトップアプリが `intent/post` を空の composer で
+   *       開く場合があるため、ユーザーが貼り付けだけで投稿できるようにする。
+   *  2. モバイル等で `navigator.share` が使える場合はそちらを優先（ネイティブ共有シート）。
+   *     `<a target="_blank">` のデフォルト遷移を `preventDefault` で止める。
+   *  3. デスクトップは `<a href>` のデフォルト動作に任せて新規タブで intent URL を開く。
+   */
+  const handleShareClick = useCallback(
+    async (e: React.MouseEvent<HTMLAnchorElement>) => {
+      if (!raw) return;
+      // 1) クリップボード先入れ（どの経路でも「貼り付け」で復旧可能にする）
+      const bundle = yukkuriShareClipboardBundle(BASE_URL, raw);
+      try {
+        await navigator.clipboard.writeText(bundle);
+        setShareCopied(true);
+        window.setTimeout(() => setShareCopied(false), 2200);
+      } catch {
+        // クリップボード API が使えない環境（古い Safari / 非 HTTPS 等）。
+        // フォールバック（後続の intent URL オープン）はそのまま動くので何もしない。
+      }
+
+      // 2) モバイル優先：ネイティブ共有シート
+      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+        e.preventDefault();
+        try {
+          await navigator.share({
+            title: `@${raw} のゆっくり解説`,
+            text: yukkuriShareTweetText(raw),
+            url: yukkuriExplainedPageUrl(BASE_URL, raw),
+          });
+        } catch {
+          // キャンセル / 共有失敗：クリップボードに入っているので何もしない
+        }
+        return;
+      }
+      // 3) デスクトップ：<a target="_blank"> のデフォルト動作で新規タブを開く
+    },
+    [raw]
+  );
+
   return (
-    <section className={styles.hero} aria-label="ゆっくり解説ヒーロー">
-      {/* 背景: 日本列島（全国 → 幕張 → 全国）のコンセプトを視覚化する背景レイヤー */}
+    <section className={styles.hero} aria-label="ゆっくり解説 × すれ違い通信 ヒーロー">
+      {/* 背景: 日本列島（全国 → 幕張 → 全国）のコンセプトを視覚化 */}
       <ChokaigiConceptBanner />
 
-      {/*
-       * UX: 主要アクション（X ID 入力 → ゆっくり解説）を最上部に置く。
-       * 以降のコンテンツは `.heroContent` で背景より前面に配置（z-index）。
-       * （izanami 記事 3-1「情報の優先順位」に準拠）
-       */}
       <div className={styles.heroContent}>
-      {!isTalking && (
-        <>
-          <p className={styles.authLessFirst}>{AUTH_LESS_FIRST_COPY}</p>
-          <p className={styles.headline}>
-            誰を紹介してもらう？
-          </p>
-        </>
-      )}
+        {/* ====== ファーストビュー v3（解説開始前）====== */}
+        {!isTalking && (
+          <>
+            <h1 className={styles.heroTitle}>{HERO_TITLE_MAIN}</h1>
+            <p className={styles.heroTitleSub}>{HERO_TITLE_SUB}</p>
 
-      {/* 解説フォーム — ダイアログが出たら上に飛んでいく */}
-      <form
-        className={`${styles.form} ${isTalking ? styles.formHidden : ""}`}
-        onSubmit={handleYukkuri}
-        aria-hidden={isTalking}
-      >
-        <label className={styles.inputLabel}>
-          紹介してほしい人のX IDを入力
-        </label>
-        <div className={styles.inputRow}>
-          <span className={styles.at}>@</span>
-          <input
-            type="text"
-            className={styles.input}
-            value={handle}
-            onChange={(e) => setHandle(e.target.value)}
-            placeholder="X ID（自分でも他の人でもOK）"
-            aria-label="XアカウントのID"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            tabIndex={isTalking ? -1 : 0}
-          />
-        </div>
+            <div className={styles.pillars}>
+              {/* 柱①：ゆっくり解説 */}
+              <article className={`${styles.pillar} ${styles.pillarYukkuri}`}>
+                <header className={styles.pillarHeader}>
+                  <span className={styles.pillarEmoji} aria-hidden="true">🎤</span>
+                  <h2 className={styles.pillarTitle}>{HERO_PILLAR_YUKKURI.title}</h2>
+                  <p className={styles.pillarSub}>{HERO_PILLAR_YUKKURI.sub}</p>
+                </header>
+                <p className={styles.pillarBody}>{HERO_PILLAR_YUKKURI.body}</p>
 
-        <button
-          type="submit"
-          className={styles.btnYukkuri}
-          disabled={loading || !hasInput}
-          tabIndex={isTalking ? -1 : 0}
-        >
-          {loading ? "解説中…" : "ゆっくり解説してもらう"}
-        </button>
+                {/* 3 人のアバターをコンパクトに並べる = カード内デコレーション。
+                 *   解説中（isTalking）はこの帯は描画せず、全画面オーバーレイ側で
+                 *   キャラが大きく喋る演出に切り替わる。 */}
+                <div className={styles.pillarCharStrip} aria-hidden="true">
+                  {CHARS.map(({ key, label, src, color }) => (
+                    <div key={key} className={styles.pillarCharItem}>
+                      <Image
+                        src={src}
+                        alt=""
+                        width={60}
+                        height={60}
+                        className={styles.pillarCharImg}
+                      />
+                      <span
+                        className={styles.pillarCharLabel}
+                        style={{ background: color, color: "#0a0e1a" }}
+                      >
+                        {label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
 
-        {loading && (
-          <div className={styles.loadingRow}>
-            <p className={styles.loadingHint}>
-              生成中… {elapsedSec}秒経過（長い場合は数分かかることがあります）
+                <form className={styles.form} onSubmit={handleYukkuri}>
+                  <label className={styles.inputLabel}>
+                    紹介してほしい人の X ID を入力
+                  </label>
+                  <div className={styles.inputRow}>
+                    <span className={styles.at}>@</span>
+                    <input
+                      type="text"
+                      className={styles.input}
+                      value={handle}
+                      onChange={(e) => setHandle(e.target.value)}
+                      placeholder="X ID（自分でも他の人でも OK）"
+                      aria-label="X アカウントの ID"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck={false}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className={styles.btnYukkuri}
+                    disabled={loading || !hasInput}
+                  >
+                    {loading ? "解説中…" : "ゆっくり解説してもらう"}
+                  </button>
+                  {loading && (
+                    <div className={styles.loadingRow}>
+                      <p className={styles.loadingHint}>
+                        生成中… {elapsedSec}秒経過（長い場合は数分かかることがあります）
+                      </p>
+                      <button
+                        type="button"
+                        className={styles.btnCancelExplain}
+                        onClick={cancelInFlight}
+                      >
+                        キャンセル
+                      </button>
+                    </div>
+                  )}
+                  {!hasInput && (
+                    <p className={styles.hint}>
+                      誰の X ID でも解説できます。自分も、推しも、今日すれ違った誰かも。
+                    </p>
+                  )}
+                </form>
+              </article>
+
+              {/* 柱②：すれ違い通信 */}
+              <article className={`${styles.pillar} ${styles.pillarSurechigai}`}>
+                <header className={styles.pillarHeader}>
+                  <span className={styles.pillarEmoji} aria-hidden="true">📍</span>
+                  <h2 className={styles.pillarTitle}>
+                    {HERO_PILLAR_SURECHIGAI.title}
+                  </h2>
+                  <p className={styles.pillarSub}>{HERO_PILLAR_SURECHIGAI.sub}</p>
+                </header>
+                <p className={styles.pillarBody}>{HERO_PILLAR_SURECHIGAI.body}</p>
+
+                <ul className={styles.pillarBullets}>
+                  {HERO_PILLAR_SURECHIGAI.bullets.map((b) => (
+                    <li key={b}>{b}</li>
+                  ))}
+                </ul>
+
+                {isLoaded && !isSignedIn && (
+                  <button
+                    type="button"
+                    className={styles.btnPillarPrimary}
+                    onClick={() => router.push("/sign-in")}
+                  >
+                    {HERO_PILLAR_SURECHIGAI.ctaGuest} →
+                  </button>
+                )}
+                {isLoaded && isSignedIn && (
+                  <button
+                    type="button"
+                    className={styles.btnPillarPrimary}
+                    onClick={() => router.push("/app")}
+                  >
+                    {HERO_PILLAR_SURECHIGAI.ctaSignedIn} →
+                  </button>
+                )}
+                {!isLoaded && (
+                  // Clerk ロード前のレイアウトガタつき防止プレースホルダ
+                  <div className={styles.btnPillarPrimaryPlaceholder} aria-hidden="true" />
+                )}
+              </article>
+            </div>
+
+            {/* ↕ シナジー文帯：ここが「2 本柱は噛み合っている」思想の可視化 */}
+            <section className={styles.synergyBand} aria-label="2 つの柱のつながり">
+              <p className={styles.synergyLead}>↕ {HERO_SYNERGY_LEAD}</p>
+              <p className={styles.synergyDetail}>{HERO_SYNERGY_DETAIL}</p>
+              <p className={styles.synergyPrivacy}>{HERO_SYNERGY_PRIVACY_NOTE}</p>
+            </section>
+          </>
+        )}
+
+        {/* ====== 解説中（isTalking=true）: 全画面モーダル ====== */}
+        {isTalking && dialogue && (
+          <div className={`${styles.chars} ${styles.charsTalking}`}>
+            {CHARS.map(({ key, label, src, color }, i) => {
+              const isReverse = i % 2 === 1;
+              return (
+                <div
+                  key={key}
+                  className={`${styles.charCard} ${isReverse ? styles.charCardReverse : styles.charCardForward} ${styles[`charCardSpeak${i}`]}`}
+                  style={{ animationDelay: `${i * 0.18}s` }}
+                >
+                  <div className={styles.charAvatarColumn}>
+                    <div className={styles.charImgWrap}>
+                      <Image
+                        src={src}
+                        alt={label}
+                        width={100}
+                        height={100}
+                        className={styles.charImg}
+                      />
+                    </div>
+                    <span
+                      className={styles.charLabel}
+                      style={{ background: color, color: "#0a0e1a" }}
+                    >
+                      {label}
+                    </span>
+                  </div>
+                  <p
+                    className={`${styles.charBubble} ${styles[`charBubble${i}`]} ${isReverse ? styles.charBubbleReverse : styles.charBubbleForward}`}
+                  >
+                    {dialogue[key]}
+                  </p>
+                </div>
+              );
+            })}
+
+            <div className={styles.talkingFooter}>
+              <YukkuriVoicePlayer dialogue={dialogue} autoPlayOnReady />
+              <p className={styles.canonicalPageNote}>
+                この紹介は <strong>@{raw}</strong> 専用 URL に保存されています（同じ人を再解説すると本文が更新）。
+              </p>
+              <Link
+                href={yukkuriExplainedPagePath(raw)}
+                className={styles.canonicalPageLink}
+              >
+                紹介ページを開く →
+              </Link>
+
+              {/* シナジー誘導：解説体験 → すれ違い参加への最強導線 */}
+              <p className={styles.postExplainSynergy}>
+                {HERO_POST_EXPLAIN_SYNERGY.replace("{handle}", raw)}
+              </p>
+
+              <div className={styles.shareRow}>
+                {isLoaded && !isSignedIn && (
+                  <button
+                    type="button"
+                    className={styles.btnSurechigaiCta}
+                    onClick={() => router.push("/sign-in")}
+                    title="位置の交換ですれ違い検出。いいね・オフ会のきっかけにも"
+                  >
+                    すれ違いに参加（X でログイン）
+                  </button>
+                )}
+                {isLoaded && isSignedIn && (
+                  <button
+                    type="button"
+                    className={styles.btnSurechigaiCta}
+                    onClick={() => router.push("/app")}
+                  >
+                    ダッシュボードへ
+                  </button>
+                )}
+                <a
+                  href={buildTweetUrl(raw)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.shareBtn}
+                  onClick={handleShareClick}
+                >
+                  {shareCopied
+                    ? "コピーしました！X で貼り付け OK"
+                    : "X でシェア（カード付き）"}
+                </a>
+                <button
+                  type="button"
+                  className={styles.btnResetExplain}
+                  onClick={() => {
+                    reset();
+                    setHandle("");
+                  }}
+                >
+                  別の人を解説
+                </button>
+              </div>
+              <p className={styles.shareHint}>
+                X アプリで空白のまま開いた場合は、<strong>そのまま貼り付け</strong>で OK（本文＋URL はコピー済み）。
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* エラー（ファーストビュー側・オーバーレイ外にだけ出す） */}
+        {error && !isTalking && (
+          <div className={styles.errorBlock}>
+            <p className={styles.error} role="alert">
+              {error}
             </p>
-            <button type="button" className={styles.btnCancelExplain} onClick={cancelInFlight}>
-              キャンセル
+            <button
+              type="button"
+              className={styles.btnRetryExplain}
+              onClick={() => {
+                reset();
+                if (raw) void explain({ xHandle: raw, name: `@${raw}` });
+              }}
+            >
+              再試行
             </button>
           </div>
         )}
-
-        {!hasInput && (
-          <p className={styles.hint}>
-            誰のX IDでも解説できます。会場ですれ違う・いいね・オフ会のきっかけは、下のすれ違い参加登録から
-          </p>
-        )}
-      </form>
-
-      {/* キャラクター3人 — 縦積み＋左右交互（ジグザグ）レイアウト。
-       *   解説中 (isTalking) は position:fixed オーバーレイになる。DOM flow から抜けるため
-       *   以下のボイスプレイヤー/シェア行もオーバーレイの内側にまとめて描画する
-       *   （外に置くと `.registerCta` / `.shareRow` が上に詰め上がって透過した隙間から透けてしまう）。
-       */}
-      <div className={`${styles.chars}${isTalking ? ` ${styles.charsTalking}` : ""}`}>
-        {CHARS.map(({ key, label, src, color }, i) => {
-          const isReverse = i % 2 === 1; // 0=左, 1=右, 2=左
-          return (
-            <div
-              key={key}
-              className={`${styles.charCard} ${isReverse ? styles.charCardReverse : styles.charCardForward}${isTalking ? ` ${styles[`charCardTalking${key}`]}` : ""} ${isTalking ? styles[`charCardSpeak${i}`] : ""}`}
-              style={{ animationDelay: `${i * 0.18}s` }}
-            >
-              <div className={styles.charAvatarColumn}>
-                <div className={styles.charImgWrap}>
-                  <Image src={src} alt={label} width={100} height={100} className={styles.charImg} />
-                </div>
-                <span className={styles.charLabel} style={{ background: color, color: "#0a0e1a" }}>
-                  {label}
-                </span>
-              </div>
-              {dialogue && (
-                <p className={`${styles.charBubble} ${styles[`charBubble${i}`]} ${isReverse ? styles.charBubbleReverse : styles.charBubbleForward}`}>
-                  {dialogue[key]}
-                </p>
-              )}
-            </div>
-          );
-        })}
-
-        {/* 解説中のアクション（ボイス + シェア + 次のアクション）はオーバーレイ内に収める */}
-        {isTalking && dialogue && (
-          <div className={styles.talkingFooter}>
-            <YukkuriVoicePlayer dialogue={dialogue} autoPlayOnReady />
-            <p className={styles.canonicalPageNote}>
-              この紹介は <strong>@{raw}</strong> 専用URLに保存されています（同じ人を再解説すると本文が更新されます）。
-            </p>
-            <Link href={yukkuriExplainedPagePath(raw)} className={styles.canonicalPageLink}>
-              紹介ページを開く →
-            </Link>
-            <div className={styles.shareRow}>
-              <a
-                href={buildTweetUrl(raw)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.shareBtn}
-              >
-                Xでシェアする
-              </a>
-              <button
-                type="button"
-                className={styles.btnResetExplain}
-                onClick={() => {
-                  reset();
-                  setHandle("");
-                }}
-              >
-                別の人を解説してもらう
-              </button>
-              {isLoaded && !isSignedIn && (
-                <button
-                  type="button"
-                  className={styles.btnRegister}
-                  onClick={() => router.push("/sign-in")}
-                  title="位置の交換ですれ違い検出。いいねやオフ会のきっかけにも"
-                >
-                  すれ違いに参加（位置・オフ会）
-                </button>
-              )}
-              {isLoaded && isSignedIn && (
-                <button
-                  type="button"
-                  className={styles.btnRegister}
-                  onClick={() => router.push("/app")}
-                >
-                  ダッシュボードへ
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* 登録 CTA は「解説していない時」のファーストビュー用。
-       *   解説中は上のオーバーレイに同等の登録ボタンが入っているので重複を避けるため非表示にする。 */}
-      {!isTalking && isLoaded && !isSignedIn && (
-        <div className={styles.registerCta}>
-          <p className={styles.registerCtaText}>
-            すれ違い通信は企画の核です。みんなで位置を交換して近くとマッチし、Xでいいねやオフ会のきっかけに。参加はこちら（ゆっくり解説とは別ボタン）
-          </p>
-          <button
-            type="button"
-            className={styles.btnRegister}
-            onClick={() => router.push("/sign-in")}
-          >
-            すれ違いに参加する（Xでログイン）
-          </button>
-        </div>
-      )}
-      {!isTalking && isLoaded && isSignedIn && (
-        <div className={styles.registerCta}>
-          <p className={styles.registerCtaText}>
-            すれ違い通信に参加中。位置の送信・マッチ確認はアプリから
-          </p>
-          <button
-            type="button"
-            className={styles.btnRegister}
-            onClick={() => router.push("/app")}
-          >
-            ダッシュボードへ
-          </button>
-        </div>
-      )}
-
-      {/* エラー */}
-      {error && (
-        <div className={styles.errorBlock}>
-          <p className={styles.error} role="alert">
-            {error}
-          </p>
-          <button
-            type="button"
-            className={styles.btnRetryExplain}
-            onClick={() => {
-              reset();
-              if (raw) void explain({ xHandle: raw, name: `@${raw}` });
-            }}
-          >
-            再試行
-          </button>
-        </div>
-      )}
       </div>
     </section>
   );
