@@ -6,7 +6,11 @@ import { useRouter } from "next/navigation";
 import type { YukkuriDialogue } from "@/lib/yukkuriExplainClient";
 import { useYukkuriExplain } from "@/lib/useYukkuriExplain";
 import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
-import { yukkuriExplainedPagePath, yukkuriShareTweetUrl } from "@/lib/yukkuriShareUrls";
+import {
+  yukkuriExplainedPagePath,
+  yukkuriShareClipboardBundle,
+  yukkuriShareTweetUrl,
+} from "@/lib/yukkuriShareUrls";
 import styles from "./chokaigi.module.css";
 
 type Dialogue = YukkuriDialogue;
@@ -21,6 +25,22 @@ const BASE_URL = "https://surechigai-nico.link";
 
 function buildTweetUrl(handle: string): string {
   return yukkuriShareTweetUrl(BASE_URL, handle);
+}
+
+/**
+ * クリップボードに「本文＋URL」を仕込んでから X を開く。
+ *
+ * X の Windows / Mac デスクトップアプリが intent URL を奪って空白の composer を
+ * 開くケースがあるので、その場合でも Ctrl+V / ⌘V でリカバリできるように
+ * 事前にクリップボードを埋めておく。
+ * `<a target="_blank">` のデフォルト遷移はそのまま任せる（preventDefault しない）。
+ */
+async function primeClipboardForShare(handle: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(yukkuriShareClipboardBundle(BASE_URL, handle));
+  } catch {
+    // クリップボード API が使えない環境では諦める（モバイルの intent はそのまま機能する）。
+  }
 }
 
 function collectFocusables(root: HTMLElement | null): HTMLElement[] {
@@ -238,6 +258,7 @@ export function StickyXSearchBar() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.stickyXShareBtn}
+                    onClick={() => void primeClipboardForShare(rawHandle)}
                   >
                     Xでシェア
                   </a>
@@ -250,6 +271,9 @@ export function StickyXSearchBar() {
                     すれ違い参加（位置・オフ会）
                   </button>
                 </div>
+                <p className={styles.stickyXShareHint}>
+                  Xアプリで空白で開いたら<strong>そのまま貼り付け</strong>でOKです（本文＋URLはコピー済）。
+                </p>
                 <p className={styles.stickyXCanonNote}>
                   <Link href={yukkuriExplainedPagePath(rawHandle)} className={styles.stickyXCanonLink}>
                     @{rawHandle} の紹介ページ（保存URL）→

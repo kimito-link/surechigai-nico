@@ -16,6 +16,14 @@ export type YukkuriExplainedArchiveRow = {
 };
 
 type CountRow = RowDataPacket & { cnt: number };
+type SitemapRow = RowDataPacket & { x_handle: string; updated_at: string };
+
+export type ListYukkuriExplainedArchiveOptions = {
+  limit?: number;
+  offset?: number;
+  query?: string;
+  since?: string;
+};
 
 function normalizeHandle(handle: string): string {
   return handle.replace(/^@+/, "").trim().toLowerCase();
@@ -76,21 +84,69 @@ export async function countYukkuriExplainedArchive(): Promise<number> {
   }
 }
 
+function normalizeQueryPrefix(query: string | undefined): string | null {
+  const q = (query ?? "").trim().replace(/^@+/, "");
+  if (!q) return null;
+  return q.slice(0, 100);
+}
+
+function normalizeSinceDate(since: string | undefined): string | null {
+  const s = (since ?? "").trim();
+  if (!s) return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+  return s;
+}
+
 export async function listYukkuriExplainedArchive(
-  limit = 500
+  options: ListYukkuriExplainedArchiveOptions = {}
 ): Promise<YukkuriExplainedArchiveRow[]> {
-  const cap = Math.min(2000, Math.max(1, limit));
+  const cap = Math.min(2000, Math.max(1, options.limit ?? 500));
+  const offset = Math.max(0, options.offset ?? 0);
+  const queryPrefix = normalizeQueryPrefix(options.query);
+  const sinceDate = normalizeSinceDate(options.since);
+  const where: string[] = [];
+  const params: Array<string | number> = [];
+  if (queryPrefix) {
+    where.push("(x_handle LIKE ? OR display_name LIKE ?)");
+    params.push(`${queryPrefix.toLowerCase()}%`, `${queryPrefix}%`);
+  }
+  if (sinceDate) {
+    where.push("updated_at >= ?");
+    params.push(`${sinceDate} 00:00:00`);
+  }
   try {
     const [rows] = await pool.query(
       `SELECT x_handle, display_name, avatar_url, rink, konta, tanunee, source,
               DATE_FORMAT(first_explained_at, '%Y-%m-%d %H:%i:%s') AS first_explained_at,
               DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at
        FROM yukkuri_explained
+       ${where.length > 0 ? `WHERE ${where.join(" AND ")}` : ""}
        ORDER BY updated_at DESC
-       LIMIT ?`,
-      [cap]
+       LIMIT ? OFFSET ?`,
+      [...params, cap, offset]
     );
     return rows as YukkuriExplainedArchiveRow[];
+  } catch {
+    return [];
+  }
+}
+
+export async function listYukkuriExplainedArchiveSitemapRows(input: {
+  limit: number;
+  offset: number;
+}): Promise<Array<{ x_handle: string; updated_at: string }>> {
+  const cap = Math.min(1000, Math.max(1, input.limit));
+  const offset = Math.max(0, input.offset);
+  try {
+    const [rows] = await pool.query<SitemapRow[]>(
+      `SELECT x_handle,
+              DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at
+       FROM yukkuri_explained
+       ORDER BY updated_at DESC
+       LIMIT ? OFFSET ?`,
+      [cap, offset]
+    );
+    return rows.map((r) => ({ x_handle: r.x_handle, updated_at: r.updated_at }));
   } catch {
     return [];
   }

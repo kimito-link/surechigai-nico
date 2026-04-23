@@ -288,6 +288,18 @@
 
 .stickyXShareBtn:hover { background: #333; }
 
+.stickyXShareHint {
+  margin: 0.45rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: #5c4033;
+}
+
+.stickyXShareHint strong {
+  color: #b45309;
+  font-weight: 800;
+}
+
 .stickyXCanonNote {
   margin: 0.45rem 0 0;
   font-size: 0.78rem;

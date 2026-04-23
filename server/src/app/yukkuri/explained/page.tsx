@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const PAGE_LIMIT = 500;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export const metadata: Metadata = {
   title: "ゆっくり解説アーカイブ | すれちがいライト",
@@ -23,10 +24,22 @@ function excerpt(text: string, max = 120): string {
   return `${t.slice(0, max)}…`;
 }
 
-export default async function YukkuriExplainedIndexPage() {
+export default async function YukkuriExplainedIndexPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; since?: string }>;
+}) {
+  const sp = await searchParams;
+  const query = (sp.q ?? "").trim();
+  const since = (sp.since ?? "").trim();
+  const normalizedSince = DATE_RE.test(since) ? since : "";
   const [total, rows] = await Promise.all([
     countYukkuriExplainedArchive(),
-    listYukkuriExplainedArchive(PAGE_LIMIT),
+    listYukkuriExplainedArchive({
+      limit: PAGE_LIMIT,
+      query,
+      since: normalizedSince,
+    }),
   ]);
 
   return (
@@ -48,7 +61,39 @@ export default async function YukkuriExplainedIndexPage() {
           <span className={styles.metaChip}>
             掲載 <strong>{total.toLocaleString("ja-JP")}</strong> アカウント
           </span>
+          <span className={styles.metaChip}>
+            表示 <strong>{rows.length.toLocaleString("ja-JP")}</strong> 件
+          </span>
         </div>
+        <form method="get" className={styles.filterForm}>
+          <label className={styles.filterField}>
+            <span>ハンドル検索</span>
+            <input
+              type="search"
+              name="q"
+              defaultValue={query}
+              placeholder="@example"
+              className={styles.filterInput}
+            />
+          </label>
+          <label className={styles.filterField}>
+            <span>更新日（以降）</span>
+            <input
+              type="date"
+              name="since"
+              defaultValue={normalizedSince}
+              className={styles.filterInput}
+            />
+          </label>
+          <div className={styles.filterActions}>
+            <button type="submit" className={styles.filterButton}>
+              絞り込む
+            </button>
+            <Link href="/yukkuri/explained" className={styles.filterReset}>
+              クリア
+            </Link>
+          </div>
+        </form>
       </header>
 
       {rows.length === 0 ? (
@@ -96,7 +141,7 @@ export default async function YukkuriExplainedIndexPage() {
           {total > PAGE_LIMIT ? (
             <p className={styles.note}>
               直近 {PAGE_LIMIT.toLocaleString("ja-JP")}{" "}
-              件を表示しています。全件数は上記のとおりです。
+              件まで表示しています。条件一致がさらに多い場合は、検索語や日付を絞ってください。
             </p>
           ) : null}
         </>

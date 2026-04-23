@@ -35,6 +35,24 @@ export function yukkuriOgImageUrl(
 }
 
 /**
+ * X に流すときのツイート本文（URL を含まない）。
+ *
+ * OGP カード表示のために URL は `url` パラメータで別に渡す前提。
+ * デスクトップアプリ向けフォールバックでは本文＋URL を連結してクリップボードに入れる。
+ */
+export function yukkuriShareTweetText(handle: string): string {
+  return `りんく・こん太・たぬ姉に @${handle} さんをゆっくり解説してもらったよ！\n#すれちがいライト #ニコニコ超会議2026`;
+}
+
+/**
+ * X デスクトップアプリが intent URL を開いた時に「空の composer」に落ちた時用の
+ * ペースト前提テキスト。本文の末尾に改行で URL を連結する。
+ */
+export function yukkuriShareClipboardBundle(siteBase: string, handle: string): string {
+  return `${yukkuriShareTweetText(handle)}\n${yukkuriExplainedPageUrl(siteBase, handle)}`;
+}
+
+/**
  * X へのシェア用 intent URL を生成する。
  *
  * 重要:
@@ -45,10 +63,15 @@ export function yukkuriOgImageUrl(
  *   URL を OGP プレビュー対象として認識し、280 字制限の文字カウントからも外れる。
  * - 本文に URL を連結してはいけない。X が URL を本文文字列の一部と見なして OGP
  *   カードを生成しない/文字数を無駄に食う、といった副作用が起きる。
+ *
+ * なお X の Windows / Mac デスクトップアプリが `x.com` のリンクをインターセプト
+ * した際に intent パラメータを無視して空白の composer を開くことが確認されている。
+ * その対策として UI 側では「シェアを押した瞬間に本文＋URL をクリップボードに入れる」
+ * `yukkuriShareClipboardBundle` を併用する（ユーザーは貼り付けでリカバリできる）。
  */
 export function yukkuriShareTweetUrl(siteBase: string, handle: string): string {
   const cardUrl = yukkuriExplainedPageUrl(siteBase, handle);
-  const text = `りんく・こん太・たぬ姉に @${handle} さんをゆっくり解説してもらったよ！\n#すれちがいライト #ニコニコ超会議2026`;
+  const text = yukkuriShareTweetText(handle);
   const params = new URLSearchParams({ text, url: cardUrl });
   return `https://x.com/intent/post?${params.toString()}`;
 }
