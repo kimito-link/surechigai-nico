@@ -46,6 +46,9 @@ function isUnprotectedApiPath(pathname: string): boolean {
   if (pathname.startsWith("/api/admin/yukkuri-backfill")) {
     return true;
   }
+  if (pathname.startsWith("/api/admin/health/yukkuri")) {
+    return true;
+  }
   return false;
 }
 
