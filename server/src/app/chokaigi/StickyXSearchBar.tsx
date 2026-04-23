@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, type FormEvent } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { YukkuriDialogue } from "@/lib/yukkuriExplainClient";
 import { useYukkuriExplain } from "@/lib/useYukkuriExplain";
+import { classifyYukkuriInput } from "@/lib/tweetUrl";
 import {
   yukkuriExplainedPagePath,
   yukkuriShareClipboardBundle,
@@ -54,7 +55,8 @@ function collectFocusables(root: HTMLElement | null): HTMLElement[] {
 export function StickyXSearchBar() {
   const router = useRouter();
   const [handle, setHandle] = useState("");
-  const { dialogue, loading, error, explain, reset, cancelInFlight } = useYukkuriExplain();
+  const { dialogue, tweetContext, loading, error, explain, reset, cancelInFlight } =
+    useYukkuriExplain();
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -62,7 +64,17 @@ export function StickyXSearchBar() {
 
   const hasInput = handle.trim().length > 0;
   const rawHandle = handle.trim().replace(/^@+/, "");
+  // 入力を「ハンドル」「ツイート URL」「認識不能」に分類する。
+  // 送信時にこの分類結果で API を振り分け、UI 表示にも流用する。
+  const classified = useMemo(() => classifyYukkuriInput(handle), [handle]);
   const panelOpen = Boolean(loading || dialogue || error);
+  // パネル内でのハンドル表記は優先順で決める:
+  //   1) ツイート解説が成功していれば投稿者の handle
+  //   2) 入力がハンドルとして有効ならその値
+  //   3) fallback: 生の入力から @ を除いた文字列
+  const displayHandle =
+    tweetContext?.handle ??
+    (classified.kind === "handle" ? classified.handle : rawHandle);
 
   const dismiss = useCallback(() => {
     cancelInFlight();
@@ -118,11 +130,22 @@ export function StickyXSearchBar() {
 
   const handleYukkuri = (e: FormEvent) => {
     e.preventDefault();
-    if (!rawHandle) return;
-    void explain({
-      xHandle: rawHandle,
-      name: `@${rawHandle}`,
-    });
+    // ツイート URL なら tweet 解説 API に振り分け。
+    // ハンドルなら既存のハンドル解説 API。
+    // どちらでもない（認識不能）場合は何もせず return。
+    if (classified.kind === "tweet") {
+      void explain({ tweetUrl: handle.trim() });
+      return;
+    }
+    if (classified.kind === "handle") {
+      void explain({
+        xHandle: classified.handle,
+        name: `@${classified.handle}`,
+      });
+      return;
+    }
+    // unknown は静かに return（submit ボタンは hasInput の間だけ表示されるが、
+    // ユーザーが URL でもハンドルでもない文字列を入れて submit した場合は無反応にする）。
   };
 
   const handleRegister = () => {
@@ -142,16 +165,31 @@ export function StickyXSearchBar() {
             className={styles.stickyXInput}
             value={handle}
             onChange={(e) => setHandle(e.target.value)}
-            placeholder="あなたのX ID"
-            aria-label="XアカウントのID"
+            placeholder="X ID または ツイート URL"
+            aria-label="X アカウントの ID、または解説したいツイートの URL"
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck={false}
           />
           {hasInput && (
             <>
-              <button type="submit" className={styles.stickyXBtnYukkuri} disabled={loading}>
-                {loading ? "…" : "ゆっくり解説"}
+              <button
+                type="submit"
+                className={styles.stickyXBtnYukkuri}
+                disabled={loading || classified.kind === "unknown"}
+                title={
+                  classified.kind === "tweet"
+                    ? "このツイートをゆっくり解説する"
+                    : classified.kind === "handle"
+                      ? `@${classified.handle} をゆっくり解説する`
+                      : "X ID か、x.com のツイート URL を入力してください"
+                }
+              >
+                {loading
+                  ? "…"
+                  : classified.kind === "tweet"
+                    ? "ツイート解説"
+                    : "ゆっくり解説"}
               </button>
               <button
                 type="button"
@@ -166,7 +204,7 @@ export function StickyXSearchBar() {
           {!hasInput && (
             <span className={styles.stickyXHintWrap} aria-live="polite">
               <span className={styles.stickyXHintLong}>
-                X IDを入れると「ゆっくり解説」と「すれ違い登録」。みんなで位置を交換してつながる土台です
+                X ID かツイート URL を入れると「ゆっくり解説」。会場ですれ違い検出するなら右のボタンから登録
               </span>
               <span className={styles.stickyXHintShort}>解説 or すれ違い登録</span>
             </span>
@@ -242,6 +280,21 @@ export function StickyXSearchBar() {
 
             {!loading && dialogue && (
               <>
+                {/* ツイート解説モードの場合は、どのツイートを解説したかを先に示す。
+                    本文を出すことで「自分のツイート URL が正しく読み込まれた」ことが
+                    ひと目で分かり、違うツイートが出てきていないかの確認もしやすい。 */}
+                {tweetContext && (
+                  <p className={styles.stickyXCanonNote}>
+                    <a
+                      href={`https://x.com/${tweetContext.handle}/status/${tweetContext.tweetId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.stickyXCanonLink}
+                    >
+                      @{tweetContext.handle} のツイートを解説中 →
+                    </a>
+                  </p>
+                )}
                 <div className={styles.yukkuriCreatorTalkDialogue}>
                   {CHARS.map(({ key, label, speaker }) => (
                     <div key={key} className={styles.yukkuriCreatorRow} data-speaker={speaker}>
@@ -251,24 +304,22 @@ export function StickyXSearchBar() {
                   ))}
                 </div>
                 <div className={styles.stickyXShareRow}>
+                  {/* Xシェアボタン: ハンドル解説でもツイート解説でも「投稿者 handle」に
+                      対するシェア URL を使う。ツイート解説専用のシェア URL は将来対応。 */}
                   <a
-                    href={buildTweetUrl(rawHandle)}
+                    href={buildTweetUrl(displayHandle)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.stickyXShareBtn}
-                    // onMouseDown で先回りしてクリップボード書き込みを開始（保険）。
                     onMouseDown={() => {
-                      void primeClipboardForShare(rawHandle);
+                      void primeClipboardForShare(displayHandle);
                     }}
-                    // onClick で確実に書き込み完了を待ってから window.open。
-                    // X デスクトップアプリが intent URL を先取りする前にクリップボードに
-                    // 本文＋URL を仕込むことで、「空白の composer で開いたら Ctrl+V」で復旧できる。
                     onClick={async (e) => {
                       e.preventDefault();
                       try {
-                        await primeClipboardForShare(rawHandle);
+                        await primeClipboardForShare(displayHandle);
                       } catch {}
-                      window.open(buildTweetUrl(rawHandle), "_blank", "noopener,noreferrer");
+                      window.open(buildTweetUrl(displayHandle), "_blank", "noopener,noreferrer");
                     }}
                   >
                     Xでシェア
@@ -285,11 +336,31 @@ export function StickyXSearchBar() {
                 <p className={styles.stickyXShareHint}>
                   Xアプリで空白で開いたら<strong>そのまま貼り付け</strong>でOKです（本文＋URLはコピー済）。
                 </p>
-                <p className={styles.stickyXCanonNote}>
-                  <Link href={yukkuriExplainedPagePath(rawHandle)} className={styles.stickyXCanonLink}>
-                    @{rawHandle} の紹介ページ（保存URL）→
-                  </Link>
-                </p>
+                {/* 保存 URL の案内。
+                    ハンドル解説 → /yukkuri/explained/{handle}
+                    ツイート解説 → /yukkuri/explained/tweet/{tweetId}
+                    ツイート解説側は DB テーブル未作成の環境では 404 になるが、
+                    Codex が `yukkuri_explained_tweet` テーブルを作成した瞬間に
+                    自動で閲覧可能になる（UI 側は追加デプロイ不要）。 */}
+                {tweetContext ? (
+                  <p className={styles.stickyXCanonNote}>
+                    <Link
+                      href={`/yukkuri/explained/tweet/${encodeURIComponent(tweetContext.tweetId)}`}
+                      className={styles.stickyXCanonLink}
+                    >
+                      このツイート解説の保存ページ →
+                    </Link>
+                  </p>
+                ) : (
+                  <p className={styles.stickyXCanonNote}>
+                    <Link
+                      href={yukkuriExplainedPagePath(displayHandle)}
+                      className={styles.stickyXCanonLink}
+                    >
+                      @{displayHandle} の紹介ページ（保存URL）→
+                    </Link>
+                  </p>
+                )}
               </>
             )}
           </div>

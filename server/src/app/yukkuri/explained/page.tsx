@@ -130,10 +130,10 @@ export default async function YukkuriExplainedIndexPage({
                     {row.display_name ? <span className={styles.cardName}>{row.display_name}</span> : null}
                   </div>
                   <p className={styles.cardExcerpt}>{excerpt(row.rink)}</p>
-                  <div className={styles.cardMeta}>
-                    更新 {row.updated_at}
-                    {row.source ? ` · ${row.source}` : ""}
-                  </div>
+                  {/* LLM ソース名（openrouter / ollama 等）は運営デバッグ用途で、
+                      ユーザーに価値がないため表示しない。必要な場合は
+                      /api/admin/health/yukkuri で確認できる。 */}
+                  <div className={styles.cardMeta}>更新 {row.updated_at}</div>
                 </Link>
               </li>
             ))}

@@ -101,13 +101,15 @@
   width: 100%;
   max-width: none;
   max-height: none;
-  /* SiteFooterCta が z-index: 999 で画面下に貼り付いており、その透明グラデーション領域が
-   * オーバーレイ下部のボタン（X でシェア / 別の人を解説 / すれ違いに参加）のクリックを
-   * 奪っていた。オーバーレイを最前面に上げて完全に覆う。 */
-  z-index: 1000;
+  /* SiteFooterCta (z-index: 999) / StickyXSearchBar (z-index: 999) / stickyXPanel (z-index: 10000)
+   * など他の fixed 要素を完全に覆うため、z-index は 10001 以上に設定する。
+   * かつては 1000 で SiteFooterCta のグラデーションや sticky bar に下部ボタンが
+   * 奪われる事故があった。10001 で sticky 系より確実に前面へ。 */
+  z-index: 10001;
   padding: clamp(0.9rem, 3.5vw, 1.8rem) clamp(0.75rem, 3vw, 1.75rem);
-  /* 下部 CTA がスクロール時にフッター CTA の高さぶん隠れないよう、safe-area も含めて余白を確保 */
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(5rem, 10vh, 6.5rem));
+  /* 下部 CTA がスクロール時にフッター CTA / safe-area で隠れないよう十分な余白を確保。
+   * iPhone SE (10vh ≈ 40px) では不足していたので max() で下限を 7rem (112px) に底上げ。 */
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + max(7rem, 18vh));
   /* ベージュ系のベースに合わせたソリッド寄りの背景で下層を確実に隠す */
   background: linear-gradient(180deg, #faf6eb 0%, #f3ead9 100%);
   /* 子要素（吹き出し + talkingFooter）を縦並びで画面中央寄せ */

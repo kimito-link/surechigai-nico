@@ -76,6 +76,87 @@ export async function fetchYukkuriExplain(
 }
 
 /**
+ * ツイート URL 解説 API の返り値に添付されるツイート情報。
+ * UI 側で「元ツイートへのリンク」「投稿者の表示名・アバター」を出すために使う。
+ */
+export type YukkuriTweetContext = {
+  tweetId: string;
+  handle: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  text: string;
+};
+
+/**
+ * ツイート URL 解説 API（`/api/yukkuri-explain-tweet`）を叩く。
+ *
+ * 返り値は `{ dialogue, tweet }`:
+ * - `dialogue`: 既存ハンドル解説と同じ 3 キャラのセリフ
+ * - `tweet`: 元ツイート情報（UI で「この投稿を解説中」と示すのに使う）
+ */
+export async function fetchYukkuriExplainTweet(
+  tweetUrl: string,
+  options?: { signal?: AbortSignal }
+): Promise<{ dialogue: YukkuriDialogue; tweet: YukkuriTweetContext }> {
+  const signal =
+    options?.signal ?? AbortSignal.timeout(YUKKURI_EXPLAIN_TIMEOUT_MS);
+  const res = await fetch("/api/yukkuri-explain-tweet", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ tweetUrl }),
+    signal,
+  });
+  const data = (await res.json().catch(() => ({}))) as {
+    error?: string;
+    error_code?: string;
+    rink?: string;
+    konta?: string;
+    tanunee?: string;
+    tweet?: {
+      id?: string;
+      handle?: string;
+      displayName?: string | null;
+      avatarUrl?: string | null;
+      text?: string;
+    };
+  };
+  if (!res.ok) {
+    throw new YukkuriExplainError({
+      message:
+        typeof data.error === "string" && data.error.length > 0
+          ? data.error
+          : `HTTP ${res.status}`,
+      errorCode: data.error_code ?? `E_TWEET_EXPLAIN_HTTP_${res.status}`,
+      httpStatus: res.status,
+    });
+  }
+  if (
+    typeof data.rink === "string" &&
+    typeof data.konta === "string" &&
+    typeof data.tanunee === "string" &&
+    data.tweet?.id &&
+    data.tweet?.handle &&
+    typeof data.tweet?.text === "string"
+  ) {
+    return {
+      dialogue: { rink: data.rink, konta: data.konta, tanunee: data.tanunee },
+      tweet: {
+        tweetId: data.tweet.id,
+        handle: data.tweet.handle,
+        displayName: data.tweet.displayName ?? null,
+        avatarUrl: data.tweet.avatarUrl ?? null,
+        text: data.tweet.text,
+      },
+    };
+  }
+  throw new YukkuriExplainError({
+    message: "応答の形式が不正です",
+    errorCode: "E_TWEET_EXPLAIN_CLIENT_BAD_SHAPE",
+    httpStatus: res.status,
+  });
+}
+
+/**
  * サーバーから返った `error_code` と `DOMException` / `Error` を人間向け文に変換する。
  */
 export function yukkuriExplainUserMessage(err: unknown): string {

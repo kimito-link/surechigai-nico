@@ -67,7 +67,11 @@
   border: 1.5px solid rgba(26, 88, 152, 0.25);
   background: #fff;
   color: #1a1a1a;
-  font-size: 0.88rem;
+  /* iOS Safari は font-size が 16px 未満の <input> にフォーカスした瞬間に
+     ページ全体を自動ズームする挙動があり、モバイルで「タップ → 勝手に拡大 →
+     戻せない」というレイアウト崩れを招いていた。16px 固定でこの自動ズームを止める。
+     見た目のサイズ感は height を据え置きにして維持。 */
+  font-size: 16px;
 }
 
 .stickyXInput:focus-visible {
@@ -162,14 +166,28 @@
   .stickyXBtnRegister {
     font-size: 0.72rem;
     padding: 0 0.55rem;
+    /* スマホではタップ領域 44×44 を最低限確保（Apple HIG / WCAG AA）。
+       height: 2rem = 32px だけだと親指で押しにくく、押せずに「解説が出ない」
+       と感じられる主要因の 1 つだった。 */
+    min-height: 44px;
+  }
+  .stickyXSubmit {
+    min-height: 44px;
   }
 }
 
-/* 結果パネル */
+/* 結果パネル。
+   z-index の積み順:
+     - Next.js の <Toaster> や Header など 9000 以下の要素
+     - ここのオーバーレイ = 9999
+     - ここのパネル = 10000
+     - LP の 3 キャラ吹き出し (.charsTalking) = 10001
+   以前は 997/998 で、広告/埋め込み系の iframe が 9999 帯を使っていた場合に
+   パネルの裏に隠れてタップが届かないケースがあったため、安全な高空き帯へ。 */
 .stickyXOverlay {
   position: fixed;
   inset: 0;
-  z-index: 997;
+  z-index: 9999;
   margin: 0;
   padding: 0;
   border: none;
@@ -229,7 +247,9 @@
   top: calc(var(--layout-header-h, 64px) + var(--layout-sticky-x-h, 52px));
   left: 0;
   right: 0;
-  z-index: 998;
+  /* .stickyXOverlay (9999) の直上。LP の 3 キャラ吹き出し (.charsTalking=10001)
+     よりは下に来ることで、解説中にパネルを開いても会話アニメが前面を維持する。 */
+  z-index: 10000;
   background: rgba(255, 252, 248, 0.99);
   border-bottom: 1px solid rgba(221, 101, 0, 0.15);
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
@@ -255,6 +275,13 @@
   line-height: 1;
   border-radius: 0.3rem;
   transition: background 0.15s;
+  /* モバイルで閉じボタンが 小さすぎてタップできないケースを避けるため、
+     最低でも 44×44 を確保（Apple HIG / WCAG AA）。 */
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .stickyXPanelClose:hover { background: rgba(0, 0, 0, 0.06); }
@@ -276,7 +303,9 @@
 .stickyXShareBtn {
   display: inline-flex;
   align-items: center;
-  height: 2rem;
+  /* モバイルで親指でタップできる最低サイズ（44px）に揃える。
+     PC では 2rem=32px でも精密ポインタで問題ないが、1 行分のレイアウト差は無視できる。 */
+  min-height: 44px;
   padding: 0 1rem;
   border-radius: 999px;
   background: #000;

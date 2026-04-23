@@ -128,9 +128,8 @@ export default async function YukkuriExplainedDetailPage({
             </div>
           </div>
         ))}
-        {row.source ? (
-          <p className={styles.sourceNote}>保存時ソース: {row.source}</p>
-        ) : null}
+        {/* 保存時ソース（openrouter / ollama / fallback_llm 等）は運営デバッグ用途のため
+            ユーザー向けには表示しない。Admin ヘルス API で確認可能。 */}
       </section>
 
       <YukkuriExplainedShareRow handle={row.x_handle} />
