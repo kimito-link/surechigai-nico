@@ -8,6 +8,11 @@
   max-width: 100vw;
 }
 
+/* サイト固定ヘッダー + chokaigi Sticky X バー分（hash / 共有 URL の着地位置） */
+.pageRoot :where(h1, h2, h3, h4)[id] {
+  scroll-margin-top: calc(var(--layout-header-h, 64px) + var(--layout-sticky-x-h, 52px) + 12px);
+}
+
 /* ===== Sticky X 検索バー ===== */
 .stickyXBar {
   position: fixed;
@@ -1375,6 +1380,11 @@ details[open] .detailMapSummary::before {
   background: #fff;
 }
 
+.creatorSearchDynamicLoading {
+  min-height: 2.5rem;
+  padding: 0.35rem 0 0.2rem;
+}
+
 .creatorSearchLoading {
   margin: 0;
   font-size: 0.92rem;
@@ -1992,7 +2002,7 @@ details[open] .detailMapSummary::before {
 }
 
 .hallCardAnchorTarget {
-  scroll-margin-top: 6.5rem;
+  scroll-margin-top: calc(var(--layout-header-h, 64px) + var(--layout-sticky-x-h, 52px) + 12px);
 }
 
 .hallCardAnchorTarget:target {

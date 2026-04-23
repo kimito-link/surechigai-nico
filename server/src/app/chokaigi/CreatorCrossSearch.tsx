@@ -1,27 +1,21 @@
-"use client";
-
-import dynamic from "next/dynamic";
 import styles from "./chokaigi.module.css";
+import { CREATOR_SEARCH_HEADING_ID } from "./creatorCrossSearchConstants";
+import { CreatorCrossSearchClient } from "./CreatorCrossSearchClient";
 
-const CreatorCrossSearchImpl = dynamic(
-  () =>
-    import("./CreatorCrossSearchImpl").then((m) => m.CreatorCrossSearchImpl),
-  {
-    loading: () => (
-      <section
-        id="creator-cross-search-heading"
-        className={styles.creatorSearchWrap}
-        aria-busy="true"
-        aria-label="クリエイタークロス検索を読み込み中"
-      >
-        <p className={styles.creatorSearchLoading}>参加者検索を読み込み中…</p>
-      </section>
-    ),
-    ssr: false,
-  }
-);
-
-/** 巨大データは別チャンクに遅延ロードし、初期バンドルを軽くする */
+/**
+ * 見出しと id は常に SSR される（hash 付き URL の初回スクロールが効く）。
+ * 重い検索 UI は CreatorCrossSearchClient で遅延する。
+ */
 export function CreatorCrossSearch() {
-  return <CreatorCrossSearchImpl />;
+  return (
+    <section
+      className={styles.creatorSearchWrap}
+      aria-labelledby={CREATOR_SEARCH_HEADING_ID}
+    >
+      <h3 id={CREATOR_SEARCH_HEADING_ID} className={styles.mapSubheading}>
+        参加者・関係者検索（クリエイタークロス）
+      </h3>
+      <CreatorCrossSearchClient />
+    </section>
+  );
 }

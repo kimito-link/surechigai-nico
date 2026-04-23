@@ -206,7 +206,7 @@ export default function ChokaigiPage() {
               </div>
             </Link>
 
-            <a href="#map-heading" className={styles.featureCard}>
+            <a href="/chokaigi#map-heading" className={styles.featureCard}>
               <span className={styles.featureIcon} aria-hidden="true">
                 🗺️
               </span>
@@ -223,7 +223,7 @@ export default function ChokaigiPage() {
               </div>
             </a>
 
-            <a href="#creator-cross-search-heading" className={styles.featureCard}>
+            <a href="/chokaigi#creator-cross-search-heading" className={styles.featureCard}>
               <span className={styles.featureIcon} aria-hidden="true">
                 🔍
               </span>
@@ -239,7 +239,7 @@ export default function ChokaigiPage() {
               </div>
             </a>
 
-            <a href="#yukkuri-dialogue-heading" className={styles.featureCard}>
+            <a href="/chokaigi#yukkuri-dialogue-heading" className={styles.featureCard}>
               <span className={styles.featureIcon} aria-hidden="true">
                 💬
               </span>
@@ -274,7 +274,7 @@ export default function ChokaigiPage() {
               </div>
             </div>
 
-            <a href="#venue-tour-3d-heading" className={styles.featureCard}>
+            <a href="/chokaigi#venue-tour-3d-heading" className={styles.featureCard}>
               <span className={styles.featureIcon} aria-hidden="true">
                 🎢
               </span>
@@ -290,7 +290,7 @@ export default function ChokaigiPage() {
               </div>
             </a>
 
-            <a href="#usage-heading" className={styles.featureCard}>
+            <a href="/chokaigi#usage-heading" className={styles.featureCard}>
               <span className={styles.featureIcon} aria-hidden="true">
                 📖
               </span>
@@ -306,7 +306,7 @@ export default function ChokaigiPage() {
               </div>
             </a>
 
-            <a href="#venue-heading" className={styles.featureCard}>
+            <a href="/chokaigi#venue-heading" className={styles.featureCard}>
               <span className={styles.featureIcon} aria-hidden="true">
                 🚶
               </span>
@@ -323,7 +323,7 @@ export default function ChokaigiPage() {
               </div>
             </a>
 
-            <a href="#after-event-heading" className={styles.featureCard}>
+            <a href="/chokaigi#after-event-heading" className={styles.featureCard}>
               <span className={styles.featureIcon} aria-hidden="true">
                 🚀
               </span>
@@ -340,7 +340,7 @@ export default function ChokaigiPage() {
               </div>
             </a>
 
-            <a href="#privacy-heading" className={styles.featureCard}>
+            <a href="/chokaigi#privacy-heading" className={styles.featureCard}>
               <span className={styles.featureIcon} aria-hidden="true">
                 🔐
               </span>
@@ -357,7 +357,7 @@ export default function ChokaigiPage() {
               </div>
             </a>
 
-            <a href="#special-thanks-heading" className={styles.featureCard}>
+            <a href="/chokaigi#special-thanks-heading" className={styles.featureCard}>
               <span className={styles.featureIcon} aria-hidden="true">
                 🙏
               </span>
@@ -470,7 +470,7 @@ export default function ChokaigiPage() {
           <p className={styles.mapFinePrint}>{MAP_HALL_LIST_NOTE}</p>
           <p className={styles.mapDialogueHint}>
             {MAP_HALL_LIST_DIALOGUE_HINT_BEFORE}
-            <a href="#yukkuri-dialogue-heading" className={styles.mapDialogueHintLink}>
+            <a href="/chokaigi#yukkuri-dialogue-heading" className={styles.mapDialogueHintLink}>
               「ゆっくり超解説」
             </a>
             {MAP_HALL_LIST_DIALOGUE_HINT_AFTER}

@@ -9,6 +9,7 @@ import { XHandleYukkuri } from "./XHandleYukkuri";
 import type { CreatorCrossSearchApiResponse } from "@/lib/creatorCrossSearch/types";
 import { accountKindLabel } from "@/lib/creatorCrossSearch/types";
 import { trackProductEvent } from "@/lib/clientAnalytics";
+import { CREATOR_SEARCH_HEADING_ID } from "./creatorCrossSearchConstants";
 
 function toXGlobalUserSearchUrl(keyword: string) {
   const q = encodeURIComponent(keyword);
@@ -16,8 +17,6 @@ function toXGlobalUserSearchUrl(keyword: string) {
 }
 
 const DEFAULT_VISIBLE_COUNT = 60;
-
-const CREATOR_SEARCH_HEADING_ID = "creator-cross-search-heading";
 
 function scrollCreatorSearchHeadingIntoView() {
   const el = document.getElementById(CREATOR_SEARCH_HEADING_ID);
@@ -127,10 +126,7 @@ export function CreatorCrossSearchImpl() {
   }, [loading, loadError, data, normalized.length, hallFilter]);
 
   return (
-    <section className={styles.creatorSearchWrap} aria-labelledby={CREATOR_SEARCH_HEADING_ID}>
-      <h3 id={CREATOR_SEARCH_HEADING_ID} className={styles.mapSubheading}>
-        参加者・関係者検索（クリエイタークロス）
-      </h3>
+    <>
       <XHandleYukkuri />
       <p className={styles.mapFinePrint}>
         参加者名・団体名・ブースコード（例: 君斗 / りんく / H2 う-20 / VOCALOID）ですぐ検索できます。公式一覧の出展者データを統合し、Xリンクや会場位置へ移動できます。
@@ -310,8 +306,8 @@ export function CreatorCrossSearchImpl() {
                     公式詳細へ
                   </a>
                 ) : null}
-                <a href={entry.mapAnchor}>このホールの詳細へ</a>
-                <a href="#map-heading">会場マップへ</a>
+                <a href={`/chokaigi${entry.mapAnchor}`}>このホールの詳細へ</a>
+                <a href="/chokaigi#map-heading">会場マップへ</a>
               </div>
             </li>
           ))}
@@ -322,6 +318,6 @@ export function CreatorCrossSearchImpl() {
           該当するブースが見つかりませんでした。別のキーワードで試してください。
         </p>
       ) : null}
-    </section>
+    </>
   );
 }
