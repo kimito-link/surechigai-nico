@@ -1,5 +1,16 @@
 # すれちがいライト - 引き継ぎ資料
 
+> **2026-04 補足**: このドキュメントは Expo モバイル版中心に書かれており、
+> 現在の主戦場である **Next.js 版 (`server/`)** と **ニコニコ超会議 2026 LP (`/chokaigi`)** の
+> 最新運用は以下を参照のこと。
+>
+> - [`CLAUDE.md`](./CLAUDE.md) — Claude Code の運用ルール・役割分担・テスト手順
+> - [`CHOKAIGI_RUNBOOK.md`](./CHOKAIGI_RUNBOOK.md) — 会期中のトラブル対応・切り分け・ダッシュボード索引
+> - [`docs/CODEX-NEXT.md`](./docs/CODEX-NEXT.md) — 参加県 / 公開範囲（§1-§6）の DB / API / UI 実装状況
+>
+> 現在の本番: **https://surechigai-nico.link**（Vercel / Next.js / Railway MySQL / Upstash Redis）。
+> Expo アプリは保留中、以下の本文はモバイル版の仕様として残している。
+
 ## アプリ概要
 
 位置情報ベースのすれ違い通信アプリ。近くにいたユーザー同士を自動マッチングし、匿名でゆるくつながる。任天堂DSのすれちがい通信のスマホ版のようなコンセプト。
