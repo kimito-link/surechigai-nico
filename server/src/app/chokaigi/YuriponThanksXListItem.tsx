@@ -8,7 +8,13 @@ import yStyles from "./YuriponThanksXListItem.module.css";
 import { SPECIAL_THANKS_YURIPON_X_HREF } from "./special-thanks-links";
 
 const RINK_MESSAGE =
-  "英語の勉強、ちゃんとがんばってるの伝わってるよ。有名とか無名とかより、いいねやリプをくれる人を大事にできる——それが「応援」って名前の気持ちだと思う。";
+  "英語の勉強、ちゃんと積み上げてるの伝わってくるよ。毎日のコツコツ、ほんとにすごいと思う。";
+
+const KONTA_MESSAGE =
+  "有名とか無名とかより、いいねやリプをくれる人を大事にできるかどうか。そこが「応援」の芯だと思うんだ。";
+
+const TANUNEE_MESSAGE =
+  "だから“差”より先に、気持ちのほうが来てるのがうれしいのだー。それが応援って名前の気持ちなのだ。";
 
 export function YuriponThanksXListItem() {
   const [open, setOpen] = useState(false);
@@ -40,12 +46,23 @@ export function YuriponThanksXListItem() {
           id={panelId}
           className={yStyles.pop}
           role="region"
-          aria-label="ゆっくりりんくより"
+          aria-label="ゆっくり3人より"
         >
           <CharacterTip
             character="rink"
             message={RINK_MESSAGE}
             className={yStyles.tipTight}
+          />
+          <CharacterTip
+            character="konta"
+            message={KONTA_MESSAGE}
+            position="right"
+            className={yStyles.tipTightMid}
+          />
+          <CharacterTip
+            character="tanunee"
+            message={TANUNEE_MESSAGE}
+            className={yStyles.tipTightMid}
           />
           <div className={yStyles.popFooter}>
             <a

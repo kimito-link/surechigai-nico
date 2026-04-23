@@ -21,6 +21,10 @@
   margin: 0.35rem 0 0 !important;
 }
 
+.tipTightMid {
+  margin: 0.2rem 0 0 !important;
+}
+
 .popFooter {
   display: flex;
   flex-wrap: wrap;
