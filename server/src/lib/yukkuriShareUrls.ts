@@ -18,11 +18,18 @@ export function yukkuriExplainedPageUrl(siteBase: string, handle: string): strin
   return `${base}${yukkuriExplainedPagePath(handle)}`;
 }
 
-/** X などで共有するときのカード画像（本文はクエリで渡す既存 `/api/og`） */
+/**
+ * X などで共有するときのカード画像（本文はクエリで渡す既存 `/api/og`）。
+ *
+ * `extras` に `avatar` / `name` が渡されたときは、シェアカード中央に対象アカウントの
+ * アバター円とユーザー名を表示する（りんく・こん太・たぬ姉が「紹介している」構図）。
+ * どちらも optional。未指定時はイニシャルのみのフォールバック表示になる。
+ */
 export function yukkuriOgImageUrl(
   siteBase: string,
   handle: string,
-  dialogue: { rink: string; konta: string; tanunee: string }
+  dialogue: { rink: string; konta: string; tanunee: string },
+  extras?: { avatar?: string | null; name?: string | null }
 ): string {
   const base = siteBase.replace(/\/$/, "");
   const url = new URL(`${base}/api/og`);
@@ -31,6 +38,8 @@ export function yukkuriOgImageUrl(
   url.searchParams.set("r", dialogue.rink);
   url.searchParams.set("k", dialogue.konta);
   url.searchParams.set("t", dialogue.tanunee);
+  if (extras?.avatar) url.searchParams.set("a", extras.avatar);
+  if (extras?.name) url.searchParams.set("n", extras.name);
   return url.toString();
 }
 

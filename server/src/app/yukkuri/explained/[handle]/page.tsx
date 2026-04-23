@@ -29,11 +29,21 @@ export async function generateMetadata({
   }
   const title = `@${row.x_handle} のゆっくり解説（保存ページ）| すれちがいライト`;
   const description = `りんく・こん太・たぬ姉による @${row.x_handle} さんの紹介（アカウント別URL・保存済み）。${row.rink.slice(0, 80)}…`;
-  const ogImage = yukkuriOgImageUrl(siteBase(), row.x_handle, {
-    rink: row.rink,
-    konta: row.konta,
-    tanunee: row.tanunee,
-  });
+  const ogImage = yukkuriOgImageUrl(
+    siteBase(),
+    row.x_handle,
+    {
+      rink: row.rink,
+      konta: row.konta,
+      tanunee: row.tanunee,
+    },
+    {
+      // シェアカード中央にアバターを円形で表示する。
+      // avatar_url は X の pbs.twimg.com なので Edge ランタイムから fetch 可能。
+      avatar: row.avatar_url,
+      name: row.display_name,
+    }
+  );
   return {
     title,
     description,
