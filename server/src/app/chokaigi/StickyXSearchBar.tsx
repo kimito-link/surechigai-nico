@@ -294,9 +294,23 @@ export function StickyXSearchBar() {
                   <button
                     type="button"
                     className={styles.stickyXBtnYukkuri}
+                    disabled={classified.kind === "unknown"}
                     onClick={() => {
+                      // 再試行は元の入力種別（ツイート URL / ハンドル）を保持したまま
+                      // もう一度同じ API を叩く。過去は常に handle explain を叩いて
+                      // いたため、ツイート URL 入力に対して再試行を押すと URL 文字列が
+                      // ハンドルとして API に渡り、確実に失敗していた。
                       reset();
-                      if (rawHandle) void explain({ xHandle: rawHandle, name: `@${rawHandle}` });
+                      if (classified.kind === "tweet") {
+                        void explain({ tweetUrl: handle.trim() });
+                        return;
+                      }
+                      if (classified.kind === "handle") {
+                        void explain({
+                          xHandle: classified.handle,
+                          name: `@${classified.handle}`,
+                        });
+                      }
                     }}
                   >
                     再試行
