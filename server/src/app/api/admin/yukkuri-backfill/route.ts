@@ -154,6 +154,27 @@ async function runBackfill(req: NextRequest, dryRun: boolean) {
         action: `fetch_failed_${r.status}`,
         error: r.error,
       });
+      // 401/403 は Bearer Token 側の問題で、残り全件を回しても同じ結果になる。
+      // レート枠と Vercel 実行時間の無駄遣いを避けるため即中断する。
+      if (r.status === 401 || r.status === 403) {
+        return NextResponse.json(
+          {
+            ok: false,
+            dryRun,
+            aborted: "token_invalid",
+            error: `X API が ${r.status} を返しました。TWITTER_BEARER_TOKEN を確認してください（Vercel 環境変数）。`,
+            total: rows.length,
+            processed: i + 1,
+            updated,
+            skipped,
+            failed,
+            waitMs,
+            limit,
+            results,
+          },
+          { status: 503 }
+        );
+      }
       if (i < rows.length - 1 && waitMs > 0) {
         await new Promise((resolve) => setTimeout(resolve, waitMs));
       }

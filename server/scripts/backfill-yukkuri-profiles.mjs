@@ -169,6 +169,14 @@ async function main() {
           profile.error ? ` error=${profile.error}` : ""
         }`
       );
+      // 401/403 は Bearer Token 側の問題で、残りを走査しても同じ結果になる。
+      // レート枠を無駄にしないために即中断。
+      if (profile.status === 401 || profile.status === 403) {
+        console.error(
+          `[backfill-yukkuri] abort: TWITTER_BEARER_TOKEN が X API で ${profile.status} を返しました。トークンを確認してください。`
+        );
+        break;
+      }
       if (i < list.length - 1) await sleep(WAIT_MS);
       continue;
     }
