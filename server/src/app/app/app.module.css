@@ -195,6 +195,148 @@
   line-height: 1.5;
 }
 
+/*
+ * PrefectureSettingsCard（CODEX-NEXT.md §1 の既存ユーザー向け編集 UI）。
+ * 閲覧モードは 1 行サマリー + 編集ボタン、編集モードは縦並びの select + 保存 / キャンセル。
+ */
+.prefSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.prefSummaryText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.prefSummaryPref {
+  font-size: 16px;
+  font-weight: 700;
+  color: #255d9b;
+}
+
+.prefSummaryVis {
+  font-size: 12px;
+  color: #5c5248;
+}
+
+.prefEditButton {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  background: #eaf2fb;
+  color: #255d9b;
+  border: 1px solid rgba(37, 93, 155, 0.2);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.prefEditButton:hover {
+  background: #d9e7f6;
+}
+
+.prefEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.prefFormGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prefLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #3a2f24;
+}
+
+.prefSelect {
+  padding: 10px 12px;
+  border: 1px solid #e0d8cb;
+  border-radius: 8px;
+  background: white;
+  font-family: inherit;
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+.prefSelect:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.prefHint {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.prefError {
+  margin: 0;
+  padding: 8px 10px;
+  background: #fef3f2;
+  border-left: 3px solid #dc3545;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #862727;
+}
+
+.prefButtonRow {
+  display: flex;
+  gap: 8px;
+}
+
+.prefSaveButton {
+  flex: 1;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #255d9b, #1d4670);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.prefSaveButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(37, 93, 155, 0.3);
+}
+
+.prefSaveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.prefCancelButton {
+  padding: 10px 14px;
+  background: white;
+  color: #5c5248;
+  border: 1px solid #e0d8cb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.prefCancelButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .button {
   width: 100%;
   padding: 12px 16px;

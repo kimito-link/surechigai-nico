@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import ProfileCard from "./components/ProfileCard";
 import LocationButton from "./components/LocationButton";
 import LocationButtonBoundary from "./components/LocationButtonBoundary";
+import PrefectureSettingsCard from "./components/PrefectureSettingsCard";
 import Stats from "./components/Stats";
 import ThanksCredit from "./components/ThanksCredit";
 import styles from "./app.module.css";
@@ -216,6 +217,15 @@ export default function AppPage() {
             authSyncError={authSyncError}
           />
         </LocationButtonBoundary>
+        {/*
+          CODEX-NEXT.md §1 の既存ユーザー向け導線。
+          オンボーディング済みの人でも後から参加県 / 公開範囲を変更できるように、
+          Stats の前に差し込む（Location ボタンの直下、目に入りやすい位置）。
+        */}
+        <PrefectureSettingsCard
+          authUuid={resolvedUuid}
+          ready={registerSettled}
+        />
         <Stats authUuid={resolvedUuid} statsReady={registerSettled} />
         <ThanksCredit />
       </div>
