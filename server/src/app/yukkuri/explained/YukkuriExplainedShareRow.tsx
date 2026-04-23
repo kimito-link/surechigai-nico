@@ -60,11 +60,33 @@ export function YukkuriExplainedShareRow({ handle }: Props) {
     [flashCopied]
   );
 
-  const handleShareClick = useCallback(() => {
-    // 画面遷移は `<a target="_blank">` 側のデフォルト動作に任せる。
-    // こちらは「開く前にクリップボードを仕込んでおく」役目のみ。
-    void copy(clipboardBundle, "share");
-  }, [clipboardBundle, copy]);
+  const handleShareClick = useCallback(
+    async (e: React.MouseEvent<HTMLAnchorElement>) => {
+      // まずクリップボードに仕込んでおく（どの経路でも「貼り付け」で復旧できる）。
+      void copy(clipboardBundle, "share");
+
+      // モバイル（および対応ブラウザ）ではネイティブ共有シートを優先。
+      // iOS/Android のシェアシート経由で X アプリに直接渡せるので、
+      // intent URL が空白の composer で開く問題を回避できる。
+      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+        e.preventDefault(); // `<a target="_blank">` のデフォルト遷移を止める
+        try {
+          await navigator.share({
+            title: `@${handle} のゆっくり解説`,
+            text: tweetText,
+            url: pageUrl,
+          });
+        } catch {
+          // ユーザーがキャンセル、または共有失敗。クリップボードに入っているので
+          // X アプリ等を自分で開いて貼り付けてもらう。何もしない。
+        }
+        return;
+      }
+      // ネイティブ共有非対応環境（主にデスクトップ）では `<a target="_blank">` の
+      // デフォルト動作に任せ、新規タブで x.com/intent/post を開く。
+    },
+    [clipboardBundle, copy, handle, pageUrl, tweetText]
+  );
 
   return (
     <div className={styles.shareRow}>

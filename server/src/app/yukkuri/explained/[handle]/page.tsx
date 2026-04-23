@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getYukkuriExplainedArchive } from "@/lib/yukkuriExplainedArchive";
 import { yukkuriOgImageUrl } from "@/lib/yukkuriShareUrls";
+import { YukkuriShareVoice } from "@/app/yukkuri/YukkuriShareVoice";
 import { YukkuriExplainedShareRow } from "../YukkuriExplainedShareRow";
 import styles from "../explained.module.css";
 
@@ -109,6 +110,13 @@ export default async function YukkuriExplainedDetailPage({
           <p className={styles.sourceNote}>保存時ソース: {row.source}</p>
         ) : null}
       </section>
+
+      {/*
+        保存ページから音声再生できるようにする。
+        VOICEVOX_BASE_URL 未設定時はブラウザ音声フォールバックボタンが出る。
+        autoPlay はしない（ユーザー操作で再生）。
+      */}
+      <YukkuriShareVoice rink={row.rink} konta={row.konta} tanunee={row.tanunee} />
 
       <YukkuriExplainedShareRow handle={row.x_handle} />
 
