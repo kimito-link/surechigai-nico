@@ -56,7 +56,13 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/logged-out",
   "/api/webhooks(.*)",
+  /**
+   * ゆっくり解説 API 群は /chokaigi LP から未ログインで叩かれる。
+   * 新しい解説エンドポイントを追加したらここにも必ず足すこと。
+   * （落ちると Clerk が sign-in にリダイレクトし、クライアントは E_*_CLIENT_BAD_SHAPE で落ちる）
+   */
   "/api/yukkuri-explain",
+  "/api/yukkuri-explain-tweet",
   "/api/og(.*)",
   "/api/health/db",
   "/api/health/yukkuri",
