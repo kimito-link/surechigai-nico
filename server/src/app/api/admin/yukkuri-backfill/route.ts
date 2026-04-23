@@ -171,8 +171,30 @@ async function runBackfill(req: NextRequest, dryRun: boolean) {
     }
   }
 
+  // runBackfillCore は happy-path / 既知エラーの両方で persistBackfillOutcome を
+  // 呼ぶが、DB 完全断・プール枯渇などの予期せぬ例外は throw される。
+  // その場合でも `lastBackfillAt` が古いままになると「Cron が止まっている」と
+  // 誤検知されるので、ここで safety-net として失敗を記録してから再 throw する。
+  const unexpectedFailureStartedAt = Date.now();
   try {
     return await runBackfillCore(req, dryRun);
+  } catch (err) {
+    try {
+      await persistBackfillOutcome({
+        startedAt: unexpectedFailureStartedAt,
+        dryRun,
+        ok: false,
+        total: 0,
+        updated: 0,
+        skipped: 0,
+        failed: 0,
+        aborted: "unhandled_exception",
+        error: (err as Error)?.message ?? String(err),
+      });
+    } catch {
+      /* Redis も死んでいる場合は記録を諦める（本来の例外を優先して投げる） */
+    }
+    throw err;
   } finally {
     if (lockAcquired && lockConn) {
       try {
