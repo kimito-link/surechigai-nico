@@ -68,6 +68,11 @@ import { YuriponThanksXListItem } from "./YuriponThanksXListItem";
 import { RomiProfileCard } from "./RomiProfileCard";
 import { SpecialThanksProfileCard } from "./SpecialThanksProfileCard";
 import { XLogoIcon } from "./XLogoIcon";
+import YukkuriIntroLink from "@/app/components/YukkuriIntroLink";
+import {
+  TSUIOKU_NO_KIRAMEKI_DIALOGUE,
+  TSUIOKU_NO_KIRAMEKI_LP_HREF,
+} from "@/app/components/yukkuri-service-dialogues";
 
 const SPECIAL_THANKS_HIGHLIGHT_PROFILES = SPECIAL_THANKS_PROFILES.filter(
   (profile) => profile.highlight
@@ -278,6 +283,30 @@ export default function ChokaigiPage() {
                 </span>
               </div>
             </div>
+
+            <YukkuriIntroLink
+              id="kimito-tsuioku-kirameki"
+              href={TSUIOKU_NO_KIRAMEKI_LP_HREF}
+              className={styles.featureCard}
+              title={TSUIOKU_NO_KIRAMEKI_DIALOGUE.title}
+              lines={TSUIOKU_NO_KIRAMEKI_DIALOGUE.lines}
+              ctaLabel={TSUIOKU_NO_KIRAMEKI_DIALOGUE.ctaLabel}
+              ctaHref={TSUIOKU_NO_KIRAMEKI_DIALOGUE.ctaHref}
+            >
+              <span className={styles.featureIcon} aria-hidden="true">
+                ✨
+              </span>
+              <div className={styles.featureBody}>
+                <h3 className={styles.featureTitle}>
+                  追憶の煌めき（君斗リンク工房）
+                </h3>
+                <p className={styles.featureDesc}>
+                  ニコ生の応援コメントを<strong>このPCに記録</strong>する Chrome 拡張。
+                  <strong>HTML 保存</strong>や<strong>マーケ分析用 .html のダウンロード</strong>まで公式LPにまとまっているよ——まずは3人のゆっくり解説で全体像をつかんでから飛べるカード。
+                </p>
+                <span className={styles.featureCta}>ゆっくり紹介を見る →</span>
+              </div>
+            </YukkuriIntroLink>
 
             <a href="/chokaigi#venue-tour-3d-heading" className={styles.featureCard}>
               <span className={styles.featureIcon} aria-hidden="true">

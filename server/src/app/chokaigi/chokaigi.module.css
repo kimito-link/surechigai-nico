@@ -9,7 +9,8 @@
 }
 
 /* サイト固定ヘッダー + chokaigi Sticky X バー分（hash / 共有 URL の着地位置） */
-.pageRoot :where(h1, h2, h3, h4)[id] {
+.pageRoot :where(h1, h2, h3, h4)[id],
+.pageRoot a.featureCard[id] {
   scroll-margin-top: calc(var(--layout-header-h, 64px) + var(--layout-sticky-x-h, 52px) + 12px);
 }
 

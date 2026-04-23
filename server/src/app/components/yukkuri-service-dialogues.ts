@@ -704,6 +704,29 @@ export const ABUSO_DIALOGUE: YukkuriDialogue = {
   ctaLabel: "あぶそりゅーと☆せぶん 公式の X を開く",
 };
 
+/** 君斗リンク工房「追憶の煌めき」公式 LP（ニコ生コメント記録 Chrome 拡張） */
+export const TSUIOKU_NO_KIRAMEKI_LP_HREF =
+  "https://tsuioku-no-kirameki.com/" as const;
+
+export const TSUIOKU_NO_KIRAMEKI_DIALOGUE: YukkuriDialogue = {
+  title: "✨ 君斗りんくの追憶の煌めき — ニコ生の応援コメントを手元に残す拡張",
+  lines: [
+    {
+      who: "rink",
+      text: "Kimito-Link Project のひとつで、ニコニコ生放送の視聴ページから応援コメントをこのPCに残す Chrome 拡張だよ。流れて消える前に、来てくれた証を星座みたいに残したい、という発想なんだ。",
+    },
+    {
+      who: "konta",
+      text: "記録を HTML で眺めたり、グラフ入りのマーケ分析ページを .html としてダウンロードしたり——公式LPに手順がまとまってるんだよね？",
+    },
+    {
+      who: "tanunee",
+      text: "この超会議LPの冒頭フォームでできる『AIゆっくり紹介』は工房の別レーン。このカードは工房の『追憶の煌めき』を、同じゆっくり3人でざっくり説明してから公式へ飛ばす専用の導線なのだー。",
+    },
+  ],
+  ctaLabel: "公式LPで拡張・保存・分析の流れを見る",
+};
+
 const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://socialxup.com/": SOCIALXUP_DIALOGUE,
   "https://threads.socialxup.com/": SOCIALXUP_THREADS_DIALOGUE,
@@ -720,8 +743,13 @@ const DIALOGUE_BY_HREF: Record<string, YukkuriDialogue> = {
   "https://x.com/yuzuchis_mammy": YUZUCHI_DIALOGUE,
   "https://x.com/sinseinaru": SINSEINEU_DIALOGUE,
   "https://x.com/abuso2525": ABUSO_DIALOGUE,
+  [TSUIOKU_NO_KIRAMEKI_LP_HREF]: TSUIOKU_NO_KIRAMEKI_DIALOGUE,
 };
 
 export function getYukkuriDialogue(href: string): YukkuriDialogue | undefined {
-  return DIALOGUE_BY_HREF[href];
+  const raw = href.trim();
+  if (DIALOGUE_BY_HREF[raw]) return DIALOGUE_BY_HREF[raw];
+  const withSlash = raw.endsWith("/") ? raw : `${raw}/`;
+  const noSlash = raw.endsWith("/") ? raw.slice(0, -1) : raw;
+  return DIALOGUE_BY_HREF[withSlash] ?? DIALOGUE_BY_HREF[noSlash];
 }

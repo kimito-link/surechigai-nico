@@ -51,6 +51,11 @@ export const MOBILE_CHOKAIGI_SECTION_LINKS: readonly HeaderNavLink[] = [
     description: "3人の掛け合い",
   },
   {
+    href: "/chokaigi#kimito-tsuioku-kirameki",
+    label: "追憶の煌めき（工房）",
+    description: "ゆっくり→公式LP・拡張DL",
+  },
+  {
     href: "/chokaigi#venue-tour-3d-heading",
     label: "3D 会場ツアー",
     description: "全ホールを自動巡回",

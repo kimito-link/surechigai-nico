@@ -41,6 +41,8 @@ const META: Record<
 
 type Props = {
   href: string;
+  /** 同一ページ内の `#` 着地用（例: 機能グリッドの深いリンク） */
+  id?: string;
   className?: string;
   children: ReactNode;
   title: string;
@@ -51,6 +53,7 @@ type Props = {
 
 export default function YukkuriIntroLink({
   href,
+  id,
   className,
   children,
   title,
@@ -89,6 +92,7 @@ export default function YukkuriIntroLink({
   return (
     <>
       <a
+        id={id}
         href={href}
         target="_blank"
         rel="noopener noreferrer"
