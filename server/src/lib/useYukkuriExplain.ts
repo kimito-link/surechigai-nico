@@ -13,8 +13,8 @@ function buildLocalFallbackDialogue(body: Record<string, unknown>): YukkuriDialo
     typeof body.xHandle === "string" ? body.xHandle.replace(/^@+/, "") : "";
   const handleText = rawHandle ? `@${rawHandle}` : "この方";
   return {
-    rink: `${handleText}さんだよ！混雑していても、気になる人は先にチェックしておこうね！`,
-    konta: `${handleText} の紹介だよ。いまは混雑しているみたいだから、少し時間をおいて再実行してみてね。`,
+    rink: `${handleText}さんだよ！公開プロフィールをもとに紹介するね！`,
+    konta: `${handleText} の紹介だよ。活動内容や固定投稿をチェックすると、魅力がつかみやすいんだよ！`,
     tanunee: `${handleText}さん、応援してるよ！交流はXでやさしくいこうね。`,
   };
 }

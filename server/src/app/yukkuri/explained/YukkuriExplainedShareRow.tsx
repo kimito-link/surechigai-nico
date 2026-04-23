@@ -1,14 +1,10 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { yukkuriExplainedPageUrl } from "@/lib/yukkuriShareUrls";
 import styles from "./explained.module.css";
 
-type Props = {
-  handle: string;
-  rink: string;
-  konta: string;
-  tanunee: string;
-};
+type Props = { handle: string };
 
 function siteBase(): string {
   return (process.env.NEXT_PUBLIC_APP_URL ?? "https://surechigai-nico.link").replace(
@@ -17,25 +13,17 @@ function siteBase(): string {
   );
 }
 
-function buildShareCardUrl(handle: string, dialogue: Pick<Props, "rink" | "konta" | "tanunee">) {
-  const url = new URL(`${siteBase()}/yukkuri`);
-  url.searchParams.set("h", handle);
-  url.searchParams.set("r", dialogue.rink);
-  url.searchParams.set("k", dialogue.konta);
-  url.searchParams.set("t", dialogue.tanunee);
-  return url.toString();
-}
-
-function buildTweetUrl(handle: string, dialogue: Pick<Props, "rink" | "konta" | "tanunee">) {
-  const cardUrl = buildShareCardUrl(handle, dialogue);
+/** ツイート本文に載せるのはアカウント別の保存ページ（OG はそのページの metadata） */
+function buildTweetUrl(handle: string) {
+  const cardUrl = yukkuriExplainedPageUrl(siteBase(), handle);
   const text = `りんく・こん太・たぬ姉に @${handle} さんをゆっくり解説してもらったよ！\n#すれちがいライト #ニコニコ超会議2026\n${cardUrl}`;
   return `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
 }
 
-export function YukkuriExplainedShareRow({ handle, rink, konta, tanunee }: Props) {
+export function YukkuriExplainedShareRow({ handle }: Props) {
   const [copied, setCopied] = useState(false);
-  const pageUrl = `${siteBase()}/yukkuri/explained/${encodeURIComponent(handle)}`;
-  const tweetUrl = buildTweetUrl(handle, { rink, konta, tanunee });
+  const pageUrl = yukkuriExplainedPageUrl(siteBase(), handle);
+  const tweetUrl = buildTweetUrl(handle);
 
   const copyPageUrl = useCallback(async () => {
     try {

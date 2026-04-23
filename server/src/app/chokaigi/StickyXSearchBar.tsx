@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, type FormEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { YukkuriDialogue } from "@/lib/yukkuriExplainClient";
 import { useYukkuriExplain } from "@/lib/useYukkuriExplain";
 import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
+import { yukkuriExplainedPagePath, yukkuriExplainedPageUrl } from "@/lib/yukkuriShareUrls";
 import styles from "./chokaigi.module.css";
 
 type Dialogue = YukkuriDialogue;
@@ -17,17 +19,8 @@ const CHARS: Array<{ key: keyof Dialogue; label: string; speaker: "rink" | "kont
 
 const BASE_URL = "https://surechigai-nico.link";
 
-function buildShareCardUrl(handle: string, dialogue: Dialogue): string {
-  const url = new URL(`${BASE_URL}/yukkuri`);
-  url.searchParams.set("h", handle);
-  url.searchParams.set("r", dialogue.rink);
-  url.searchParams.set("k", dialogue.konta);
-  url.searchParams.set("t", dialogue.tanunee);
-  return url.toString();
-}
-
-function buildTweetUrl(handle: string, dialogue: Dialogue): string {
-  const cardUrl = buildShareCardUrl(handle, dialogue);
+function buildTweetUrl(handle: string): string {
+  const cardUrl = yukkuriExplainedPageUrl(BASE_URL, handle);
   const text = `りんく・こん太・たぬ姉に @${handle} さんをゆっくり解説してもらったよ！\n#すれちがいライト #ニコニコ超会議2026\n${cardUrl}`;
   return `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
 }
@@ -233,7 +226,7 @@ export function StickyXSearchBar() {
                 <YukkuriVoicePlayer dialogue={dialogue} compact />
                 <div className={styles.stickyXShareRow}>
                   <a
-                    href={buildTweetUrl(rawHandle, dialogue)}
+                    href={buildTweetUrl(rawHandle)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.stickyXShareBtn}
@@ -244,6 +237,11 @@ export function StickyXSearchBar() {
                     すれ違い登録へ
                   </button>
                 </div>
+                <p className={styles.stickyXCanonNote}>
+                  <Link href={yukkuriExplainedPagePath(rawHandle)} className={styles.stickyXCanonLink}>
+                    @{rawHandle} の紹介ページ（保存URL）→
+                  </Link>
+                </p>
               </>
             )}
           </div>

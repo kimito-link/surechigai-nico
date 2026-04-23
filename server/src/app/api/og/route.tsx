@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import type { NextRequest } from "next/server";
+import { YUKKURI_DIALOGUE_OG_PREVIEW_CHARS } from "@/lib/yukkuriDialogueClamp";
 
 export const runtime = "edge";
 
@@ -10,7 +11,8 @@ export async function GET(req: NextRequest) {
   const konta   = searchParams.get("k") ?? "よろしくね！";
   const tanunee = searchParams.get("t") ?? "応援してるよ！";
 
-  const truncate = (s: string, n: number) => s.length > n ? s.slice(0, n) + "…" : s;
+  const truncate = (s: string, n: number) => (s.length > n ? `${s.slice(0, n)}…` : s);
+  const ogLineMax = YUKKURI_DIALOGUE_OG_PREVIEW_CHARS;
 
   return new ImageResponse(
     (
@@ -85,7 +87,7 @@ export async function GET(req: NextRequest) {
                 padding: "10px 16px", color: "#f0f4ff", fontSize: "20px",
                 lineHeight: "1.5", display: "flex", flex: 1,
               }}>
-                {truncate(text, 45)}
+                {truncate(text, ogLineMax)}
               </div>
             </div>
           ))}

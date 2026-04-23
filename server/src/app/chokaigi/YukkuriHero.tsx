@@ -1,12 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useEffect, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import type { YukkuriDialogue } from "@/lib/yukkuriExplainClient";
 import { useYukkuriExplain } from "@/lib/useYukkuriExplain";
 import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
+import { yukkuriExplainedPagePath, yukkuriExplainedPageUrl } from "@/lib/yukkuriShareUrls";
 import { AUTH_LESS_FIRST_COPY } from "./lp-content";
 import { ChokaigiConceptBanner } from "./ChokaigiConceptBanner";
 import styles from "./YukkuriHero.module.css";
@@ -21,17 +23,8 @@ const CHARS = [
 
 const BASE_URL = "https://surechigai-nico.link";
 
-function buildShareCardUrl(handle: string, d: Dialogue) {
-  const url = new URL(`${BASE_URL}/yukkuri`);
-  url.searchParams.set("h", handle);
-  url.searchParams.set("r", d.rink);
-  url.searchParams.set("k", d.konta);
-  url.searchParams.set("t", d.tanunee);
-  return url.toString();
-}
-
-function buildTweetUrl(handle: string, d: Dialogue) {
-  const cardUrl = buildShareCardUrl(handle, d);
+function buildTweetUrl(handle: string) {
+  const cardUrl = yukkuriExplainedPageUrl(BASE_URL, handle);
   const text = `りんく・こん太・たぬ姉に @${handle} さんをゆっくり解説してもらったよ！\n#すれちがいライト #ニコニコ超会議2026\n${cardUrl}`;
   return `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
 }
@@ -177,9 +170,15 @@ export function YukkuriHero() {
         {isTalking && dialogue && (
           <div className={styles.talkingFooter}>
             <YukkuriVoicePlayer dialogue={dialogue} autoPlayOnReady />
+            <p className={styles.canonicalPageNote}>
+              この紹介は <strong>@{raw}</strong> 専用URLに保存されています（同じ人を再解説すると本文が更新されます）。
+            </p>
+            <Link href={yukkuriExplainedPagePath(raw)} className={styles.canonicalPageLink}>
+              紹介ページを開く →
+            </Link>
             <div className={styles.shareRow}>
               <a
-                href={buildTweetUrl(raw, dialogue)}
+                href={buildTweetUrl(raw)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.shareBtn}

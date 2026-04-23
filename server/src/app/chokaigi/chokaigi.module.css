@@ -1,4 +1,4 @@
-﻿.pageRoot {
+.pageRoot {
   min-height: 100vh;
   font-family: "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic UI", sans-serif;
   color: #1e1510;
@@ -261,6 +261,23 @@
 }
 
 .stickyXShareBtn:hover { background: #333; }
+
+.stickyXCanonNote {
+  margin: 0.45rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.stickyXCanonLink {
+  color: #1a5898;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.stickyXCanonLink:hover {
+  color: #144a80;
+}
 
 @media (max-width: 640px) {
   .stickyXLabel { display: none; }

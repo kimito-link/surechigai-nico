@@ -21,7 +21,9 @@ function normalizeHandle(handle: string): string {
 }
 
 /**
- * ゆっくり解説の成功結果を DB に保存（同一ハンドルは上書き更新）。
+ * ゆっくり解説の成功結果を DB に保存。
+ * 同一 x_handle は 1 行（再解説で本文・updated_at が上書き）。蓄積は「ハンドル種類が増える」形。
+ * 公開URL: `/yukkuri/explained/{handle}`（`yukkuriShareUrls`）。
  * テーブル未作成環境では握りつぶす。
  */
 export async function upsertYukkuriExplainedArchive(input: {
