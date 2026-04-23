@@ -97,13 +97,22 @@ export function useYukkuriExplain() {
       const tweetUrl = typeof body.tweetUrl === "string" ? body.tweetUrl : null;
       if (tweetUrl && tweetUrl.length > 0) {
         const result = await fetchYukkuriExplainTweet(tweetUrl, { signal: ac.signal });
+        // 途中でユーザーが再送信などで新しい explain を始めていた場合、
+        // この古い結果で UI を上書きしてはいけない（race condition）。
+        if (abortRef.current !== ac) return;
         setDialogue(result.dialogue);
         setTweetContext(result.tweet);
       } else {
         const result = await fetchYukkuriExplain(body, { signal: ac.signal });
+        if (abortRef.current !== ac) return;
         setDialogue(result);
       }
     } catch (e) {
+      // 現在アクティブな attempt でなければ（= ユーザーが再送信して上書きされた等）
+      // 古い attempt のエラーで UI を騒がせない。userCancelledRef / timeoutFiredRef
+      // も新しい attempt 側のフラグなので触らない。
+      if (abortRef.current !== ac) return;
+
       if (ac.signal.aborted) {
         // 1. ユーザー明示キャンセル → 静かに終了（UI は dismiss 済み）
         if (userCancelledRef.current) {
@@ -131,13 +140,20 @@ export function useYukkuriExplain() {
       // ネットワーク層ではなくアプリ層のエラー（HTTP エラー / JSON 不正等）
       setError(yukkuriExplainUserMessage(e));
     } finally {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
+      // 現在アクティブな attempt の finally のみ、共有 state を触ってよい。
+      // 古い attempt の finally が走ると:
+      //   - timeoutRef.current は新しい attempt のタイマーを指しており、誤って clear してしまう
+      //   - abortRef.current を null にすると、新しい attempt の cancel が機能しなくなる
+      //   - setLoading(false) すると、まだ fetch 中なのに spinner が消える
+      if (abortRef.current === ac) {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+        timeoutFiredRef.current = false;
+        setLoading(false);
+        abortRef.current = null;
       }
-      timeoutFiredRef.current = false;
-      setLoading(false);
-      abortRef.current = null;
     }
   }, []);
 
