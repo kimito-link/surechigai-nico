@@ -88,14 +88,31 @@ export function publishLiveMapEvent(payload: Omit<LiveMapEvent, "type">) {
   })();
 }
 
-/** 購読: 取得したイベントごとにコールバックが呼ばれる。cleanup 関数を返す。 */
+/** 購読: 取得したイベントごとにコールバックが呼ばれる。cleanup 関数を返す。
+ *
+ * 安全策: `onEvent` が throw した場合、Node の EventEmitter はデフォルトで
+ * 'error' イベントを発火し、error listener が無いとプロセス自体が落ちる。
+ * 会期中に 1 つの壊れた SSE 接続がサーバ全体を落とすのは致命的なので、
+ * このレイヤでコールバックを try/catch で囲んで隔離する。
+ *
+ * 典型的な例外源: live-stream route が `JSON.stringify(event)` で投げる
+ * （循環参照は現状無いが、将来 event 型を拡張したときのリスクを抑える）、
+ * または `controller.enqueue` の内部例外がここまで漏れたケース。
+ */
 export function subscribeLiveMapEvents(
   onEvent: (event: LiveMapEvent) => void
 ): () => void {
   const store = getStore();
-  store.emitter.on("event", onEvent);
+  const safe = (event: LiveMapEvent) => {
+    try {
+      onEvent(event);
+    } catch (err) {
+      console.warn("[liveMapBus] listener threw (isolated)", err);
+    }
+  };
+  store.emitter.on("event", safe);
   return () => {
-    store.emitter.off("event", onEvent);
+    store.emitter.off("event", safe);
   };
 }
 
