@@ -3,9 +3,11 @@ import type { Metadata } from "next";
 import styles from "../chokaigi.module.css";
 import {
   SPECIAL_THANKS_PROFILES,
+  SPECIAL_THANKS_POKKURI_X_HREF,
   SPECIAL_THANKS_X_ONLY,
   SPECIAL_THANKS_YURIPON_X_HREF,
 } from "../special-thanks-links";
+import { PokkuriThanksXListItem } from "../PokkuriThanksXListItem";
 import { YuriponThanksXListItem } from "../YuriponThanksXListItem";
 import { THIRD_PARTY_CREDITS } from "../third-party-credits";
 import { RomiProfileCard } from "../RomiProfileCard";
@@ -119,6 +121,8 @@ export default function SpecialThanksPage() {
                 {SPECIAL_THANKS_X_ONLY.map((link) =>
                   link.href === SPECIAL_THANKS_YURIPON_X_HREF ? (
                     <YuriponThanksXListItem key={link.href} />
+                  ) : link.href === SPECIAL_THANKS_POKKURI_X_HREF ? (
+                    <PokkuriThanksXListItem key={link.href} />
                   ) : (
                     <li key={link.href} className={styles.footerThanksItem}>
                       <a

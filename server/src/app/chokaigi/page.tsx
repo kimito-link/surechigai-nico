@@ -58,9 +58,11 @@ import { StarField } from "./StarField";
 import { YukkuriHero } from "./YukkuriHero";
 import {
   SPECIAL_THANKS_PROFILES,
+  SPECIAL_THANKS_POKKURI_X_HREF,
   SPECIAL_THANKS_X_ONLY,
   SPECIAL_THANKS_YURIPON_X_HREF,
 } from "./special-thanks-links";
+import { PokkuriThanksXListItem } from "./PokkuriThanksXListItem";
 import { YuriponThanksXListItem } from "./YuriponThanksXListItem";
 import { RomiProfileCard } from "./RomiProfileCard";
 import { SpecialThanksProfileCard } from "./SpecialThanksProfileCard";
@@ -624,6 +626,8 @@ export default function ChokaigiPage() {
                   {SPECIAL_THANKS_X_ONLY.map((link) =>
                     link.href === SPECIAL_THANKS_YURIPON_X_HREF ? (
                       <YuriponThanksXListItem key={link.href} />
+                    ) : link.href === SPECIAL_THANKS_POKKURI_X_HREF ? (
+                      <PokkuriThanksXListItem key={link.href} />
                     ) : (
                       <li key={link.href} className={styles.footerThanksItem}>
                         <a
