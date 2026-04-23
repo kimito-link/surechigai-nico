@@ -9,9 +9,7 @@ import type { YukkuriDialogue } from "@/lib/yukkuriExplainClient";
 import { useYukkuriExplain } from "@/lib/useYukkuriExplain";
 import {
   yukkuriExplainedPagePath,
-  yukkuriExplainedPageUrl,
   yukkuriShareClipboardBundle,
-  yukkuriShareTweetText,
   yukkuriShareTweetUrl,
 } from "@/lib/yukkuriShareUrls";
 import {
@@ -95,16 +93,18 @@ export function YukkuriHero() {
   /**
    * 「X でシェア（カード付き）」の onClick。
    *
-   * 同じパターンを `YukkuriExplainedShareRow` でも使用している（共通化してもよいが、
-   * 現状は handle の扱いが微妙に違うのでインラインで保持）。
+   * 【ツイッター専用方針】以前は navigator.share（ネイティブ共有シート）を優先していたが、
+   * 以下の理由で削除し、**全ユーザーを `x.com/intent/post` 直行に統一**している:
+   *  - iOS/Android の共有シートは LINE / Instagram / Mastodon 等も並べるため
+   *    「X に共有するはずが別 SNS に流れる」誤タップ事故の原因になる
+   *  - ネイティブ共有経由だと X アプリ側で `{text, url}` が別フィールドで渡されて
+   *    OGP カードが出ない / 空 composer で開くケースが観測された
    *
-   * 挙動:
-   *  1. 押した瞬間に「本文＋URL」をクリップボードに入れる
-   *     → X の Windows/Mac デスクトップアプリが `intent/post` を空の composer で
-   *       開く場合があるため、ユーザーが貼り付けだけで投稿できるようにする。
-   *  2. モバイル等で `navigator.share` が使える場合はそちらを優先（ネイティブ共有シート）。
-   *     `<a target="_blank">` のデフォルト遷移を `preventDefault` で止める。
-   *  3. デスクトップは `<a href>` のデフォルト動作に任せて新規タブで intent URL を開く。
+   * 現在の挙動:
+   *  1. 押した瞬間にクリップボードへ「本文＋URL」を仕込む
+   *     （X デスクトップアプリが intent を奪って空 composer を開いた時の Ctrl+V 用）
+   *  2. `x.com/intent/post?text=<本文+URL>` を新規タブで開く
+   *     （iOS は Universal Link で X アプリ起動、それ以外は Web composer）
    */
   const handleShareClick = useCallback(
     async (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -125,21 +125,7 @@ export function YukkuriHero() {
         // フォールバック（後続の intent URL オープン）はそのまま動くので何もしない。
       }
 
-      // 2) モバイル優先：ネイティブ共有シート
-      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-        try {
-          await navigator.share({
-            title: `@${raw} のゆっくり解説`,
-            text: yukkuriShareTweetText(raw),
-            url: yukkuriExplainedPageUrl(BASE_URL, raw),
-          });
-          return;
-        } catch {
-          // キャンセル / 共有失敗：クリップボードに入っているので intent URL を手動で開く
-        }
-      }
-      // 3) デスクトップ・または navigator.share 失敗時：
-      //    クリップボード書き込み完了後に intent URL を明示的に新規タブで開く。
+      // 2) X の intent URL を新規タブで開く（全環境共通）。
       window.open(buildTweetUrl(raw), "_blank", "noopener,noreferrer");
     },
     [raw]

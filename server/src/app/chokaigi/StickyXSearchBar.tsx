@@ -10,6 +10,8 @@ import {
   yukkuriExplainedPagePath,
   yukkuriShareClipboardBundle,
   yukkuriShareTweetUrl,
+  yukkuriTweetShareClipboardBundle,
+  yukkuriTweetShareTweetUrl,
 } from "@/lib/yukkuriShareUrls";
 import styles from "./chokaigi.module.css";
 
@@ -23,8 +25,22 @@ const CHARS: Array<{ key: keyof Dialogue; label: string; speaker: "rink" | "kont
 
 const BASE_URL = "https://surechigai-nico.link";
 
-function buildTweetUrl(handle: string): string {
-  return yukkuriShareTweetUrl(BASE_URL, handle);
+/**
+ * シェア先 URL の組み立て。
+ * - ハンドル解説モード → アカウント紹介ページ (`/yukkuri/explained/{handle}`) を共有
+ * - ツイート解説モード → ツイート解説ページ (`/yukkuri/explained/tweet/{tweetId}`) を共有
+ *   ハンドルの紹介ページを共有してしまうとシェアカードが「そのアカウント全体の紹介」
+ *   として表示され、解説対象のツイートが伝わらないため。
+ */
+type ShareTarget =
+  | { kind: "handle"; handle: string }
+  | { kind: "tweet"; tweetId: string; handle: string };
+
+function buildTweetUrl(target: ShareTarget): string {
+  if (target.kind === "tweet") {
+    return yukkuriTweetShareTweetUrl(BASE_URL, target.tweetId, target.handle);
+  }
+  return yukkuriShareTweetUrl(BASE_URL, target.handle);
 }
 
 /**
@@ -33,13 +49,16 @@ function buildTweetUrl(handle: string): string {
  * X の Windows / Mac デスクトップアプリが intent URL を奪って空白の composer を
  * 開くケースがあるので、その場合でも Ctrl+V / ⌘V でリカバリできるように
  * 事前にクリップボードを埋めておく。
- * `<a target="_blank">` のデフォルト遷移はそのまま任せる（preventDefault しない）。
  */
-async function primeClipboardForShare(handle: string): Promise<void> {
+async function primeClipboardForShare(target: ShareTarget): Promise<void> {
   try {
-    await navigator.clipboard.writeText(yukkuriShareClipboardBundle(BASE_URL, handle));
+    const bundle =
+      target.kind === "tweet"
+        ? yukkuriTweetShareClipboardBundle(BASE_URL, target.tweetId, target.handle)
+        : yukkuriShareClipboardBundle(BASE_URL, target.handle);
+    await navigator.clipboard.writeText(bundle);
   } catch {
-    // クリップボード API が使えない環境では諦める（モバイルの intent はそのまま機能する）。
+    // クリップボード API が使えない環境では諦める（intent は独立に機能する）。
   }
 }
 
@@ -75,6 +94,17 @@ export function StickyXSearchBar() {
   const displayHandle =
     tweetContext?.handle ??
     (classified.kind === "handle" ? classified.handle : rawHandle);
+
+  // シェア先のターゲット。ツイート解説モードなら「そのツイート 1 件の解説ページ」
+  // を共有し、ハンドル解説モードなら「アカウント紹介ページ」を共有する。
+  // tweetContext が解決している間はツイート側を優先し、API 側で tweet が認識
+  // できなかった場合（fallback でハンドル解説になった場合）はハンドル側に戻る。
+  const shareTarget = useMemo<ShareTarget>(() => {
+    if (tweetContext) {
+      return { kind: "tweet", tweetId: tweetContext.tweetId, handle: tweetContext.handle };
+    }
+    return { kind: "handle", handle: displayHandle };
+  }, [tweetContext, displayHandle]);
 
   const dismiss = useCallback(() => {
     cancelInFlight();
@@ -304,22 +334,25 @@ export function StickyXSearchBar() {
                   ))}
                 </div>
                 <div className={styles.stickyXShareRow}>
-                  {/* Xシェアボタン: ハンドル解説でもツイート解説でも「投稿者 handle」に
-                      対するシェア URL を使う。ツイート解説専用のシェア URL は将来対応。 */}
+                  {/* Xシェアボタン: shareTarget がハンドル/ツイートのどちらかを判別し、
+                      それぞれ最適なシェア URL（アカウント紹介 or ツイート解説ページ）を
+                      返す。ツイート解説をハンドル紹介ページとして拡散してしまうと OGP
+                      カードが「そのアカウント全体の紹介」になり、どのツイートについて
+                      反応したのか伝わらないため、個別ページにリンクするのがポイント。 */}
                   <a
-                    href={buildTweetUrl(displayHandle)}
+                    href={buildTweetUrl(shareTarget)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.stickyXShareBtn}
                     onMouseDown={() => {
-                      void primeClipboardForShare(displayHandle);
+                      void primeClipboardForShare(shareTarget);
                     }}
                     onClick={async (e) => {
                       e.preventDefault();
                       try {
-                        await primeClipboardForShare(displayHandle);
+                        await primeClipboardForShare(shareTarget);
                       } catch {}
-                      window.open(buildTweetUrl(displayHandle), "_blank", "noopener,noreferrer");
+                      window.open(buildTweetUrl(shareTarget), "_blank", "noopener,noreferrer");
                     }}
                   >
                     Xでシェア

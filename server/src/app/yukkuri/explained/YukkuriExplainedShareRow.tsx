@@ -72,27 +72,22 @@ export function YukkuriExplainedShareRow({ handle }: Props) {
         await copy(clipboardBundle, "share");
       } catch {}
 
-      // モバイル（および対応ブラウザ）ではネイティブ共有シートを優先。
-      // iOS/Android のシェアシート経由で X アプリに直接渡せるので、
-      // intent URL が空白の composer で開く問題を回避できる。
-      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-        try {
-          await navigator.share({
-            title: `@${handle} のゆっくり解説`,
-            text: tweetText,
-            url: pageUrl,
-          });
-          return;
-        } catch {
-          // ユーザーがキャンセル、または共有失敗。クリップボードに入っているので
-          // 後続の intent URL オープンに進む。
-        }
-      }
-      // ネイティブ共有非対応環境（主にデスクトップ）または navigator.share 失敗時：
-      // クリップボード書き込み完了後に x.com/intent/post を明示的に新規タブで開く。
+      // 【ツイッター専用方針】navigator.share は以前使っていたが削除した。
+      // 理由:
+      //  - iOS/Android の共有シートは LINE / Instagram / Slack / Mastodon 等の
+      //    選択肢も並べるため、「ツイッターに共有するはずが別 SNS に流れる」という
+      //    誤タップ事故が起きる。ユーザー要望は「X だけに拡散」。
+      //  - ネイティブ共有経由だと X アプリ内で `{text, url}` が別フィールドで
+      //    渡されて OGP カードが揺れる（空 composer や URL だけ貼りの事例も観測）。
+      //
+      // 全ユーザー（Desktop / モバイル Safari / モバイル Chrome）で必ず
+      // `x.com/intent/post?text=<本文+URL>` を直接開く経路に統一。
+      // X アプリが iOS の Universal Link として intent URL を受け取る場合は
+      // アプリが起動し、そうでなければ x.com の Web composer が開く。
+      // いずれにせよ「宛先は X のみ」が保証される。
       window.open(tweetUrl, "_blank", "noopener,noreferrer");
     },
-    [clipboardBundle, copy, handle, pageUrl, tweetText, tweetUrl]
+    [clipboardBundle, copy, tweetUrl]
   );
 
   return (

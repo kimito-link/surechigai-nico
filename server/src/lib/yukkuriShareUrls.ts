@@ -98,3 +98,54 @@ export function yukkuriShareTweetUrl(siteBase: string, handle: string): string {
   const params = new URLSearchParams({ text: body });
   return `https://x.com/intent/post?${params.toString()}`;
 }
+
+/* =========================================================
+ * ツイート URL 解説モード用のシェア URL 群
+ *
+ * ハンドル解説（上記）はアカウント紹介ページを共有するが、ツイート解説は
+ * 「この 1 ツイートに 3 キャラが反応した結果」を共有する別の体験。
+ * カード URL を `/yukkuri/explained/tweet/{tweetId}` にすることで、
+ * シェアカードにツイート本文と 3 キャラの反応が写る（`/api/og` は同関数で生成）。
+ * ========================================================= */
+
+export function yukkuriTweetExplainedPagePath(tweetId: string): string {
+  const t = tweetId.replace(/\D/g, "").slice(0, 32);
+  return `/yukkuri/explained/tweet/${encodeURIComponent(t)}`;
+}
+
+export function yukkuriTweetExplainedPageUrl(siteBase: string, tweetId: string): string {
+  const base = siteBase.replace(/\/$/, "");
+  return `${base}${yukkuriTweetExplainedPagePath(tweetId)}`;
+}
+
+/**
+ * X に流すツイート解説のシェア本文（URL を含まない）。
+ * `yukkuriShareTweetText` と同じトーンでまとめるが、「ツイート」を名指しする。
+ */
+export function yukkuriTweetShareTweetText(handle: string): string {
+  return `りんく・こん太・たぬ姉が @${handle} のツイートに反応してくれたよ！\n#すれちがいライト #ニコニコ超会議2026`;
+}
+
+export function yukkuriTweetShareClipboardBundle(
+  siteBase: string,
+  tweetId: string,
+  handle: string
+): string {
+  return `${yukkuriTweetShareTweetText(handle)}\n${yukkuriTweetExplainedPageUrl(siteBase, tweetId)}`;
+}
+
+/**
+ * ツイート解説用の `x.com/intent/post` URL。
+ * ハンドル用と同じ方針: `text` に「本文 + 改行 + URL」を連結、`url` パラメータは使わない。
+ */
+export function yukkuriTweetShareTweetUrl(
+  siteBase: string,
+  tweetId: string,
+  handle: string
+): string {
+  const cardUrl = yukkuriTweetExplainedPageUrl(siteBase, tweetId);
+  const text = yukkuriTweetShareTweetText(handle);
+  const body = `${text}\n${cardUrl}`;
+  const params = new URLSearchParams({ text: body });
+  return `https://x.com/intent/post?${params.toString()}`;
+}
