@@ -89,7 +89,76 @@ async function fetchXProfile(
   }
 }
 
+/** MySQL 名前付きロックキー。Cron/手動/API の多重起動を防ぐ。 */
+const BACKFILL_LOCK_NAME = "yukkuri_backfill";
+
 async function runBackfill(req: NextRequest, dryRun: boolean) {
+  // 同時実行ロック取得（0秒タイムアウト = 既に保持されていれば即失敗）
+  // pool.getConnection() で 1 本占有し、GET_LOCK → 本処理 → RELEASE_LOCK。
+  // セッション紐付きの advisory lock なので、このリクエストが異常終了しても
+  // 物理コネクション解放時に MySQL 側で自動解放される。
+  let lockConn: Awaited<ReturnType<typeof pool.getConnection>> | null = null;
+  let lockAcquired = false;
+  try {
+    lockConn = await pool.getConnection();
+    const [lockRows] = await lockConn.query<RowDataPacket[]>(
+      `SELECT GET_LOCK(?, 0) AS got`,
+      [BACKFILL_LOCK_NAME]
+    );
+    lockAcquired = Number(lockRows[0]?.got ?? 0) === 1;
+    if (!lockAcquired) {
+      lockConn.release();
+      lockConn = null;
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "バックフィルは別プロセスが実行中です。完了後にもう一度実行してください。",
+        },
+        { status: 409 }
+      );
+    }
+  } catch (err) {
+    // ロック取得そのものが失敗した場合は conn を解放しつつベストエフォートで続行。
+    // ロック無しでも整合性は崩れない（UPSERT は冪等）。ロギングだけ残す。
+    console.warn(
+      "[yukkuri-backfill] GET_LOCK acquisition failed; continuing without lock",
+      (err as Error)?.message
+    );
+    if (lockConn) {
+      try {
+        lockConn.release();
+      } catch {
+        /* ignore */
+      }
+      lockConn = null;
+    }
+  }
+
+  try {
+    return await runBackfillCore(req, dryRun);
+  } finally {
+    if (lockAcquired && lockConn) {
+      try {
+        await lockConn.query(`SELECT RELEASE_LOCK(?)`, [BACKFILL_LOCK_NAME]);
+      } catch (err) {
+        console.warn(
+          "[yukkuri-backfill] RELEASE_LOCK failed",
+          (err as Error)?.message
+        );
+      }
+    }
+    if (lockConn) {
+      try {
+        lockConn.release();
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+}
+
+async function runBackfillCore(req: NextRequest, dryRun: boolean) {
   const bearerToken = process.env.TWITTER_BEARER_TOKEN?.trim();
   if (!bearerToken) {
     return NextResponse.json(
