@@ -64,23 +64,37 @@ export function yukkuriShareClipboardBundle(siteBase: string, handle: string): s
 /**
  * X へのシェア用 intent URL を生成する。
  *
- * 重要:
- * - エンドポイントは `/intent/post`。旧 `/intent/tweet` は一部の X クライアント
- *   で `text` パラメータが無視される事象（tweet composer が空で開く）が報告されて
- *   いるため使わない。
- * - `text`（本文）と `url`（カード URL）は別パラメータで渡す。こうすると X 側が
- *   URL を OGP プレビュー対象として認識し、280 字制限の文字カウントからも外れる。
- * - 本文に URL を連結してはいけない。X が URL を本文文字列の一部と見なして OGP
- *   カードを生成しない/文字数を無駄に食う、といった副作用が起きる。
+ * 仕様（2026-04 時点の挙動に合わせて変更）:
+ * - エンドポイントは `/intent/post`
+ * - **`text` パラメータに「本文 + 改行 + URL」を連結して渡す**。
+ *   `url` パラメータは付けない。X 側が `text` 内の URL を自動検出して
+ *   OGP カードを生成する（本文文字数カウントからは URL が除外される）。
  *
- * なお X の Windows / Mac デスクトップアプリが `x.com` のリンクをインターセプト
- * した際に intent パラメータを無視して空白の composer を開くことが確認されている。
- * その対策として UI 側では「シェアを押した瞬間に本文＋URL をクリップボードに入れる」
- * `yukkuriShareClipboardBundle` を併用する（ユーザーは貼り付けでリカバリできる）。
+ * なぜこの仕様になったか（履歴メモ）:
+ * - 旧実装は `text=<本文>` と `url=<URL>` を別パラメータで渡していた。
+ *   この方式は X Web の古い挙動では「URL は OGP カード化される（本文と分離）」
+ *   と想定されていたが、**2026-04 現在、X の Windows / Mac デスクトップアプリ
+ *   および一部の Web セッションで `text` が完全に無視され、composer に URL
+ *   文字列だけが貼られる現象**が再現した（ユーザー報告 + 開発者による再現確認）。
+ * - `text` に本文 + URL を連結する方式なら、composer に本文が必ず入り、
+ *   URL もそのまま貼られるため OGP カードも自動で生成される。文字数カウント
+ *   では URL はオートリンク化時に「t.co 23 字」に短縮される。
+ * - 「本文に URL を連結すると OGP カードが生成されない」という旧コメントは、
+ *   さらに昔の Twitter Cards v1 時代の話で、現行の X では当てはまらない。
+ *
+ * 併用する UX 対策:
+ * - UI 側ではシェアを押した瞬間に `yukkuriShareClipboardBundle` でクリップボード
+ *   に本文＋URL を入れている。X デスクトップアプリが intent パラメータを
+ *   完全に無視して空白の composer を開いた場合でも、ユーザーが Ctrl+V / ⌘V で
+ *   即座にリカバリできる（案内文も表示）。
  */
 export function yukkuriShareTweetUrl(siteBase: string, handle: string): string {
   const cardUrl = yukkuriExplainedPageUrl(siteBase, handle);
   const text = yukkuriShareTweetText(handle);
-  const params = new URLSearchParams({ text, url: cardUrl });
+  // 本文 + 改行 + URL の 1 本の string として text に渡す。
+  // Desktop / Web / iOS / Android のどのクライアントでも composer に本文と URL
+  // が両方入り、URL から OGP カードが自動生成される。
+  const body = `${text}\n${cardUrl}`;
+  const params = new URLSearchParams({ text: body });
   return `https://x.com/intent/post?${params.toString()}`;
 }
