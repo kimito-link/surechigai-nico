@@ -1,0 +1,41 @@
+.root {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 2rem);
+  min-height: 42vh;
+}
+
+.bar {
+  height: 0.85rem;
+  max-width: 14rem;
+  margin-bottom: 0.65rem;
+  border-radius: 0.35rem;
+  background: rgba(37, 93, 155, 0.12);
+}
+
+.barWide {
+  height: 0.85rem;
+  max-width: 100%;
+  margin-bottom: 0.65rem;
+  border-radius: 0.35rem;
+  background: rgba(37, 93, 155, 0.1);
+}
+
+.barShort {
+  height: 0.85rem;
+  max-width: 9rem;
+  margin-bottom: 1.25rem;
+  border-radius: 0.35rem;
+  background: rgba(37, 93, 155, 0.12);
+}
+
+.block {
+  height: 6.5rem;
+  border-radius: 0.65rem;
+  background: rgba(88, 62, 28, 0.06);
+  border: 1px solid rgba(88, 62, 28, 0.08);
+}
+
+.block + .block {
+  margin-top: 0.75rem;
+}

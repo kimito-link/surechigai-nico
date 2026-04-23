@@ -48,6 +48,9 @@ export default function RootLayout({
             },
           }}
         >
+          <a href="#main-content" className="skipToMain">
+            メインコンテンツへ
+          </a>
           <WebVitalsReporter />
           <LayoutSpacingEffect />
           <DocumentHashScroll />
@@ -56,7 +59,13 @@ export default function RootLayout({
           </Suspense>
           <PrefetchChokaigiRoutes />
           <SiteHeader />
-          <div className={layoutStyles.pageShell}>{children}</div>
+          <div
+            id="main-content"
+            tabIndex={-1}
+            className={layoutStyles.pageShell}
+          >
+            {children}
+          </div>
           <SiteFooterCta />
         </ClerkProvider>
       </body>
