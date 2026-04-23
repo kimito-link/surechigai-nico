@@ -18,11 +18,17 @@ function toXGlobalUserSearchUrl(keyword: string) {
 
 const DEFAULT_VISIBLE_COUNT = 60;
 
+function prefersReducedMotion(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 function scrollCreatorSearchHeadingIntoView() {
   const el = document.getElementById(CREATOR_SEARCH_HEADING_ID);
   if (!el) return;
+  const behavior: ScrollBehavior = prefersReducedMotion() ? "auto" : "smooth";
   requestAnimationFrame(() => {
-    setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+    setTimeout(() => el.scrollIntoView({ behavior, block: "start" }), 120);
   });
 }
 

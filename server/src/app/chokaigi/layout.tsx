@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { ChokaigiJsonLd } from "./ChokaigiJsonLd";
 import { StickyXSearchBar } from "./StickyXSearchBar";
-import { ChokaigiHashScroll } from "./ChokaigiHashScroll";
 import { ChokaigiLayoutMetrics } from "./ChokaigiLayoutMetrics";
 import {
   LP_DESCRIPTION,
@@ -48,7 +47,6 @@ export default function ChokaigiLayout({
   return (
     <div className={styles.pageRoot}>
       <ChokaigiLayoutMetrics />
-      <ChokaigiHashScroll />
       <ChokaigiJsonLd />
       <StickyXSearchBar />
       {children}

@@ -12,7 +12,7 @@ function formatCount(n: number): string {
 /**
  * TOP ファーストビュー用の 3 チップ統計バー。
  * 各チップは a/Link 要素として導線化し、
- *  - 現在参加中 → 同一ページ下部の #live-participants-heading へスクロール
+ *  - 現在参加中 → 同一ページ下部の #live-participants-heading へスクロール（共有は /#...）
  *  - 登録数     → /creators（都道府県別 一覧）
  *  - ゆっくり解説 → /yukkuri/explained（解説アーカイブ一覧）
  * を目指す。数字が 0 でも押せるよう常に表示する（導線優先）。
@@ -23,7 +23,7 @@ export default async function HeroStats() {
   return (
     <div className={styles.heroStatsRow} aria-label="参加状況サマリー">
       <Link
-        href="#live-participants-heading"
+        href="/#live-participants-heading"
         className={`${styles.heroStatsChip} ${styles.heroStatsChipLive}`}
       >
         <span className={styles.heroStatsChipDot} aria-hidden="true" />

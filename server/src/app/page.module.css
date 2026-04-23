@@ -11,6 +11,10 @@
     linear-gradient(180deg, #fdfaf5 0%, #f7f1e7 45%, #efe6d8 100%);
 }
 
+.shell :where(h1, h2, h3)[id] {
+  scroll-margin-top: calc(var(--layout-header-h, 64px) + 12px);
+}
+
 .hero {
   position: relative;
   overflow: hidden;

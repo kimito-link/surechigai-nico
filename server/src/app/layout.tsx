@@ -10,6 +10,7 @@ import { WebVitalsReporter } from "./components/WebVitalsReporter";
 import { AnalyticsNavigationTracker } from "./components/AnalyticsNavigationTracker";
 import layoutStyles from "./layout.module.css";
 import { LayoutSpacingEffect } from "./components/LayoutSpacingEffect";
+import { DocumentHashScroll } from "./components/DocumentHashScroll";
 
 export const metadata: Metadata = {
   icons: {
@@ -49,6 +50,7 @@ export default function RootLayout({
         >
           <WebVitalsReporter />
           <LayoutSpacingEffect />
+          <DocumentHashScroll />
           <Suspense fallback={null}>
             <AnalyticsNavigationTracker />
           </Suspense>

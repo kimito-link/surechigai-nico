@@ -14,23 +14,27 @@ function scrollToLocationHash(): boolean {
   return true;
 }
 
+function isHashScrollRoute(pathname: string): boolean {
+  if (pathname === "/" || pathname === "") return true;
+  return pathname.startsWith("/chokaigi");
+}
+
 /**
- * App Router では同一ページへの hash 付き遷移や、クライアント遷移直後に
- * ブラウザ既定のスクロールが効かないことがある。固定ヘッダー分は CSS の
- * scroll-margin で吸収する。
+ * トップ `/` と `/chokaigi` 配下で、hash 付き URL の着地を確実にする。
+ * 固定ヘッダー分は各ページの CSS scroll-margin で吸収する。
  */
-export function ChokaigiHashScroll() {
+export function DocumentHashScroll() {
   const pathname = usePathname() ?? "";
 
   useLayoutEffect(() => {
-    if (!pathname.startsWith("/chokaigi")) return;
+    if (!isHashScrollRoute(pathname)) return;
     scrollToLocationHash();
     const retry = window.setTimeout(() => scrollToLocationHash(), 220);
     return () => window.clearTimeout(retry);
   }, [pathname]);
 
   useLayoutEffect(() => {
-    if (!pathname.startsWith("/chokaigi")) return;
+    if (!isHashScrollRoute(pathname)) return;
     const onHash = () => scrollToLocationHash();
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);

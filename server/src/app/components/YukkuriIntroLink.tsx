@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./YukkuriIntroLink.module.css";
+
+/** 同一サイト内パス（`//host` などの偽装を除外） */
+function isSameOriginAppPath(target: string): boolean {
+  if (!target.startsWith("/")) return false;
+  if (target.startsWith("//")) return false;
+  return true;
+}
 
 export type YukkuriSpeaker = "rink" | "konta" | "tanunee";
 
@@ -50,6 +58,7 @@ export default function YukkuriIntroLink({
   ctaLabel,
   ctaHref,
 }: Props) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -68,12 +77,13 @@ export default function YukkuriIntroLink({
 
   const proceed = () => {
     const target = ctaHref ?? href;
-    if (target.startsWith("/")) {
-      window.location.href = target;
-    } else {
-      window.open(target, "_blank", "noopener,noreferrer");
+    if (isSameOriginAppPath(target)) {
       setOpen(false);
+      router.push(target);
+      return;
     }
+    window.open(target, "_blank", "noopener,noreferrer");
+    setOpen(false);
   };
 
   return (
