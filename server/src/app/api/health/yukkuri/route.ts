@@ -24,9 +24,30 @@ export async function GET() {
     const [rows] = await pool.query<RowDataPacket[]>(
       "SELECT COUNT(*) AS c FROM yukkuri_explained"
     );
+    const [coverageRows] = await pool.query<RowDataPacket[]>(
+      `SELECT
+         COUNT(*) AS total,
+         SUM(display_name IS NOT NULL) AS withName,
+         SUM(avatar_url IS NOT NULL) AS withAvatar,
+         SUM(display_name IS NOT NULL AND avatar_url IS NOT NULL) AS withBoth
+       FROM yukkuri_explained`
+    );
+    const total = Number(coverageRows[0]?.total ?? 0);
+    const withName = Number(coverageRows[0]?.withName ?? 0);
+    const withAvatar = Number(coverageRows[0]?.withAvatar ?? 0);
+    const withBoth = Number(coverageRows[0]?.withBoth ?? 0);
+    const coveragePct =
+      total > 0 ? Math.round(((withBoth / total) * 100) * 10) / 10 : 0;
     result.yukkuriExplainedTable = {
       exists: true,
       count: Number(rows[0]?.c ?? 0),
+    };
+    result.archive = {
+      total,
+      withName,
+      withAvatar,
+      withBoth,
+      coveragePct,
     };
   } catch (err) {
     const msg = (err as Error).message ?? "";
@@ -36,6 +57,13 @@ export async function GET() {
       hint: /doesn't exist|Unknown table/i.test(msg)
         ? "scripts/ensure-chokaigi-tables.sql を本番 DB に適用してください"
         : undefined,
+    };
+    result.archive = {
+      total: 0,
+      withName: 0,
+      withAvatar: 0,
+      withBoth: 0,
+      coveragePct: 0,
     };
   }
 
