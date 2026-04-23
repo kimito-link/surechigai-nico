@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { liveMapFormatAgo } from "@/lib/liveMapShared";
+import { prefectureCodeToName } from "@/lib/prefectureCodes";
 import styles from "../app.module.css";
 
 export type EncounterRow = {
@@ -22,6 +23,11 @@ export type EncounterRow = {
   other_gender: string | null;
   other_encounter_count: number;
   is_my_ghost: 0 | 1 | boolean;
+  /**
+   * マッチ相手の参加県コード ("01".."47")。
+   * 相手の location_visibility が 1 以上のときだけ API から返る。0 / null の場合は表示しない。
+   */
+  other_home_prefecture?: string | null;
 };
 
 const TIER_LABELS: Record<number, { label: string; className: string }> = {
@@ -38,6 +44,11 @@ export default function EncounterCard({ encounter }: { encounter: EncounterRow }
     ? `https://x.com/${encounter.other_twitter_handle.replace(/^@/, "")}`
     : null;
   const encounteredAtMs = new Date(encounter.encountered_at).getTime();
+  // CODEX-NEXT.md §1: 相手が許可している場合のみ「📍〇〇県」バッジを出す。
+  // サーバ側で既に location_visibility >= 1 のフィルタを通っているので、来た値はそのまま表示してよい。
+  const otherPrefectureName = prefectureCodeToName(
+    encounter.other_home_prefecture ?? null
+  );
 
   return (
     <article className={styles.encounterCard}>
@@ -82,6 +93,11 @@ export default function EncounterCard({ encounter }: { encounter: EncounterRow }
         <span className={styles.encounterArea}>
           📍 {encounter.area_name ?? "場所不明"}
         </span>
+        {otherPrefectureName && (
+          <span className={styles.encounterPrefecture}>
+            🏠 {otherPrefectureName}から
+          </span>
+        )}
         <span className={styles.encounterTime}>
           {liveMapFormatAgo(encounteredAtMs)}
         </span>

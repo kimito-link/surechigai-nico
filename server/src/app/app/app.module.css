@@ -1267,6 +1267,22 @@
   color: #8a7d6e;
 }
 
+/*
+ * CODEX-NEXT.md §1 のマッチ相手の参加県バッジ。
+ * 既存 encounterArea / encounterTime と横並びになっても折り返せる余地が要るので
+ * min-width: 0 を持たせる（flex 子要素の省略が効くように）。
+ */
+.encounterPrefecture {
+  font-weight: 600;
+  color: #255d9b;
+  background: #eaf2fb;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .encounterHitokoto {
   margin: 0;
   padding: 8px 10px;

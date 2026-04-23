@@ -217,6 +217,51 @@
   color: #888;
 }
 
+/*
+ * CODEX-NEXT.md §2 のシナジー導線。
+ * 一覧カードのアバター行の下・本文の上に配置して、
+ * 「この人はすれ違いライトにも参加している」と一目で分かるようにする。
+ */
+.cardBadgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 4px;
+}
+
+.detailBadgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.surechigaiBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffd38b, #ffb648);
+  color: #7a3e00;
+  border: 1px solid rgba(122, 62, 0, 0.15);
+}
+
+.prefectureBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #eaf2fb;
+  color: #255d9b;
+  border: 1px solid rgba(37, 93, 155, 0.2);
+}
+
 .note {
   margin: 20px 0 0;
   font-size: 12px;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PREFECTURE_NAMES } from "@/lib/prefectureCodes";
 import styles from "../onboarding.module.css";
 
 interface ProfileStepProps {
@@ -9,12 +10,18 @@ interface ProfileStepProps {
     ageGroup: string;
     gender: string;
     hitokoto: string;
+    /** JIS X 0401 "01".."47" or null。未設定はそのまま null を維持する。 */
+    homePrefecture: string | null;
+    /** 0=完全非公開 / 1=マッチ相手のみ / 2=全体公開 */
+    locationVisibility: 0 | 1 | 2;
   };
   onComplete: (data: {
     nickname: string;
     ageGroup: string;
     gender: string;
     hitokoto: string;
+    homePrefecture: string | null;
+    locationVisibility: 0 | 1 | 2;
   }) => void;
 }
 
@@ -32,11 +39,46 @@ const GENDERS = [
   { value: "other", label: "その他" },
 ];
 
+const VISIBILITY_OPTIONS: Array<{
+  value: 0 | 1 | 2;
+  label: string;
+  hint: string;
+}> = [
+  {
+    value: 0,
+    label: "公開しない（デフォルト）",
+    hint: "誰にも参加県は見せません",
+  },
+  {
+    value: 1,
+    label: "すれちがった人にだけ見せる",
+    hint: "マッチ画面のバッジに表示されます",
+  },
+  {
+    value: 2,
+    label: "全体に公開する",
+    hint: "ゆっくり解説や地図ピンで会場に表示されます",
+  },
+];
+
+// インデックス + 1 をゼロパディングすれば "01".."47"。
+// Select の value に直接使うために事前計算しておく。
+const PREFECTURE_OPTIONS = PREFECTURE_NAMES.map((name, i) => ({
+  code: String(i + 1).padStart(2, "0"),
+  name,
+}));
+
 export default function ProfileStep({ initialData, onComplete }: ProfileStepProps) {
   const [nickname, setNickname] = useState(initialData.nickname);
   const [ageGroup, setAgeGroup] = useState(initialData.ageGroup);
   const [gender, setGender] = useState(initialData.gender);
   const [hitokoto, setHitokoto] = useState(initialData.hitokoto);
+  const [homePrefecture, setHomePrefecture] = useState<string | null>(
+    initialData.homePrefecture
+  );
+  const [locationVisibility, setLocationVisibility] = useState<0 | 1 | 2>(
+    initialData.locationVisibility
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   /**
@@ -65,6 +107,10 @@ export default function ProfileStep({ initialData, onComplete }: ProfileStepProp
           age_group: ageGroup,
           gender,
           hitokoto: hitokoto.trim(),
+          // CODEX-NEXT.md §1: 参加県は任意。未選択なら null を送って列を空に保つ。
+          home_prefecture: homePrefecture,
+          // 公開範囲は TINYINT（デフォルト 0 = 完全非公開）。
+          location_visibility: locationVisibility,
         }),
       });
 
@@ -77,6 +123,8 @@ export default function ProfileStep({ initialData, onComplete }: ProfileStepProp
         ageGroup,
         gender,
         hitokoto: hitokoto.trim(),
+        homePrefecture,
+        locationVisibility,
       });
     } catch (error) {
       console.error("Error saving profile:", error);
@@ -195,6 +243,64 @@ export default function ProfileStep({ initialData, onComplete }: ProfileStepProp
           ))}
         </select>
       </div>
+      </fieldset>
+
+      {/*
+        CODEX-NEXT.md §1「参加県と公開範囲」。
+        - デフォルトは完全非公開（locationVisibility = 0）。ユーザーが明示的に公開レベルを上げたときだけ表に出る。
+        - 県だけ選択して公開範囲を「公開しない」のまま残すのも可（DB に保存はされるが表には出ない）。
+      */}
+      <fieldset className={styles.formSection}>
+        <legend className={styles.formSectionTitle}>参加県（任意・デフォルト非公開）</legend>
+        <p className={styles.formSectionHint}>
+          超会議で「〇〇から来たんです」のきっかけに使える項目です。公開するかどうかは下のセレクトで選べます。
+        </p>
+
+        <div className={styles.formGroup}>
+          <label htmlFor="homePrefecture" className={styles.label}>
+            参加県
+          </label>
+          <select
+            id="homePrefecture"
+            value={homePrefecture ?? ""}
+            onChange={(e) => setHomePrefecture(e.target.value ? e.target.value : null)}
+            className={styles.select}
+            disabled={isSubmitting}
+          >
+            <option value="">選択しない</option>
+            {PREFECTURE_OPTIONS.map((p) => (
+              <option key={p.code} value={p.code}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className={styles.formGroup}>
+          <label htmlFor="locationVisibility" className={styles.label}>
+            公開範囲
+          </label>
+          <select
+            id="locationVisibility"
+            value={String(locationVisibility)}
+            onChange={(e) => {
+              const n = Number(e.target.value);
+              // 画面から来る値は 0/1/2 のいずれかだが念のため narrow する。
+              setLocationVisibility(n === 1 ? 1 : n === 2 ? 2 : 0);
+            }}
+            className={styles.select}
+            disabled={isSubmitting}
+          >
+            {VISIBILITY_OPTIONS.map((opt) => (
+              <option key={opt.value} value={String(opt.value)}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <p className={styles.helperText}>
+            {VISIBILITY_OPTIONS.find((o) => o.value === locationVisibility)?.hint}
+          </p>
+        </div>
       </fieldset>
 
       <fieldset className={styles.formSection}>

@@ -4,6 +4,7 @@ import {
   countYukkuriExplainedArchive,
   listYukkuriExplainedArchive,
 } from "@/lib/yukkuriExplainedArchive";
+import { prefectureCodeToName } from "@/lib/prefectureCodes";
 import styles from "./explained.module.css";
 
 export const dynamic = "force-dynamic";
@@ -104,39 +105,58 @@ export default async function YukkuriExplainedIndexPage({
       ) : (
         <>
           <ul className={styles.list}>
-            {rows.map((row) => (
-              <li key={row.x_handle}>
-                <Link
-                  href={`/yukkuri/explained/${encodeURIComponent(row.x_handle)}`}
-                  className={styles.cardLink}
-                >
-                  <div className={styles.cardTop}>
-                    <div className={styles.cardIdentity}>
-                      {row.avatar_url ? (
-                        <img
-                          src={row.avatar_url}
-                          alt=""
-                          className={styles.cardAvatar}
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      ) : (
-                        <span className={styles.cardAvatarFallback} aria-hidden="true">
-                          @{row.x_handle.slice(0, 1).toUpperCase()}
-                        </span>
-                      )}
-                      <span className={styles.cardHandle}>@{row.x_handle}</span>
+            {rows.map((row) => {
+              // CODEX-NEXT.md §2: 本人が公開レベル 2 のときだけ県名を出す。
+              // 公開レベル 0/1 の人は home_prefecture が API から NULL で返ってくるので prefName も null。
+              const prefName = prefectureCodeToName(row.home_prefecture ?? null);
+              return (
+                <li key={row.x_handle}>
+                  <Link
+                    href={`/yukkuri/explained/${encodeURIComponent(row.x_handle)}`}
+                    className={styles.cardLink}
+                  >
+                    <div className={styles.cardTop}>
+                      <div className={styles.cardIdentity}>
+                        {row.avatar_url ? (
+                          <img
+                            src={row.avatar_url}
+                            alt=""
+                            className={styles.cardAvatar}
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        ) : (
+                          <span className={styles.cardAvatarFallback} aria-hidden="true">
+                            @{row.x_handle.slice(0, 1).toUpperCase()}
+                          </span>
+                        )}
+                        <span className={styles.cardHandle}>@{row.x_handle}</span>
+                      </div>
+                      {row.display_name ? <span className={styles.cardName}>{row.display_name}</span> : null}
                     </div>
-                    {row.display_name ? <span className={styles.cardName}>{row.display_name}</span> : null}
-                  </div>
-                  <p className={styles.cardExcerpt}>{excerpt(row.rink)}</p>
-                  {/* LLM ソース名（openrouter / ollama 等）は運営デバッグ用途で、
-                      ユーザーに価値がないため表示しない。必要な場合は
-                      /api/admin/health/yukkuri で確認できる。 */}
-                  <div className={styles.cardMeta}>更新 {row.updated_at}</div>
-                </Link>
-              </li>
-            ))}
+                    {(row.is_surechigai_member || prefName) && (
+                      <div className={styles.cardBadgeRow}>
+                        {row.is_surechigai_member && (
+                          <span className={styles.surechigaiBadge}>
+                            📍 すれちがい参加中
+                          </span>
+                        )}
+                        {prefName && (
+                          <span className={styles.prefectureBadge}>
+                            🏠 {prefName}から
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <p className={styles.cardExcerpt}>{excerpt(row.rink)}</p>
+                    {/* LLM ソース名（openrouter / ollama 等）は運営デバッグ用途で、
+                        ユーザーに価値がないため表示しない。必要な場合は
+                        /api/admin/health/yukkuri で確認できる。 */}
+                    <div className={styles.cardMeta}>更新 {row.updated_at}</div>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
           {total > PAGE_LIMIT ? (
             <p className={styles.note}>

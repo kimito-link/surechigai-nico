@@ -12,11 +12,21 @@ import CompleteStep from "./steps/CompleteStep";
 
 type Step = "init" | "profile" | "location" | "avatar" | "complete";
 
-const defaultProfile = {
+const defaultProfile: {
+  nickname: string;
+  ageGroup: string;
+  gender: string;
+  hitokoto: string;
+  homePrefecture: string | null;
+  locationVisibility: 0 | 1 | 2;
+} = {
   nickname: "",
   ageGroup: "unset",
   gender: "unset",
   hitokoto: "",
+  // CODEX-NEXT.md §1 の初期値。デフォルト非公開で DB 側 TINYINT DEFAULT 0 と整合。
+  homePrefecture: null,
+  locationVisibility: 0,
 };
 
 export default function OnboardingPage() {

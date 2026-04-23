@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getYukkuriExplainedArchive } from "@/lib/yukkuriExplainedArchive";
+import { prefectureCodeToName } from "@/lib/prefectureCodes";
 import { yukkuriOgImageUrl } from "@/lib/yukkuriShareUrls";
 import { YukkuriExplainedShareRow } from "../YukkuriExplainedShareRow";
 import styles from "../explained.module.css";
@@ -73,6 +74,9 @@ export default async function YukkuriExplainedDetailPage({
   const row = await getYukkuriExplainedArchive(decoded);
   if (!row) notFound();
 
+  // CODEX-NEXT.md §2: users.location_visibility >= 2 のときだけ home_prefecture が返る。
+  const prefName = prefectureCodeToName(row.home_prefecture ?? null);
+
   return (
     <main className={styles.detailShell}>
       <header className={styles.detailHeader}>
@@ -102,6 +106,16 @@ export default async function YukkuriExplainedDetailPage({
         {row.display_name ? (
           <p className={styles.detailSub}>{row.display_name}</p>
         ) : null}
+        {(row.is_surechigai_member || prefName) && (
+          <div className={styles.detailBadgeRow}>
+            {row.is_surechigai_member && (
+              <span className={styles.surechigaiBadge}>📍 すれちがい参加中</span>
+            )}
+            {prefName && (
+              <span className={styles.prefectureBadge}>🏠 {prefName}から</span>
+            )}
+          </div>
+        )}
       </header>
 
       <section className={styles.dialogueBlock} aria-label="ゆっくり解説の本文">
