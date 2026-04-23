@@ -180,131 +180,150 @@ async function callOpenRouter(
 }
 
 export async function POST(req: NextRequest) {
-  // 1) body parse
-  let body: { tweetUrl?: string };
+  // 全体を try/catch で囲って、想定外例外でも JSON を返すようにする。
+  // ここが throw すると Next.js が HTML の 500 を返し、クライアントの
+  // `res.json()` が落ちて `E_TWEET_EXPLAIN_CLIENT_BAD_SHAPE` になる。
+  // ハンドル版 (/api/yukkuri-explain) と同じく「どの経路でも JSON エラー」を保証する。
   try {
-    body = (await req.json()) as typeof body;
-  } catch {
-    return NextResponse.json(
-      { error: "JSON 本文が不正です", error_code: "E_TWEET_EXPLAIN_BAD_JSON" },
-      { status: 400 }
-    );
-  }
-  const tweetUrl = body.tweetUrl?.trim();
-  if (!tweetUrl) {
-    return NextResponse.json(
-      { error: "tweetUrl が空です", error_code: "E_TWEET_EXPLAIN_NO_URL" },
-      { status: 400 }
-    );
-  }
-
-  // 2) URL パース
-  const parsed = extractTweetId(tweetUrl);
-  if (!parsed) {
-    return NextResponse.json(
-      {
-        error:
-          "ツイート URL を認識できませんでした（例: https://x.com/username/status/1234567890）",
-        error_code: "E_TWEET_EXPLAIN_BAD_URL",
-      },
-      { status: 400 }
-    );
-  }
-
-  // 3) X API でツイート + 投稿者取得
-  const bearerToken = process.env.TWITTER_BEARER_TOKEN?.trim();
-  if (!bearerToken) {
-    return NextResponse.json(
-      {
-        error:
-          "X API が設定されていないため、このツイート解説機能は一時的に使用できません（運営にご連絡ください）。",
-        error_code: "E_TWEET_EXPLAIN_NO_BEARER",
-      },
-      { status: 503 }
-    );
-  }
-  const tweet = await fetchXTweetWithAuthor(parsed.tweetId, bearerToken);
-  if (!tweet) {
-    return NextResponse.json(
-      {
-        error:
-          "このツイートを取得できませんでした（削除済み・非公開アカウント・URL の打ち間違い等をご確認ください）。",
-        error_code: "E_TWEET_EXPLAIN_TWEET_NOT_FOUND",
-      },
-      { status: 404 }
-    );
-  }
-
-  // 4) LLM 呼び出し（OpenRouter のモデルを順に試す。1 つ成功で終わり）
-  const openRouterKey = process.env.OPENROUTER_API_KEY?.trim();
-  if (!openRouterKey) {
-    return NextResponse.json(
-      {
-        error: "解説 AI が設定されていません（運営にご連絡ください）。",
-        error_code: "E_TWEET_EXPLAIN_NO_LLM",
-      },
-      { status: 503 }
-    );
-  }
-
-  const userMessage = buildUserMessage(tweet);
-  const failures: string[] = [];
-  let dialogue: Dialogue | null = null;
-  let usedModel: string | null = null;
-
-  for (const model of MODELS) {
-    const r = await callOpenRouter(openRouterKey, model, userMessage, PER_MODEL_TIMEOUT_MS);
-    if (!r.ok) {
-      failures.push(r.message);
-      // 401/402 は他モデルでも直らないので打ち切り
-      if (r.status === 401 || r.status === 402) break;
-      continue;
+    // 1) body parse
+    let body: { tweetUrl?: string };
+    try {
+      body = (await req.json()) as typeof body;
+    } catch {
+      return NextResponse.json(
+        { error: "JSON 本文が不正です", error_code: "E_TWEET_EXPLAIN_BAD_JSON" },
+        { status: 400 }
+      );
     }
-    const parsedDialogue = extractDialogue(r.text);
-    if (parsedDialogue) {
-      dialogue = clampYukkuriDialogue(parsedDialogue);
-      usedModel = model;
-      break;
+    const tweetUrl = body.tweetUrl?.trim();
+    if (!tweetUrl) {
+      return NextResponse.json(
+        { error: "tweetUrl が空です", error_code: "E_TWEET_EXPLAIN_NO_URL" },
+        { status: 400 }
+      );
     }
-    failures.push(`openrouter ${model} parse_failed`);
-  }
 
-  if (!dialogue || !usedModel) {
-    console.warn(
-      `[yukkuri-explain-tweet] all models failed tweetId=${parsed.tweetId} failures=${JSON.stringify(failures).slice(0, 400)}`
-    );
+    // 2) URL パース
+    const parsed = extractTweetId(tweetUrl);
+    if (!parsed) {
+      return NextResponse.json(
+        {
+          error:
+            "ツイート URL を認識できませんでした（例: https://x.com/username/status/1234567890）",
+          error_code: "E_TWEET_EXPLAIN_BAD_URL",
+        },
+        { status: 400 }
+      );
+    }
+
+    // 3) X API でツイート + 投稿者取得
+    const bearerToken = process.env.TWITTER_BEARER_TOKEN?.trim();
+    if (!bearerToken) {
+      return NextResponse.json(
+        {
+          error:
+            "X API が設定されていないため、このツイート解説機能は一時的に使用できません（運営にご連絡ください）。",
+          error_code: "E_TWEET_EXPLAIN_NO_BEARER",
+        },
+        { status: 503 }
+      );
+    }
+    const tweet = await fetchXTweetWithAuthor(parsed.tweetId, bearerToken);
+    if (!tweet) {
+      return NextResponse.json(
+        {
+          error:
+            "このツイートを取得できませんでした（削除済み・非公開アカウント・URL の打ち間違い等をご確認ください）。",
+          error_code: "E_TWEET_EXPLAIN_TWEET_NOT_FOUND",
+        },
+        { status: 404 }
+      );
+    }
+
+    // 4) LLM 呼び出し（OpenRouter のモデルを順に試す。1 つ成功で終わり）
+    const openRouterKey = process.env.OPENROUTER_API_KEY?.trim();
+    if (!openRouterKey) {
+      return NextResponse.json(
+        {
+          error: "解説 AI が設定されていません（運営にご連絡ください）。",
+          error_code: "E_TWEET_EXPLAIN_NO_LLM",
+        },
+        { status: 503 }
+      );
+    }
+
+    const userMessage = buildUserMessage(tweet);
+    const failures: string[] = [];
+    let dialogue: Dialogue | null = null;
+    let usedModel: string | null = null;
+
+    for (const model of MODELS) {
+      const r = await callOpenRouter(openRouterKey, model, userMessage, PER_MODEL_TIMEOUT_MS);
+      if (!r.ok) {
+        failures.push(r.message);
+        // 401/402 は他モデルでも直らないので打ち切り
+        if (r.status === 401 || r.status === 402) break;
+        continue;
+      }
+      const parsedDialogue = extractDialogue(r.text);
+      if (parsedDialogue) {
+        dialogue = clampYukkuriDialogue(parsedDialogue);
+        usedModel = model;
+        break;
+      }
+      failures.push(`openrouter ${model} parse_failed`);
+    }
+
+    if (!dialogue || !usedModel) {
+      console.warn(
+        `[yukkuri-explain-tweet] all models failed tweetId=${parsed.tweetId} failures=${JSON.stringify(failures).slice(0, 400)}`
+      );
+      return NextResponse.json(
+        {
+          error:
+            "ツイート解説の生成に失敗しました。しばらくしてからもう一度お試しください。",
+          error_code: "E_TWEET_EXPLAIN_LLM_FAILED",
+        },
+        { status: 503 }
+      );
+    }
+
+    // 5) 保存（テーブル未作成なら握りつぶす）
+    await upsertYukkuriExplainedTweet({
+      tweetId: tweet.tweetId,
+      xHandle: tweet.author.username,
+      authorDisplayName: tweet.author.name,
+      authorAvatarUrl: tweet.author.profileImageUrl,
+      tweetText: tweet.text,
+      tweetedAt: tweet.createdAt ?? null,
+      rink: dialogue.rink,
+      konta: dialogue.konta,
+      tanunee: dialogue.tanunee,
+      source: "openrouter",
+    });
+
+    return NextResponse.json({
+      ...dialogue,
+      tweet: {
+        id: tweet.tweetId,
+        handle: tweet.author.username,
+        displayName: tweet.author.name,
+        avatarUrl: tweet.author.profileImageUrl,
+        text: tweet.text,
+      },
+    });
+  } catch (err) {
+    // fetchXTweetWithAuthor の内部 fetch エラー（DNS 失敗・TLS 障害・
+    // 予期せぬ JSON 構造）など、上の個別ブランチで拾い切れない例外。
+    // スタックはログに残すが、クライアントへは整形した JSON を返す。
+    console.error("[yukkuri-explain-tweet] unhandled exception", err);
     return NextResponse.json(
       {
         error:
-          "ツイート解説の生成に失敗しました。しばらくしてからもう一度お試しください。",
-        error_code: "E_TWEET_EXPLAIN_LLM_FAILED",
+          "ツイート解説でサーバ内部エラーが発生しました。少し待ってから再試行してください。",
+        error_code: "E_TWEET_EXPLAIN_UNHANDLED",
       },
-      { status: 503 }
+      { status: 500 }
     );
   }
-
-  // 5) 保存（テーブル未作成なら握りつぶす）
-  await upsertYukkuriExplainedTweet({
-    tweetId: tweet.tweetId,
-    xHandle: tweet.author.username,
-    authorDisplayName: tweet.author.name,
-    authorAvatarUrl: tweet.author.profileImageUrl,
-    tweetText: tweet.text,
-    tweetedAt: tweet.createdAt ?? null,
-    rink: dialogue.rink,
-    konta: dialogue.konta,
-    tanunee: dialogue.tanunee,
-    source: "openrouter",
-  });
-
-  return NextResponse.json({
-    ...dialogue,
-    tweet: {
-      id: tweet.tweetId,
-      handle: tweet.author.username,
-      displayName: tweet.author.name,
-      avatarUrl: tweet.author.profileImageUrl,
-      text: tweet.text,
-    },
-  });
 }
