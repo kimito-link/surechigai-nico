@@ -214,9 +214,13 @@ async function runBackfill(req: NextRequest, dryRun: boolean) {
 }
 
 export async function GET(req: NextRequest) {
-  const unauth = requireAdminAuth(req);
-  if (unauth) return unauth;
-  return runBackfill(req, /* dryRun */ true);
+  const isVercelCron = req.headers.get("x-vercel-cron") != null;
+  if (!isVercelCron) {
+    const unauth = requireAdminAuth(req);
+    if (unauth) return unauth;
+  }
+  const isCron = req.nextUrl.searchParams.get("cron") === "1";
+  return runBackfill(req, /* dryRun */ !isCron);
 }
 
 export async function POST(req: NextRequest) {
