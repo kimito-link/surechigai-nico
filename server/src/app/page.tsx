@@ -54,7 +54,9 @@ export default function Home() {
           <HeroStats />
         </Suspense>
       </div>
-      <YukkuriHero />
+      <div className={styles.homeYukkuriHeroWrap}>
+        <YukkuriHero />
+      </div>
       <header className={styles.hero}>
         <div className={styles.heroInner}>
           <div className={styles.heroCopy}>

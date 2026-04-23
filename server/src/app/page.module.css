@@ -142,6 +142,21 @@
   }
 }
 
+/*
+ * 解説オーバーレイ（YukkuriHero .charsTalking）が fixed で覆う範囲のオフセット用。
+ * page.tsx の .homeYukkuriHeroWrap で上書きする。
+ */
+.homeYukkuriHeroWrap {
+  --yukkuri-overlay-extra-top: 56px;
+}
+
+@media (max-width: 600px) {
+  .homeYukkuriHeroWrap {
+    /* チップが 2 行に折り返す幅でもバンド全体がオーバーレイに入らないよう多めに */
+    --yukkuri-overlay-extra-top: 80px;
+  }
+}
+
 /* ページ最上部の統計バンド：ファーストビューで必ず見えるよう固定高さで圧縮表示 */
 .heroStatsBand {
   position: relative;

@@ -93,7 +93,8 @@
  * どの画面サイズでも吹き出し+アクションだけに集中できる見た目にする。 */
 .charsTalking {
   position: fixed;
-  top: var(--layout-header-h, 64px);
+  /* ホームでは親に --yukkuri-overlay-extra-top（統計バンド分）を足して、チップが隠れないようにする */
+  top: calc(var(--layout-header-h, 64px) + var(--yukkuri-overlay-extra-top, 0px));
   left: 0;
   right: 0;
   bottom: 0;
