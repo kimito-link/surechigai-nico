@@ -2505,6 +2505,12 @@ details[open] .detailMapSummary::before {
   font-weight: 700;
 }
 
+/* Special Thanks 直下のりんく一言（CharacterTip の余白をセクションに合わせる） */
+.footerThanksRinkTip {
+  margin: 0.15rem 0 0.9rem !important;
+  max-width: min(38rem, 100%);
+}
+
 .footerThanksList {
   display: flex;
   flex-wrap: wrap;

@@ -31,6 +31,7 @@ import {
   MAP_SCHEMATIC_TITLE,
   MAP_SECTION_INTRO,
   MAP_SECTION_TITLE,
+  RINK_FOLLOWERS_THANKS_MESSAGE,
   USAGE_FOOTNOTE,
   USAGE_SECTION_HEADING_ID,
   USAGE_SECTION_INTRO,
@@ -600,6 +601,11 @@ export default function ChokaigiPage() {
             <p className={styles.footerThanksIntro}>
               本企画にご協力いただいたみなさまを、ひとりずつご紹介します。
             </p>
+            <CharacterTip
+              character="rink"
+              message={RINK_FOLLOWERS_THANKS_MESSAGE}
+              className={styles.footerThanksRinkTip}
+            />
 
             {SPECIAL_THANKS_HIGHLIGHT_PROFILES.length > 0 ? (
               <div className={styles.thanksHighlight}>

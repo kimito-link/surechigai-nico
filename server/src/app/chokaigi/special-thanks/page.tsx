@@ -1,12 +1,14 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import styles from "../chokaigi.module.css";
+import { CharacterTip } from "../CharacterTip";
 import {
   SPECIAL_THANKS_PROFILES,
   SPECIAL_THANKS_POKKURI_X_HREF,
   SPECIAL_THANKS_X_ONLY,
   SPECIAL_THANKS_YURIPON_X_HREF,
 } from "../special-thanks-links";
+import { RINK_FOLLOWERS_THANKS_MESSAGE } from "../lp-content";
 import { PokkuriThanksXListItem } from "../PokkuriThanksXListItem";
 import { YuriponThanksXListItem } from "../YuriponThanksXListItem";
 import { THIRD_PARTY_CREDITS } from "../third-party-credits";
@@ -117,6 +119,11 @@ export default function SpecialThanksPage() {
               >
                 X でご応援いただいているみなさま
               </h2>
+              <CharacterTip
+                character="rink"
+                message={RINK_FOLLOWERS_THANKS_MESSAGE}
+                className={styles.footerThanksRinkTip}
+              />
               <ul className={styles.footerThanksList}>
                 {SPECIAL_THANKS_X_ONLY.map((link) =>
                   link.href === SPECIAL_THANKS_YURIPON_X_HREF ? (

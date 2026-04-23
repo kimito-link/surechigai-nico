@@ -255,6 +255,10 @@ export const HOME_HERO_LEAD =
 export const AUTH_LESS_FIRST_COPY =
   "ログインなしでゆっくり解説や会場ガイドも試せます。すれ違い通信は企画の核で、参加登録と位置送信でみんなと位置を交換し、近くとマッチ。Xでいいねやオフ会のきっかけにも（登録・送信はログイン後）。";
 
+/** Special Thanks 付近：フォロー・応援への感謝（りんくの吹き出し） */
+export const RINK_FOLLOWERS_THANKS_MESSAGE =
+  "フォローしてくれてるみんな、応援いつも本当にありがとう。やることが多すぎて間に合ってないだけで、ちゃんと気にしてないわけじゃないから、気長に見守っててほしいな。";
+
 /** ルート / の短い要約（詳細は /chokaigi へ） */
 export const HOME_USAGE_SECTION_TITLE = "すれ違い通信のひとこと";
 
