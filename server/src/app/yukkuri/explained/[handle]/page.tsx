@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getYukkuriExplainedArchive } from "@/lib/yukkuriExplainedArchive";
 import { yukkuriOgImageUrl } from "@/lib/yukkuriShareUrls";
-import { YukkuriShareVoice } from "@/app/yukkuri/YukkuriShareVoice";
 import { YukkuriExplainedShareRow } from "../YukkuriExplainedShareRow";
 import styles from "../explained.module.css";
 
@@ -106,27 +105,33 @@ export default async function YukkuriExplainedDetailPage({
       <section className={styles.dialogueBlock} aria-label="ゆっくり解説の本文">
         {(
           [
-            ["りんく", row.rink, styles.badgeRink],
-            ["こん太", row.konta, styles.badgeKonta],
-            ["たぬ姉", row.tanunee, styles.badgeTanunee],
+            ["りんく", row.rink, styles.badgeRink, "/chokaigi/yukkuri/rink.png"],
+            ["こん太", row.konta, styles.badgeKonta, "/chokaigi/yukkuri/konta.png"],
+            ["たぬ姉", row.tanunee, styles.badgeTanunee, "/chokaigi/yukkuri/tanunee.png"],
           ] as const
-        ).map(([label, text, badgeClass]) => (
+        ).map(([label, text, badgeClass, avatar]) => (
           <div key={label} className={styles.dialogueRow}>
-            <span className={badgeClass}>{label}</span>
-            <p className={styles.bubble}>{text}</p>
+            {/* キャラアイコン（48×48 円形）: バッジだけでは誰が喋っているか分かりづらいので、
+                LP の YukkuriHero と同じ 3 キャラの PNG をアーカイブにも揃える。 */}
+            <img
+              src={avatar}
+              alt=""
+              className={styles.charAvatar}
+              width={48}
+              height={48}
+              loading="lazy"
+              decoding="async"
+            />
+            <div className={styles.charColumn}>
+              <span className={badgeClass}>{label}</span>
+              <p className={styles.bubble}>{text}</p>
+            </div>
           </div>
         ))}
         {row.source ? (
           <p className={styles.sourceNote}>保存時ソース: {row.source}</p>
         ) : null}
       </section>
-
-      {/*
-        保存ページから音声再生できるようにする。
-        VOICEVOX_BASE_URL 未設定時はブラウザ音声フォールバックボタンが出る。
-        autoPlay はしない（ユーザー操作で再生）。
-      */}
-      <YukkuriShareVoice rink={row.rink} konta={row.konta} tanunee={row.tanunee} />
 
       <YukkuriExplainedShareRow handle={row.x_handle} />
 

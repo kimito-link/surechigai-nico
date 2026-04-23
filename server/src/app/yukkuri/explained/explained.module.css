@@ -290,11 +290,32 @@
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .dialogueRow:last-child {
   margin-bottom: 0;
+}
+
+/* キャラアイコン（48×48 円形）。LP の YukkuriHero と統一感を出すため
+   白の半透明ボーダーでダーク背景に浮かせる。 */
+.charAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* キャラアイコンの右側：ラベル（バッジ）とバブルを縦に積む。 */
+.charColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
 }
 
 .badgeRink {
