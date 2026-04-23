@@ -284,15 +284,7 @@ export default function ChokaigiPage() {
               </div>
             </div>
 
-            <YukkuriIntroLink
-              id="kimito-tsuioku-kirameki"
-              href={TSUIOKU_NO_KIRAMEKI_LP_HREF}
-              className={styles.featureCard}
-              title={TSUIOKU_NO_KIRAMEKI_DIALOGUE.title}
-              lines={TSUIOKU_NO_KIRAMEKI_DIALOGUE.lines}
-              ctaLabel={TSUIOKU_NO_KIRAMEKI_DIALOGUE.ctaLabel}
-              ctaHref={TSUIOKU_NO_KIRAMEKI_DIALOGUE.ctaHref}
-            >
+            <a href="/chokaigi#kimito-tsuioku-kirameki" className={styles.featureCard}>
               <span className={styles.featureIcon} aria-hidden="true">
                 ✨
               </span>
@@ -301,12 +293,12 @@ export default function ChokaigiPage() {
                   追憶の煌めき（君斗リンク工房）
                 </h3>
                 <p className={styles.featureDesc}>
-                  ニコ生の応援コメントを<strong>このPCに記録</strong>する Chrome 拡張。
-                  <strong>HTML 保存</strong>や<strong>マーケ分析用 .html のダウンロード</strong>まで公式LPにまとまっているよ——まずは3人のゆっくり解説で全体像をつかんでから飛べるカード。
+                  ニコ生コメント記録の Chrome 拡張。概要・ゆっくり長尺解説・公式LPへの導線は、
+                  <strong>下のひとかたまりの専用ブロック</strong>にまとめてあります。
                 </p>
-                <span className={styles.featureCta}>ゆっくり紹介を見る →</span>
+                <span className={styles.featureCta}>専用ブロックへジャンプ →</span>
               </div>
-            </YukkuriIntroLink>
+            </a>
 
             <a href="/chokaigi#venue-tour-3d-heading" className={styles.featureCard}>
               <span className={styles.featureIcon} aria-hidden="true">
@@ -411,6 +403,69 @@ export default function ChokaigiPage() {
           <CharacterTip
             character="tanunee"
             message="機能は全部「超会議を楽しんでもらう」ための道具なのだー。気負わずに、好きなものだけつまんで使ってくれたらうれしいのだー。"
+            position="right"
+          />
+        </section>
+
+        <section
+          id="kimito-tsuioku-kirameki"
+          className={`${styles.section} ${styles.kimitoKiramekiSection}`}
+          aria-labelledby="kimito-tsuioku-kirameki-heading"
+        >
+          <h2 id="kimito-tsuioku-kirameki-heading">
+            君斗りんくの追憶の煌めき
+            <span className={styles.kimitoKiramekiSubtitle}>(きらめき)</span>
+          </h2>
+          <p className={styles.sectionLead}>
+            このブロックは、君斗リンク工房のプロダクト「追憶の煌めき」を
+            <strong>ひとつの大きなコンテンツ</strong>としてまとめたコーナーです（このすれちがいライト本体の機能とは別レーン）。
+            ニコニコ生放送の視聴ページから応援コメントを手元に残す Chrome 拡張で、公式サイトでは記録の考え方・HTML 保存・マーケ分析・試用までが章でつながっています。
+          </p>
+          <CharacterTip
+            character="rink"
+            message="まずは下の白い箱のなかを上から順に見てもらえると、全体の地図が頭に入りやすいよ。長いゆっくりは、コーヒーでも飲みながらで大丈夫。"
+          />
+          <div className={styles.kimitoKiramekiPanel}>
+            <p className={styles.kimitoKiramekiPanelLead}>
+              公式 LP（tsuioku-no-kirameki.com）では、たとえば次のようなテーマが章として用意されています。
+              用語の定義や画面の見え方は、そちらの本文が正です。
+            </p>
+            <ul className={styles.tipList}>
+              <li>記録の安定性・改善の透明性・七夕プレビューなど、設計の考え方</li>
+              <li>HTML 保存、配信マーケ分析、分析ページの .html ダウンロード</li>
+              <li>拡張の見え方、コメント／音声コメント、Identicon まわり</li>
+              <li>導入・試用の手順（環境によっては Chrome ウェブストア経由）</li>
+            </ul>
+            <YukkuriIntroLink
+              href={TSUIOKU_NO_KIRAMEKI_LP_HREF}
+              className={`${styles.featureCard} ${styles.kimitoKiramekiYukkuriCard}`}
+              title={TSUIOKU_NO_KIRAMEKI_DIALOGUE.title}
+              lines={TSUIOKU_NO_KIRAMEKI_DIALOGUE.lines}
+              ctaLabel={TSUIOKU_NO_KIRAMEKI_DIALOGUE.ctaLabel}
+              ctaHref={TSUIOKU_NO_KIRAMEKI_DIALOGUE.ctaHref}
+            >
+              <span className={styles.featureIcon} aria-hidden="true">
+                ✨
+              </span>
+              <div className={styles.featureBody}>
+                <h3 className={styles.featureTitle}>
+                  ゆっくり解説（長め）を開いてから公式へ
+                </h3>
+                <p className={styles.featureDesc}>
+                  <strong>りんく・こん太・たぬ姉</strong>の掛け合いで、拡張の位置づけと公式 LP の読み方まで話します。
+                  終わったあとのオレンジのボタンから、本家サイトへ飛べます。
+                </p>
+                <span className={styles.featureCta}>モーダルで解説を読む →</span>
+              </div>
+            </YukkuriIntroLink>
+            <p className={styles.mapFinePrint}>
+              仕様・価格・対応環境の最終確認は、必ず公式サイトの表示に従ってください。
+              他配信プラットフォーム対応などのロードマップ表現も、公式の最新情報が優先です。
+            </p>
+          </div>
+          <CharacterTip
+            character="tanunee"
+            message="ハンバーガーメニューの『追憶の煌めき』からも、このブロックに直行できるのだー。機能一覧のカードからもジャンプできるのだ。"
             position="right"
           />
         </section>

@@ -10,7 +10,8 @@
 
 /* サイト固定ヘッダー + chokaigi Sticky X バー分（hash / 共有 URL の着地位置） */
 .pageRoot :where(h1, h2, h3, h4)[id],
-.pageRoot a.featureCard[id] {
+.pageRoot a.featureCard[id],
+.pageRoot section[id] {
   scroll-margin-top: calc(var(--layout-header-h, 64px) + var(--layout-sticky-x-h, 52px) + 12px);
 }
 
@@ -714,6 +715,55 @@ a.featureCard:focus-visible {
   background: rgba(248, 245, 240, 0.8);
   border: 1px solid rgba(26, 88, 152, 0.1);
   box-shadow: inset 0 3px 0 0 #2a78d8, 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* 君斗リンク工房「追憶の煌めき」：LP とは別レーンの、ひとかたまりの紹介ブロック */
+.shell article .section.kimitoKiramekiSection {
+  background: linear-gradient(
+    165deg,
+    rgba(255, 252, 247, 0.98) 0%,
+    rgba(255, 243, 230, 0.92) 100%
+  );
+  border: 1px solid rgba(227, 140, 30, 0.28);
+  box-shadow:
+    inset 0 3px 0 0 #e3500a,
+    0 6px 22px rgba(221, 101, 0, 0.09);
+  border-radius: 1rem;
+  padding-inline: clamp(0.75rem, 3vw, 1.25rem);
+  padding-block: clamp(1rem, 3vw, 1.35rem);
+}
+
+.kimitoKiramekiSubtitle {
+  display: inline;
+  font-size: 0.72em;
+  font-weight: 700;
+  color: #b35500;
+  -webkit-text-fill-color: #b35500;
+  background: none;
+  margin-left: 0.15em;
+}
+
+.kimitoKiramekiPanel {
+  margin-top: 0.35rem;
+  padding: clamp(1rem, 3.2vw, 1.6rem);
+  border-radius: 1rem;
+  background: #fff;
+  border: 1.5px solid rgba(227, 140, 30, 0.22);
+  box-shadow: 0 4px 16px rgba(221, 101, 0, 0.07);
+  min-width: 0;
+}
+
+.kimitoKiramekiPanelLead {
+  margin: 0 0 0.85rem;
+  font-size: clamp(0.9rem, 2.4vw, 1rem);
+  line-height: 1.7;
+  color: #5c4a3d;
+}
+
+.kimitoKiramekiYukkuriCard {
+  width: 100%;
+  margin-top: 0.25rem;
+  box-sizing: border-box;
 }
 
 .section h2 {
