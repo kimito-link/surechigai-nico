@@ -150,6 +150,24 @@ MySQL 8.0+ が必須(SPATIAL INDEX、ST_Distance_Sphere使用)。
 
 初期構築は `server/scripts/init-db.sql` を実行。
 
+### スキーマのアップデート（本番 / Railway MySQL）
+
+超会議関連の付加テーブル（`locations` の SPATIAL、`blocks`、`yukkuri_explained`、
+`yukkuri_explained_tweet` 等）と、既存テーブルへの idempotent な ADD COLUMN /
+`CONVERT TO utf8mb4` は `server/scripts/ensure-chokaigi-tables.sql` に集約。
+
+**Vercel デプロイ時に自動適用される**:
+`server/package.json` の `build` が `next build` の前に
+`node -r dotenv/config scripts/ensure-chokaigi-tables.mjs` を呼ぶ。
+Vercel の Build 用 Env に `MYSQL_PUBLIC_URL`（または `DATABASE_URL` 等）が
+入っていれば DDL が流れ、無ければ graceful skip で build は継続する。
+
+手元で明示的に流したい場合は `npm run db:ensure:chokaigi`
+（`server/.env.local` に `MYSQL_PUBLIC_URL=mysql://...` が必要）。
+
+SQL は冪等化（`CREATE TABLE IF NOT EXISTS` / `ALTER TABLE ... CONVERT TO ...` /
+information_schema を見て ADD COLUMN）で書くのが規約。
+
 ---
 
 ## セットアップ手順

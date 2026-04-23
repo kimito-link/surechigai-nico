@@ -1,8 +1,21 @@
 /**
- * 本番 Railway MySQL に locations / blocks を「無ければ作る」
+ * 本番 Railway MySQL に「すれちがいライト関連テーブル」を idempotent に作成・更新する。
  *
- * - Vercel の `next build` の前に走らせる（package.json の build）。接続情報が無ければスキップ。
- * - 手元で明示実行: `npm run db:ensure:chokaigi`（.env に mysql:// が無いと失敗）
+ * 呼ばれる経路:
+ * - **Vercel build**: `package.json` の `build` スクリプトが `next build` の前にこれを呼ぶ。
+ *   接続情報（MYSQL_PUBLIC_URL / DATABASE_URL 等）が Build スコープの Env に入っていれば
+ *   自動で DDL 反映、入っていなければ「skip」ログを出して build を継続（= fail しない）。
+ *   これにより `git push` → Vercel デプロイだけで DB スキーマが同期される。
+ * - **手元で明示実行**: `npm run db:ensure:chokaigi`。
+ *   こちらは接続情報が無いと明示的に失敗 (`process.exit(1)`) する。
+ *   ローカルから Railway へ当てたいときは `server/.env.local` に `MYSQL_PUBLIC_URL=mysql://...`
+ *   を一時的に入れて走らせる運用。
+ *
+ * スキーマ変更の方針:
+ * - 既存 DB を壊さないため、全ての DDL は idempotent にする
+ *   （CREATE TABLE IF NOT EXISTS / ALTER TABLE … CONVERT TO / information_schema 確認付き ADD COLUMN）。
+ * - 将来 schema migrations の versioning が必要になったら、別途 `migrations/NNN_*.sql` +
+ *   `schema_migrations` テーブルで管理する案に切り替える。現状は規模的に不要。
  */
 import fs from "node:fs";
 import path from "node:path";
