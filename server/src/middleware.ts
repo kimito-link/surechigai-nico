@@ -54,6 +54,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/yukkuri-explain",
   "/api/og(.*)",
   "/api/health/db",
+  "/api/health/yukkuri",
   /**
    * Bearer uuid: は各 API 内の requireAuth / authenticateRequest で検証する。
    * Clerk の protect() を通すとセッション無しで 401/リダイレクトになり失敗するため public。
