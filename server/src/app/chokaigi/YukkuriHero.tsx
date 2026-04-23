@@ -8,7 +8,7 @@ import { useUser } from "@clerk/nextjs";
 import type { YukkuriDialogue } from "@/lib/yukkuriExplainClient";
 import { useYukkuriExplain } from "@/lib/useYukkuriExplain";
 import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
-import { yukkuriExplainedPagePath, yukkuriExplainedPageUrl } from "@/lib/yukkuriShareUrls";
+import { yukkuriExplainedPagePath, yukkuriShareTweetUrl } from "@/lib/yukkuriShareUrls";
 import { AUTH_LESS_FIRST_COPY } from "./lp-content";
 import { ChokaigiConceptBanner } from "./ChokaigiConceptBanner";
 import styles from "./YukkuriHero.module.css";
@@ -24,9 +24,7 @@ const CHARS = [
 const BASE_URL = "https://surechigai-nico.link";
 
 function buildTweetUrl(handle: string) {
-  const cardUrl = yukkuriExplainedPageUrl(BASE_URL, handle);
-  const text = `りんく・こん太・たぬ姉に @${handle} さんをゆっくり解説してもらったよ！\n#すれちがいライト #ニコニコ超会議2026\n${cardUrl}`;
-  return `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
+  return yukkuriShareTweetUrl(BASE_URL, handle);
 }
 
 export function YukkuriHero() {

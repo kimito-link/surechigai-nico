@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { yukkuriExplainedPageUrl } from "@/lib/yukkuriShareUrls";
+import { yukkuriExplainedPageUrl, yukkuriShareTweetUrl } from "@/lib/yukkuriShareUrls";
 import styles from "./explained.module.css";
 
 type Props = { handle: string };
@@ -15,9 +15,7 @@ function siteBase(): string {
 
 /** ツイート本文に載せるのはアカウント別の保存ページ（OG はそのページの metadata） */
 function buildTweetUrl(handle: string) {
-  const cardUrl = yukkuriExplainedPageUrl(siteBase(), handle);
-  const text = `りんく・こん太・たぬ姉に @${handle} さんをゆっくり解説してもらったよ！\n#すれちがいライト #ニコニコ超会議2026\n${cardUrl}`;
-  return `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
+  return yukkuriShareTweetUrl(siteBase(), handle);
 }
 
 export function YukkuriExplainedShareRow({ handle }: Props) {

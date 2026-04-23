@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import type { YukkuriDialogue } from "@/lib/yukkuriExplainClient";
 import { useYukkuriExplain } from "@/lib/useYukkuriExplain";
 import { YukkuriVoicePlayer } from "@/app/components/YukkuriVoicePlayer";
-import { yukkuriExplainedPagePath, yukkuriExplainedPageUrl } from "@/lib/yukkuriShareUrls";
+import { yukkuriExplainedPagePath, yukkuriShareTweetUrl } from "@/lib/yukkuriShareUrls";
 import styles from "./chokaigi.module.css";
 
 type Dialogue = YukkuriDialogue;
@@ -20,9 +20,7 @@ const CHARS: Array<{ key: keyof Dialogue; label: string; speaker: "rink" | "kont
 const BASE_URL = "https://surechigai-nico.link";
 
 function buildTweetUrl(handle: string): string {
-  const cardUrl = yukkuriExplainedPageUrl(BASE_URL, handle);
-  const text = `りんく・こん太・たぬ姉に @${handle} さんをゆっくり解説してもらったよ！\n#すれちがいライト #ニコニコ超会議2026\n${cardUrl}`;
-  return `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
+  return yukkuriShareTweetUrl(BASE_URL, handle);
 }
 
 function collectFocusables(root: HTMLElement | null): HTMLElement[] {
