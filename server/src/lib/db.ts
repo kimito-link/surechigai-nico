@@ -104,6 +104,14 @@ const poolOptions: mysql.PoolOptions = {
   connectTimeout: 20_000,
   timezone: "+09:00",
   enableKeepAlive: true,
+  /**
+   * 明示しないと mysql2 は `UTF8_GENERAL_CI`（= utf8mb3, 3-byte UTF-8）で接続する。
+   * X プロフィール名に 4-byte 文字（絵文字・一部 CJK 拡張漢字）が混ざると
+   * `Quma(�N�[�}])` のように `�` 化するため utf8mb4 を強制する。
+   * テーブル側の charset が違っていても、接続側で utf8mb4 を使えば
+   * サーバが変換可能なケースでは往復時の破損を防げる。
+   */
+  charset: "utf8mb4",
   ...(useMysqlSsl
     ? {
         ssl: {
