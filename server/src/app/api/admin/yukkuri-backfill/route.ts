@@ -114,7 +114,9 @@ async function runBackfill(req: NextRequest, dryRun: boolean) {
   const [rows] = await pool.query<Row[]>(
     `SELECT x_handle, display_name, avatar_url
      FROM yukkuri_explained
-     ORDER BY updated_at DESC
+     ORDER BY
+       (display_name IS NULL OR avatar_url IS NULL) DESC,
+       updated_at DESC
      LIMIT ?`,
     [limit]
   );

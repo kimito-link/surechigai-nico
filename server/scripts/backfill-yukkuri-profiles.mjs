@@ -140,7 +140,9 @@ async function main() {
   const [rows] = await conn.query(
     `SELECT x_handle, display_name, avatar_url
      FROM yukkuri_explained
-     ORDER BY updated_at DESC`
+     ORDER BY
+       (display_name IS NULL OR avatar_url IS NULL) DESC,
+       updated_at DESC`
   );
   const list = rows;
   console.log(
