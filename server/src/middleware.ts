@@ -41,6 +41,11 @@ function isUnprotectedApiPath(pathname: string): boolean {
   if (pathname.startsWith("/api/voicevox")) {
     return true;
   }
+  // 管理 API は Clerk セッションではなく Basic 認証 (requireAdminAuth) で守る。
+  // Clerk protect を通すとリダイレクトで 404 になるので、middleware ではバイパス。
+  if (pathname.startsWith("/api/admin/yukkuri-backfill")) {
+    return true;
+  }
   return false;
 }
 
