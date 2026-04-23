@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/admin/yukkuri-backfill?limit=30&cron=1",
+      "path": "/api/admin/yukkuri-backfill?limit=20",
       "schedule": "0 18 * * *"
     }
   ]

@@ -213,14 +213,38 @@ async function runBackfill(req: NextRequest, dryRun: boolean) {
   });
 }
 
-export async function GET(req: NextRequest) {
-  const isVercelCron = req.headers.get("x-vercel-cron") != null;
-  if (!isVercelCron) {
-    const unauth = requireAdminAuth(req);
-    if (unauth) return unauth;
+/**
+ * 認証モデル:
+ * - Vercel Cron: `Authorization: Bearer $CRON_SECRET` を Vercel が自動付与する公式経路。
+ *   Bearer が一致した場合だけ GET で「実更新」を許可する。
+ * - 手動 admin: Basic 認証（ADMIN_USER/ADMIN_PASS）を通して GET=dryRun / POST=実更新。
+ *
+ * `x-vercel-cron` ヘッダは Vercel 外部からでも任意に付与できる前提で扱い、
+ * 単独では認証に使わない（補助情報として無視）。
+ */
+function hasValidCronBearer(req: NextRequest): boolean {
+  const cronSecret = process.env.CRON_SECRET?.trim();
+  if (!cronSecret) return false;
+  const authHeader = req.headers.get("authorization") ?? "";
+  const expected = `Bearer ${cronSecret}`;
+  if (authHeader.length !== expected.length) return false;
+  // timingSafe 相当（短文字列でも一定時間にする）
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) {
+    diff |= authHeader.charCodeAt(i) ^ expected.charCodeAt(i);
   }
-  const isCron = req.nextUrl.searchParams.get("cron") === "1";
-  return runBackfill(req, /* dryRun */ !isCron);
+  return diff === 0;
+}
+
+export async function GET(req: NextRequest) {
+  // 1) Vercel Cron（Bearer 一致）: 実更新モードで実行
+  if (hasValidCronBearer(req)) {
+    return runBackfill(req, /* dryRun */ false);
+  }
+  // 2) 手動 admin: Basic 認証 → GET は常に dryRun
+  const unauth = requireAdminAuth(req);
+  if (unauth) return unauth;
+  return runBackfill(req, /* dryRun */ true);
 }
 
 export async function POST(req: NextRequest) {
