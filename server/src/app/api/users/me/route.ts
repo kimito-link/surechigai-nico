@@ -39,7 +39,21 @@ export async function PATCH(req: NextRequest) {
   const authResult = await requireAuth(req);
   if (authResult instanceof Response) return authResult;
 
-  const body = await req.json();
+  // req.json() は body が空 / 不正 JSON のときに throw する。
+  // また Object.entries(null) は TypeError になるので body が object であることも確認。
+  let body: Record<string, unknown>;
+  try {
+    const parsed = (await req.json()) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return Response.json(
+        { error: "JSON ボディはオブジェクトを指定してください" },
+        { status: 400 }
+      );
+    }
+    body = parsed as Record<string, unknown>;
+  } catch {
+    return Response.json({ error: "JSON ボディが不正です" }, { status: 400 });
+  }
 
   // 更新可能なフィールド
   const allowedFields: Record<string, string> = {
@@ -99,12 +113,19 @@ export async function PATCH(req: NextRequest) {
   }
 
   values.push(authResult.id);
-  await pool.execute(
-    `UPDATE users SET ${updates.join(", ")} WHERE id = ?`,
-    values
-  );
-
-  return Response.json({ ok: true });
+  try {
+    await pool.execute(
+      `UPDATE users SET ${updates.join(", ")} WHERE id = ?`,
+      values
+    );
+    return Response.json({ ok: true });
+  } catch (err) {
+    console.error("[users/me] PATCH failed", err);
+    return Response.json(
+      { error: "プロフィール更新に失敗しました" },
+      { status: 500 }
+    );
+  }
 }
 
 // アカウント削除（匿名化処理）
