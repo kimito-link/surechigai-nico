@@ -16,6 +16,11 @@ export const MOBILE_PRIMARY_LINKS: readonly HeaderNavLink[] = [
   { href: "/", label: "ホーム", description: "トップページ" },
   { href: "/chokaigi", label: "超会議LP", description: "企画ページ全体" },
   {
+    href: "/chokaigi#kimito-tsuioku-kirameki",
+    label: "追憶の煌めき（工房）",
+    description: "ゆっくり紹介→公式LP・拡張",
+  },
+  {
     href: "/creators",
     label: "都道府県別クリエイター",
     description: "47 都道府県の参加者一覧",
