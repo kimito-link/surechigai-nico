@@ -79,41 +79,21 @@ function buildEmptySummary(): PrefectureSummary[] {
 type UnknownCountRow = RowDataPacket & { cnt: number };
 
 /**
- * `visibilityMin` を指定すると「自分の位置（居住県）を公開しているユーザーだけ」に絞って集計する。
- * - 0（デフォルト）: フィルタしない（従来挙動）。ヒーローの総登録者数表示に使う。
- * - 1: location_visibility >= 1（マッチ相手向け）
- * - 2: location_visibility >= 2（全体公開、ヒーロー地図ピン用途）
+ * `visibilityMin` フィルタの純粋ロジックは `visibilityFilter.ts` に切り出し、
+ * 単体テスト（node --test + tsx）が `server-only` 壁を越えずに検証できるようにした。
  *
- * CODEX-NEXT.md §1 の「prefecture-counts を location_visibility >= 2 で絞る」要望に対し、
- * 既存の集計値を壊さないために **opt-in パラメータ**として足す。
+ * ここからは従来の `@/lib/creators` 経由の import パスを保つために re-export を行う。
+ *   - `PrefectureQueryOptions`: API route / 他 lib の型参照
+ *   - `parseVisibilityMin`: `?visibilityMin=` のパース
+ *   - `buildVisibilityClause`: 下の `getPrefectureSummaries` / `getCreatorsByPrefecture` 内部で使う
  */
-export type PrefectureQueryOptions = {
-  visibilityMin?: 0 | 1 | 2;
-};
-
-function buildVisibilityClause(
-  visibilityMin: number | undefined
-): { sql: string; params: number[] } {
-  if (!visibilityMin || visibilityMin < 1) return { sql: "", params: [] };
-  const v = visibilityMin >= 2 ? 2 : 1;
-  return { sql: " AND u.location_visibility >= ?", params: [v] };
-}
-
-/**
- * `?visibilityMin=0|1|2` をパースする共通ヘルパ。
- * - 未指定 / 空文字 / 不正値 → `undefined`（＝フィルタしない）
- * - "0" も明示的に「フィルタしない」意図として `undefined` を返す（呼び出し側で opt-in）
- */
-export function parseVisibilityMin(
-  raw: string | null | undefined
-): 0 | 1 | 2 | undefined {
-  if (raw == null || raw === "") return undefined;
-  const n = Number(raw);
-  if (!Number.isInteger(n)) return undefined;
-  if (n === 1) return 1;
-  if (n === 2) return 2;
-  return undefined;
-}
+import {
+  buildVisibilityClause,
+  parseVisibilityMin,
+  type PrefectureQueryOptions,
+} from "@/lib/visibilityFilter";
+export { parseVisibilityMin };
+export type { PrefectureQueryOptions };
 
 export async function getPrefectureSummaries(
   options: PrefectureQueryOptions = {}
