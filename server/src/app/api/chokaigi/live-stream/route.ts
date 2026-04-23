@@ -40,12 +40,45 @@ export async function GET(req: NextRequest) {
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
       let closed = false;
+      // heartbeat と unsubscribe は close() 内から解放したいため let で前置き宣言。
+      // enqueue が throw したとき（下流切断）にも close() を呼べるようにするため、
+      // close の定義は safeEnqueue より前にする（TDZ 回避兼 可読性）。
+      let heartbeat: ReturnType<typeof setInterval> | null = null;
+      let unsubscribe: (() => void) | null = null;
+
+      const close = () => {
+        if (closed) return;
+        closed = true;
+        if (heartbeat) {
+          clearInterval(heartbeat);
+          heartbeat = null;
+        }
+        if (unsubscribe) {
+          try {
+            unsubscribe();
+          } catch {
+            /* ignore */
+          }
+          unsubscribe = null;
+        }
+        try {
+          controller.close();
+        } catch {
+          /* already closed */
+        }
+      };
+
       const safeEnqueue = (chunk: Uint8Array) => {
         if (closed) return;
         try {
           controller.enqueue(chunk);
         } catch {
-          closed = true;
+          // enqueue が throw = 下流が閉じた。req.signal の abort が来ない
+          // ケース（ネットワーク分断等）があり得るので、ここで heartbeat と
+          // subscribe を巻き取って完全解放する。leak するとこのプロセス上の
+          // EventEmitter リスナー数が上限(1000)に向けて蓄積し、新規接続が
+          // サイレントに throttle される。
+          close();
         }
       };
 
@@ -56,27 +89,15 @@ export async function GET(req: NextRequest) {
       safeEnqueue(encodeSse("catchup", { events: catchup, serverTs: Date.now() }));
 
       // 購読
-      const unsubscribe = subscribeLiveMapEvents((event: LiveMapEvent) => {
+      unsubscribe = subscribeLiveMapEvents((event: LiveMapEvent) => {
         if (!withinVenue(event.lat, event.lng)) return;
         safeEnqueue(encodeSse("location", event));
       });
 
       // heartbeat (25秒ごと) — プロキシのアイドル切断を防ぐ
-      const heartbeat = setInterval(() => {
+      heartbeat = setInterval(() => {
         safeEnqueue(new TextEncoder().encode(`: ping ${Date.now()}\n\n`));
       }, 25_000);
-
-      const close = () => {
-        if (closed) return;
-        closed = true;
-        clearInterval(heartbeat);
-        unsubscribe();
-        try {
-          controller.close();
-        } catch {
-          /* already closed */
-        }
-      };
 
       // クライアント切断時に後始末
       req.signal.addEventListener("abort", close);
