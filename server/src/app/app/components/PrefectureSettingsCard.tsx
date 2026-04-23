@@ -148,6 +148,14 @@ export default function PrefectureSettingsCard({ authUuid, ready = true }: Props
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
+        // 401/403 は UUID が古い or クッキーが飛んだケース。
+        // 再ログインを促すメッセージに差し替える（「保存に失敗しました」だと
+        // ユーザーが何度も保存ボタンを押して余計にエラーが増える）。
+        if (res.status === 401 || res.status === 403) {
+          throw new Error(
+            "認証が切れた可能性があります。ページを再読み込みするか、一度ログアウトしてログインし直してください。"
+          );
+        }
         const msg =
           typeof data?.error === "string" ? data.error : `保存に失敗しました (${res.status})`;
         throw new Error(msg);

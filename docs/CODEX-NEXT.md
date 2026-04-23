@@ -24,6 +24,11 @@ DB/API/フロントまで一気通貫で暫定実装済み。
   optional `?visibilityMin=1|2` を受け、渡したときだけ `u.location_visibility >= ?` で絞る
   （§1 表 4 行目）。既存の未指定呼び出しは従来挙動のまま。
   パースロジックは `server/src/lib/visibilityFilter.ts` に切り出し、単体テストで lock。
+  **設計メモ**: `/creators` と `/creators/[pref]` のページは `visibilityMin` を渡さない設計。
+  これらのページは `location_logs.municipality`（過去に訪れた県）に基づく表示で、
+  自己申告の `home_prefecture` とは別軸。CODEX-NEXT §1 の公開範囲は「自己申告した参加県」を
+  対象にしており、位置ログの municipality に遡って適用しない。visibilityMin は
+  「解説アーカイブ・ヒーロー地図ピン等の新規コンシューマ」のみ opt-in で使う。
 - **§2 アーカイブ JOIN**: `yukkuriExplainedArchive.ts` の list/get で users と LEFT JOIN。
   `is_surechigai_member` (boolean) と `home_prefecture` (visibility >= 2 のときだけ) を返す。
 - **§3 解説プロンプトへの県注入**: `/api/yukkuri-explain` の POST で DB 側再チェック
