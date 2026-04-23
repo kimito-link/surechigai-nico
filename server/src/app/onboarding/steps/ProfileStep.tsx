@@ -39,18 +39,21 @@ export default function ProfileStep({ initialData, onComplete }: ProfileStepProp
   const [hitokoto, setHitokoto] = useState(initialData.hitokoto);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  /**
+   * プロフィール保存と次ステップへの遷移を共通化。
+   * - ワンタップ（Xのまま使う）: 現在の state そのまま（ほぼ初期値）で PATCH
+   * - 詳細フォーム: ユーザーが編集した state で PATCH
+   * どちらも「ニックネームが空でない」だけを必須バリデーションとする。
+   */
+  const submitProfile = async (opts?: { silent?: boolean }) => {
     if (!nickname.trim()) {
-      alert("ニックネームを入力してください");
+      if (!opts?.silent) alert("ニックネームを入力してください");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // プロフィール情報を保存（API呼び出し）
       const res = await fetch("/api/users/me", {
         method: "PATCH",
         headers: {
@@ -83,9 +86,50 @@ export default function ProfileStep({ initialData, onComplete }: ProfileStepProp
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await submitProfile();
+  };
+
+  const handleQuickSubmit = async () => {
+    // X からの自動補完値のまま即確定する導線。
+    // ニックネーム空のとき（X 情報が取れていない稀なケース）は alert ではなく
+    // 静かにスキップして、ユーザーを下のフォームに誘導する。
+    await submitProfile({ silent: true });
+  };
+
   return (
     <form onSubmit={handleSubmit} className={styles.stepCard}>
       <h2 className={styles.stepTitle}>プロフィール</h2>
+
+      {/*
+        ワンタップ導線: X ログイン済みで nickname が自動補完されていれば、
+        年代・性別・ひとこと などの任意項目を埋めずに即 Location ステップへ進める。
+        超会議会場での離脱率対策（入力フォームで脱落させない）。
+      */}
+      {nickname.trim().length > 0 && (
+        <div className={styles.quickCta}>
+          <p className={styles.quickCtaTitle}>
+            Xの情報でそのまま使えます
+          </p>
+          <p className={styles.quickCtaText}>
+            ニックネームは <strong>「{nickname}」</strong> で登録します。
+            年代・性別・ひとことは <strong>あとでプロフィールから変更できます</strong>。
+          </p>
+          <button
+            type="button"
+            className={`${styles.button} ${styles.quickCtaButton}`}
+            onClick={() => void handleQuickSubmit()}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "保存中..." : "Xのままで使う（ワンタップ）"}
+          </button>
+        </div>
+      )}
+
+      <p className={styles.detailsDivider}>
+        <span>詳しく設定する（任意）</span>
+      </p>
 
       <fieldset className={styles.formSection}>
         <legend className={styles.formSectionTitle}>基本（最大3項目）</legend>
