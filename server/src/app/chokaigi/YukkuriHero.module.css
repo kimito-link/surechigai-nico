@@ -101,8 +101,13 @@
   width: 100%;
   max-width: none;
   max-height: none;
-  z-index: 40;
+  /* SiteFooterCta が z-index: 999 で画面下に貼り付いており、その透明グラデーション領域が
+   * オーバーレイ下部のボタン（X でシェア / 別の人を解説 / すれ違いに参加）のクリックを
+   * 奪っていた。オーバーレイを最前面に上げて完全に覆う。 */
+  z-index: 1000;
   padding: clamp(0.9rem, 3.5vw, 1.8rem) clamp(0.75rem, 3vw, 1.75rem);
+  /* 下部 CTA がスクロール時にフッター CTA の高さぶん隠れないよう、safe-area も含めて余白を確保 */
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(5rem, 10vh, 6.5rem));
   /* ベージュ系のベースに合わせたソリッド寄りの背景で下層を確実に隠す */
   background: linear-gradient(180deg, #faf6eb 0%, #f3ead9 100%);
   /* 子要素（吹き出し + talkingFooter）を縦並びで画面中央寄せ */
