@@ -1,6 +1,7 @@
 import "server-only";
 import pool from "@/lib/db";
 import type { RowDataPacket } from "mysql2";
+import { loadLastBackfillRun } from "@/lib/yukkuriBackfillState";
 
 /**
  * `/api/health/yukkuri` と `/api/admin/health/yukkuri` 共通の診断ロジック。
@@ -82,10 +83,20 @@ export async function gatherYukkuriHealth(
     };
   }
 
+  // Redis: プロフィール backfill Cron の直近実行結果。
+  // 非 detailed（公開）には「時刻」と「失敗件数」だけを返す。これだけでも
+  // UptimeRobot 等が「24h 以内に backfill が回ったか / 失敗が一定数以下か」を
+  // 外から監視できる。詳細版（admin）には実行内容フル JSON を出す。
+  const lastBackfill = await loadLastBackfillRun();
+  result.lastBackfillAt = lastBackfill?.at ?? null;
+  result.lastBackfillFailed = lastBackfill?.failed ?? null;
+
   // --- 以下は detailed === true の時だけ返す（admin 専用） ---
   if (!detailed) {
     return result;
   }
+
+  result.lastBackfill = lastBackfill;
 
   // MySQL: ツイート URL 解説アーカイブ件数
   try {

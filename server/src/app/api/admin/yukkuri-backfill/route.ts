@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import type { RowDataPacket } from "mysql2";
 import pool from "@/lib/db";
 import { requireAdminAuth } from "@/lib/adminAuth";
+import {
+  recordBackfillRun,
+  type BackfillRunState,
+} from "@/lib/yukkuriBackfillState";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -34,6 +38,38 @@ export const dynamic = "force-dynamic";
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 200;
 const DEFAULT_WAIT_MS = 1500;
+
+/**
+ * 実行結果を Upstash Redis に保存するためのヘルパ。
+ * /api/health/yukkuri がこの値を読んで「最後に backfill が回った時刻 / 失敗件数」
+ * を返すので、Cron が無言で止まっている事故を外から検知できる。
+ * dryRun の結果は recordBackfillRun 側で自動的にスキップされる。
+ */
+async function persistBackfillOutcome(args: {
+  startedAt: number;
+  dryRun: boolean;
+  ok: boolean;
+  total: number;
+  updated: number;
+  skipped: number;
+  failed: number;
+  aborted: string | null;
+  error: string | null;
+}): Promise<void> {
+  const state: BackfillRunState = {
+    at: new Date().toISOString(),
+    ok: args.ok,
+    total: args.total,
+    updated: args.updated,
+    skipped: args.skipped,
+    failed: args.failed,
+    aborted: args.aborted,
+    error: args.error,
+    durationMs: Date.now() - args.startedAt,
+    dryRun: args.dryRun,
+  };
+  await recordBackfillRun(state);
+}
 
 type Row = RowDataPacket & {
   x_handle: string;
@@ -159,8 +195,20 @@ async function runBackfill(req: NextRequest, dryRun: boolean) {
 }
 
 async function runBackfillCore(req: NextRequest, dryRun: boolean) {
+  const startedAt = Date.now();
   const bearerToken = process.env.TWITTER_BEARER_TOKEN?.trim();
   if (!bearerToken) {
+    await persistBackfillOutcome({
+      startedAt,
+      dryRun,
+      ok: false,
+      total: 0,
+      updated: 0,
+      skipped: 0,
+      failed: 0,
+      aborted: "no_bearer_token",
+      error: "TWITTER_BEARER_TOKEN 未設定",
+    });
     return NextResponse.json(
       {
         ok: false,
@@ -226,6 +274,17 @@ async function runBackfillCore(req: NextRequest, dryRun: boolean) {
       // 401/403 は Bearer Token 側の問題で、残り全件を回しても同じ結果になる。
       // レート枠と Vercel 実行時間の無駄遣いを避けるため即中断する。
       if (r.status === 401 || r.status === 403) {
+        await persistBackfillOutcome({
+          startedAt,
+          dryRun,
+          ok: false,
+          total: rows.length,
+          updated,
+          skipped,
+          failed,
+          aborted: "token_invalid",
+          error: `X API が ${r.status} を返しました`,
+        });
         return NextResponse.json(
           {
             ok: false,
@@ -289,6 +348,18 @@ async function runBackfillCore(req: NextRequest, dryRun: boolean) {
       await new Promise((resolve) => setTimeout(resolve, waitMs));
     }
   }
+
+  await persistBackfillOutcome({
+    startedAt,
+    dryRun,
+    ok: true,
+    total: rows.length,
+    updated,
+    skipped,
+    failed,
+    aborted: null,
+    error: null,
+  });
 
   return NextResponse.json({
     ok: true,
