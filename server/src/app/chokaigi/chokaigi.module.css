@@ -2536,6 +2536,13 @@ details[open] .detailMapSummary::before {
   outline-offset: 3px;
 }
 
+button.footerThanksLink {
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: inherit;
+}
+
 .footerThanksLinkIcon {
   width: 0.95em;
   height: 0.95em;

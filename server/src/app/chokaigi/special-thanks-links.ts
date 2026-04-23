@@ -235,13 +235,16 @@ export const SPECIAL_THANKS_PROFILES: ReadonlyArray<SpecialThanksProfile> = [
   },
 ] as const;
 
+/** X-only 一覧のうち、LP 上でクリックでゆっくり一言を出す専用導線にするアカウント */
+export const SPECIAL_THANKS_YURIPON_X_HREF = "https://x.com/yuripon7777" as const;
+
 /**
  * X アカウントのみでご協力・応援してくださっているみなさま。
  * プロフィールカード化はせず、アットマーク一覧として表示します。
  */
 export const SPECIAL_THANKS_X_ONLY: ReadonlyArray<SpecialThanksXLink> = [
   { label: "@flap_shizuku", href: "https://x.com/flap_shizuku" },
-  { label: "@yuripon7777", href: "https://x.com/yuripon7777" },
+  { label: "@yuripon7777", href: SPECIAL_THANKS_YURIPON_X_HREF },
   { label: "@pokkuri0803", href: "https://x.com/pokkuri0803" },
   { label: "@engineerHiyoko", href: "https://x.com/engineerHiyoko" },
   { label: "@KoichiNishizuka", href: "https://x.com/KoichiNishizuka" },

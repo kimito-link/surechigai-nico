@@ -4,7 +4,9 @@ import styles from "../chokaigi.module.css";
 import {
   SPECIAL_THANKS_PROFILES,
   SPECIAL_THANKS_X_ONLY,
+  SPECIAL_THANKS_YURIPON_X_HREF,
 } from "../special-thanks-links";
+import { YuriponThanksXListItem } from "../YuriponThanksXListItem";
 import { THIRD_PARTY_CREDITS } from "../third-party-credits";
 import { RomiProfileCard } from "../RomiProfileCard";
 import { SpecialThanksProfileCard } from "../SpecialThanksProfileCard";
@@ -114,21 +116,25 @@ export default function SpecialThanksPage() {
                 X でご応援いただいているみなさま
               </h2>
               <ul className={styles.footerThanksList}>
-                {SPECIAL_THANKS_X_ONLY.map((link) => (
-                  <li key={link.href} className={styles.footerThanksItem}>
-                    <a
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.footerThanksLink}
-                    >
-                      <XLogoIcon className={styles.footerThanksLinkIcon} />
-                      <span className={styles.footerThanksLinkLabel}>
-                        {link.label}
-                      </span>
-                    </a>
-                  </li>
-                ))}
+                {SPECIAL_THANKS_X_ONLY.map((link) =>
+                  link.href === SPECIAL_THANKS_YURIPON_X_HREF ? (
+                    <YuriponThanksXListItem key={link.href} />
+                  ) : (
+                    <li key={link.href} className={styles.footerThanksItem}>
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.footerThanksLink}
+                      >
+                        <XLogoIcon className={styles.footerThanksLinkIcon} />
+                        <span className={styles.footerThanksLinkLabel}>
+                          {link.label}
+                        </span>
+                      </a>
+                    </li>
+                  )
+                )}
               </ul>
             </section>
           ) : null}

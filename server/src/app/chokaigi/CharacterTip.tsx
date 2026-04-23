@@ -9,6 +9,8 @@ interface CharacterTipProps {
   character: CharacterName;
   message: string;
   position?: "left" | "right";
+  /** 親レイアウト用（余白の詰めなど） */
+  className?: string;
 }
 
 const CHARACTER_MAP: Record<CharacterName, (typeof GUIDES)[number]> = {
@@ -17,11 +19,19 @@ const CHARACTER_MAP: Record<CharacterName, (typeof GUIDES)[number]> = {
   tanunee: GUIDES.find((g) => g.name === "たぬ姉")!,
 };
 
-export function CharacterTip({ character, message, position = "left" }: CharacterTipProps) {
+export function CharacterTip({
+  character,
+  message,
+  position = "left",
+  className,
+}: CharacterTipProps) {
   const guide = CHARACTER_MAP[character];
-  
+  const rootClass = [styles.container, position === "right" ? styles.right : "", className ?? ""]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className={`${styles.container} ${position === "right" ? styles.right : ""}`}>
+    <div className={rootClass}>
       <div className={styles.avatar}>
         <Image
           src={guide.imageSrc}
