@@ -36,6 +36,35 @@ function initialOf(handle: string): string {
   return (h[0] ?? "?").toUpperCase();
 }
 
+/**
+ * `?a=<avatar_url>` は外部から任意に付けられるため、信頼できる CDN だけ通す。
+ *
+ * アバターは運用上 X の CDN (`pbs.twimg.com`) しか届かない（DB 経由でもライブ取得でも
+ * X API のレスポンスを保存したものしか使わない）。ここで allowlist を効かせることで:
+ *  - Edge runtime の `ImageResponse` が任意の外部ホストへ fetch するのを防ぎ、弱い SSRF と
+ *    遅延エンドポイントを使った OGP DoS を封じる
+ *  - allowlist 外は null に落ちるので `initialOf()` の頭文字フォールバックが出るだけで、
+ *    カード自体は正常に生成される
+ */
+function sanitizeAvatarUrl(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (!trimmed || trimmed.length > 500) return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    return null;
+  }
+  if (parsed.protocol !== "https:") return null;
+  // pbs.twimg.com（プロフィール画像）と abs.twimg.com（デフォルトアイコン）を許可。
+  const host = parsed.hostname.toLowerCase();
+  if (host === "pbs.twimg.com" || host === "abs.twimg.com") {
+    return parsed.toString();
+  }
+  return null;
+}
+
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const origin = url.origin;
@@ -45,7 +74,7 @@ export async function GET(req: NextRequest) {
   const rink = truncate(sp.get("r") ?? "この人、気になる！", CARD_LINE_MAX);
   const konta = truncate(sp.get("k") ?? "応援してるよ！", CARD_LINE_MAX);
   const tanunee = truncate(sp.get("t") ?? "超会議で会いたいね", CARD_LINE_MAX);
-  const avatar = sp.get("a") || null;
+  const avatar = sanitizeAvatarUrl(sp.get("a"));
   const name = sp.get("n") || null;
 
   const charRink = `${origin}/chokaigi/yukkuri/rink.png`;
