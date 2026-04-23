@@ -30,6 +30,7 @@ export function YukkuriVoicePlayer({ dialogue, compact, autoPlayOnReady = false 
   const [hint, setHint] = useState("");
   const [gate, setGate] = useState<VoicevoxGate>("unknown");
   const [speechSupported, setSpeechSupported] = useState(false);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const abortRef = useRef<AbortController | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const autoPlayedKeyRef = useRef<string>("");
@@ -66,6 +67,27 @@ export function YukkuriVoicePlayer({ dialogue, compact, autoPlayOnReady = false 
     setSpeechSupported(typeof window.speechSynthesis !== "undefined");
   }, []);
 
+  /**
+   * SpeechSynthesis.getVoices() はブラウザ差が大きい:
+   * - Safari / Firefox: 同期的に返る（初回呼び出しで埋まる）
+   * - Chrome / Edge: 初回は空配列で、後から voiceschanged が発火して埋まる
+   * そのため「初回取得 + voiceschanged で再取得」の両対応が必要。
+   */
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.speechSynthesis === "undefined") {
+      return;
+    }
+    const synth = window.speechSynthesis;
+    const update = () => {
+      setVoices(synth.getVoices());
+    };
+    update(); // 同期で返るブラウザ向け
+    synth.addEventListener("voiceschanged", update);
+    return () => {
+      synth.removeEventListener("voiceschanged", update);
+    };
+  }, []);
+
   const stop = useCallback(() => {
     abortRef.current?.abort();
     abortRef.current = null;
@@ -82,10 +104,6 @@ export function YukkuriVoicePlayer({ dialogue, compact, autoPlayOnReady = false 
   }, []);
 
   const pickJapaneseVoice = useCallback((): SpeechSynthesisVoice | null => {
-    if (typeof window === "undefined" || typeof window.speechSynthesis === "undefined") {
-      return null;
-    }
-    const voices = window.speechSynthesis.getVoices();
     if (voices.length === 0) return null;
     return (
       voices.find((v) => /^ja[-_]?jp$/i.test(v.lang)) ??
@@ -93,7 +111,7 @@ export function YukkuriVoicePlayer({ dialogue, compact, autoPlayOnReady = false 
       voices[0] ??
       null
     );
-  }, []);
+  }, [voices]);
 
   const playBrowserFallback = useCallback(async () => {
     if (!dialogue) return;
