@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { clampYukkuriDialogue } from "@/lib/yukkuriDialogueClamp";
 import { recordYukkuriExplainedHandleRedis, YUKKURI_EXPLAINED_SET_KEY } from "@/lib/homeStats";
 import { upsertYukkuriExplainedArchive } from "@/lib/yukkuriExplainedArchive";
+import pool from "@/lib/db";
+import { prefectureCodeToName } from "@/lib/prefectureCodes";
+import type { RowDataPacket } from "mysql2";
 import {
   OFFICIAL_CREATORCROSS_ENTRIES,
   type OfficialCreatorCrossEntry,
@@ -622,6 +625,49 @@ function normalizeXAvatarUrl(input: string | undefined): string | undefined {
 }
 
 /**
+ * DB 側で「このハンドルの持ち主が参加県を全体公開しているか」を再確認し、
+ * 公開していれば参加県名を返す（そうでなければ null）。
+ *
+ * CODEX-NEXT.md §3 の「DB 側での二重チェック」実装:
+ * - フロントが `publicPrefecture` を投げてきただけでは詐称可能（他人の県を偽装できる）
+ * - 実際に LLM プロンプトに混ぜてよいのは `users.location_visibility >= 2` のユーザーだけ
+ * - さらに「公開レベルは 2 だけど home_prefecture は未設定」のケースもある（NULL）
+ *
+ * 現状 `users.twitter_handle` はスキーマ上存在するがアプリコード側でまだ書き込んでいない
+ * （アカウント連携が未実装）。この関数は「twitter_handle が未登録 = ヒット 0 件 = 県注入なし」
+ * という安全側のデフォルトで動き、将来 Codex が X 連携を足した時点で自動的に機能し始める。
+ *
+ * 例外時は必ず null を返して、DB 障害で LLM パスが止まらないようにする。
+ */
+async function fetchPublicPrefectureForHandle(
+  handle: string
+): Promise<string | null> {
+  const normalized = handle.trim().replace(/^@+/, "").toLowerCase();
+  if (!normalized) return null;
+  try {
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      `SELECT home_prefecture, location_visibility
+         FROM users
+        WHERE LOWER(twitter_handle) = ?
+          AND is_deleted = FALSE
+        LIMIT 1`,
+      [normalized]
+    );
+    const row = rows?.[0];
+    if (!row) return null;
+    const visibility = Number(row.location_visibility ?? 0);
+    if (!Number.isFinite(visibility) || visibility < 2) return null;
+    const code = typeof row.home_prefecture === "string" ? row.home_prefecture : null;
+    return prefectureCodeToName(code);
+  } catch (err) {
+    console.warn(
+      `[yukkuri-explain] fetchPublicPrefectureForHandle failed handle=${normalized} err=${(err as Error).message}`
+    );
+    return null;
+  }
+}
+
+/**
  * bio が「実質的に薄い」判定。
  *
  * 背景:
@@ -706,7 +752,8 @@ function buildUserMessage(
     intro?: string;
   },
   profile: XProfile | null,
-  official: OfficialCreatorContext | null
+  official: OfficialCreatorContext | null,
+  publicPrefectureName: string | null
 ): string {
   // trim を先に行う。逆順だと「先頭空白 + @」の入力で `^@+` が一致せず @ が残る。
   const handle = body.xHandle?.trim().replace(/^@+/, "") ?? "";
@@ -733,6 +780,11 @@ function buildUserMessage(
     official?.days?.length ? `公式出展日: ${official.days.join(" / ")}` : null,
     official?.booth ? `公式ブース: ${official.booth}` : null,
     official?.intro ? `公式紹介文: ${official.intro}` : null,
+    // 参加県は「本人が全体公開している（location_visibility >= 2）」ときだけ DB で解決済み。
+    // フロント申告を鵜呑みにすると詐称可能なので、この値は必ず DB 経由で来ている（publicPrefectureName）。
+    publicPrefectureName
+      ? `参加県: ${publicPrefectureName}（本人が全体公開しているので、たぬ姉の締めで軽く触れてよい）`
+      : null,
   ]
     .filter(Boolean)
     .join("\n");
@@ -747,6 +799,13 @@ function buildUserMessage(
           .join("\n")}`
       : "";
 
+  // 参加県の扱い: DB で公開レベル 2 が確認された人だけ上の `lines` に含まれている。
+  // 含まれていれば「たぬ姉が自然に触れてよい」、含まれていなければ「県や地域の推測は禁止」
+  // と明示することで、LLM が勝手に県を創作するのを防ぐ。
+  const prefectureRule = publicPrefectureName
+    ? "- 参加県が入力にある場合は **たぬ姉の締めで軽く 1 度だけ触れてよい**（例: 「〇〇からの参加なんだね、ありがとう！」）。ただし強調しすぎず、メインの紹介は人物像で進める。"
+    : "- **参加県や出身地域の推測は禁止**（情報がない場合は一切触れない）。";
+
   return `以下のXユーザーを3人でゆっくり個別紹介してください:\n${lines}${tweetBlock}
 
 【追加ルール】
@@ -755,7 +814,8 @@ function buildUserMessage(
 - **自己紹介文は原文コピペ禁止**。意訳・言い換え・要約のみ許可。
 - 「最近の投稿サンプル」がある場合は **そこから 2 つ以上の話題・人名・趣味・雰囲気を合成** してセリフに織り込む（生の URL やツイート ID への言及は禁止）。
 - 「最近の投稿サンプル」が無い・薄い場合のみ、こん太がハンドルの綴りから推測した一言を入れてよい（最終手段）。
-- 会場データ（ブース・ホール・ジャンル等）がある場合はたぬ姉が締めの一言で触れて構わないが、必須ではない。`;
+- 会場データ（ブース・ホール・ジャンル等）がある場合はたぬ姉が締めの一言で触れて構わないが、必須ではない。
+${prefectureRule}`;
 }
 
 // ---------------- 応答パース ----------------
@@ -1222,6 +1282,10 @@ export async function POST(req: NextRequest) {
     hallLabel?: string;
     sub?: string;
     intro?: string;
+    // CODEX-NEXT.md §3: フロントから「この人は参加県を公開している」のヒントとして来る
+    // 任意フィールド。値は信用せず、DB 側で二重チェックして実際に公開レベル 2 の場合のみ
+    // プロンプトに注入する（下の fetchPublicPrefectureForHandle を参照）。
+    publicPrefecture?: string;
   };
   try {
     body = (await req.json()) as typeof body;
@@ -1314,7 +1378,26 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const userMessage = buildUserMessage(body, profile, official);
+  // 参加県を LLM プロンプトに混ぜるかの最終判定は DB 側（location_visibility >= 2 のときだけ）。
+  // フロントからの publicPrefecture は「フロントがこの機能を使いたがっているか」のヒント扱い、
+  // 実際に注入する県名は DB 由来の home_prefecture から解決する。
+  // handle が空なら DB 照合できないので自動的にスキップ。
+  const publicPrefectureName = handle
+    ? await fetchPublicPrefectureForHandle(handle)
+    : null;
+  if (publicPrefectureName && body.publicPrefecture) {
+    // デバッグ補助: フロントが送ってきたヒントと DB 側の答えがズレていれば警告（DB を優先）。
+    const hintCode = typeof body.publicPrefecture === "string"
+      ? body.publicPrefecture.trim()
+      : "";
+    if (hintCode && prefectureCodeToName(hintCode) !== publicPrefectureName) {
+      console.warn(
+        `[yukkuri-explain] publicPrefecture hint mismatch handle=${handle} hint=${hintCode} db=${publicPrefectureName}`
+      );
+    }
+  }
+
+  const userMessage = buildUserMessage(body, profile, official, publicPrefectureName);
 
   const failures: CallResult[] = [];
   const startedTotal = Date.now();

@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import pool from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
+import { isValidPrefectureCode } from "@/lib/prefectureCodes";
 import type { RowDataPacket } from "mysql2";
 
 // プロフィール取得
@@ -12,7 +13,8 @@ export async function GET(req: NextRequest) {
     `SELECT id, uuid, nickname, avatar_config, avatar_url, hitokoto, hitokoto_set_at,
             spotify_track_id, spotify_track_name, spotify_artist_name, spotify_album_image_url,
             age_group, gender, show_age_group, show_gender,
-            notification_enabled, location_paused_until, streak_count, last_encounter_date, created_at
+            notification_enabled, location_paused_until, streak_count, last_encounter_date,
+            home_prefecture, location_visibility, created_at
      FROM users WHERE id = ?`,
     [authResult.id]
   );
@@ -72,6 +74,11 @@ export async function PATCH(req: NextRequest) {
     fcm_token: "VARCHAR",
     avatar_url: "VARCHAR",
     location_paused_until: "DATETIME",
+    // 超会議 2026「参加県と公開範囲」（CODEX-NEXT.md §1）
+    // - home_prefecture: JIS X 0401 "01".."47" or null。prefectureCodes.ts で検証
+    // - location_visibility: 0=完全非公開 / 1=マッチ相手のみ / 2=全体公開
+    home_prefecture: "VARCHAR",
+    location_visibility: "TINYINT",
   };
 
   const updates: string[] = [];
@@ -92,6 +99,30 @@ export async function PATCH(req: NextRequest) {
         { error: "ひとことは100文字以内で入力してください" },
         { status: 400 }
       );
+    }
+    // 参加県。null は「設定解除」として許可。文字列なら "01".."47" のみ許可
+    // （整数で投げられた場合も拒否。型揺れを避けるため）。
+    if (key === "home_prefecture") {
+      if (value !== null && !isValidPrefectureCode(value)) {
+        return Response.json(
+          { error: "home_prefecture は \"01\"〜\"47\" の文字列または null を指定してください" },
+          { status: 400 }
+        );
+      }
+    }
+    // 公開レベル。0/1/2 の整数のみ受け付ける。boolean / 文字列は拒否。
+    if (key === "location_visibility") {
+      if (
+        typeof value !== "number" ||
+        !Number.isInteger(value) ||
+        value < 0 ||
+        value > 2
+      ) {
+        return Response.json(
+          { error: "location_visibility は 0 / 1 / 2 のいずれかで指定してください" },
+          { status: 400 }
+        );
+      }
     }
     // ひとこと更新時にhitokoto_set_atも自動更新
     if (key === "hitokoto") {

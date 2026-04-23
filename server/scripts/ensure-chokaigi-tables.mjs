@@ -242,5 +242,46 @@ for (const st of statements) {
     console.log("[ensure-chokaigi] ok: yukkuri_explained.avatar_url already present");
   }
 }
+
+// users.home_prefecture / location_visibility（超会議 2026「参加県・公開範囲」）。
+//
+// 仕様:
+// - home_prefecture: JIS X 0401 の 01..47 を 0 パディング文字列で保持。NULL は未設定。
+//   型は VARCHAR(8) と広めにしてあるが、アプリ側バリデーションで "01".."47" のみ許容する。
+// - location_visibility: 0=完全非公開 / 1=マッチ相手のみ / 2=全体公開。
+//   **デフォルト 0 が必須**（フロントの "デフォルト非公開" 約束を DB 側で担保）。
+//
+// 既存レコードは DEFAULT で自動的に 0 が入るので、後方互換を壊さない。
+// CODEX-NEXT.md §1 のスキーマ案に準拠。
+{
+  const [rows] = await conn.query(
+    `
+      SELECT COLUMN_NAME
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME = 'users'
+        AND COLUMN_NAME IN ('home_prefecture', 'location_visibility')
+    `
+  );
+  const present = new Set(
+    (rows ?? []).map((r) => String(r.COLUMN_NAME || "").toLowerCase())
+  );
+  if (!present.has("home_prefecture")) {
+    await conn.query(
+      "ALTER TABLE users ADD COLUMN home_prefecture VARCHAR(8) NULL COMMENT '都道府県コード JIS X 0401 の 01..47。NULL は未設定'"
+    );
+    console.log("[ensure-chokaigi] ok: added users.home_prefecture");
+  } else {
+    console.log("[ensure-chokaigi] ok: users.home_prefecture already present");
+  }
+  if (!present.has("location_visibility")) {
+    await conn.query(
+      "ALTER TABLE users ADD COLUMN location_visibility TINYINT NOT NULL DEFAULT 0 COMMENT '0=完全非公開 / 1=マッチ相手のみ / 2=全体公開'"
+    );
+    console.log("[ensure-chokaigi] ok: added users.location_visibility (DEFAULT 0)");
+  } else {
+    console.log("[ensure-chokaigi] ok: users.location_visibility already present");
+  }
+}
 await conn.end();
 console.log(`[ensure-chokaigi] 完了 (${statements.length} 文)`);

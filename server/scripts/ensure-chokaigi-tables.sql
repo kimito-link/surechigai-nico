@@ -89,3 +89,17 @@ CREATE TABLE IF NOT EXISTS yukkuri_explained_tweet (
 -- ============================================================
 ALTER TABLE yukkuri_explained
   CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- ============================================================
+-- users.home_prefecture / location_visibility
+--   超会議 2026 で「参加県を任意公開」するために追加したカラム。
+--   JIS X 0401 の 01..47 を 0 パディングで持つ（"01" = 北海道 ... "47" = 沖縄県）。
+--   location_visibility: 0=完全非公開 / 1=マッチ相手のみ / 2=全体公開（デフォルト 0 必須）。
+--   **実際の ADD COLUMN は ensure-chokaigi-tables.mjs 側で information_schema 確認付きで
+--   冪等に流す**（ここは SQL を手で流す運用者向けの参考クエリ）。
+-- ============================================================
+-- ALTER TABLE users
+--   ADD COLUMN home_prefecture VARCHAR(8) NULL
+--     COMMENT '都道府県コード JIS X 0401 の 01..47。NULL は未設定',
+--   ADD COLUMN location_visibility TINYINT NOT NULL DEFAULT 0
+--     COMMENT '0=完全非公開 / 1=マッチ相手のみ / 2=全体公開';
