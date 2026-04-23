@@ -11,6 +11,11 @@ const ORDER = [
   { key: "konta" as const, label: "こん太" },
   { key: "tanunee" as const, label: "たぬ姉" },
 ];
+const SPEECH_STYLE: Record<(typeof ORDER)[number]["key"], { rate: number; pitch: number }> = {
+  rink: { rate: 1.15, pitch: 1.3 },
+  konta: { rate: 1.0, pitch: 1.0 },
+  tanunee: { rate: 0.95, pitch: 0.9 },
+};
 
 type Props = {
   dialogue: YukkuriDialogue | null;
@@ -24,9 +29,11 @@ export function YukkuriVoicePlayer({ dialogue, compact, autoPlayOnReady = false 
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState("");
   const [gate, setGate] = useState<VoicevoxGate>("unknown");
+  const [speechSupported, setSpeechSupported] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const autoPlayedKeyRef = useRef<string>("");
+  const speechTokenRef = useRef(0);
 
   useEffect(() => {
     if (!dialogue) {
@@ -54,6 +61,11 @@ export function YukkuriVoicePlayer({ dialogue, compact, autoPlayOnReady = false 
     };
   }, [dialogue]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setSpeechSupported(typeof window.speechSynthesis !== "undefined");
+  }, []);
+
   const stop = useCallback(() => {
     abortRef.current?.abort();
     abortRef.current = null;
@@ -63,7 +75,66 @@ export function YukkuriVoicePlayer({ dialogue, compact, autoPlayOnReady = false 
       a.removeAttribute("src");
       a.load();
     }
+    if (typeof window !== "undefined" && typeof window.speechSynthesis !== "undefined") {
+      window.speechSynthesis.cancel();
+    }
+    speechTokenRef.current += 1;
   }, []);
+
+  const pickJapaneseVoice = useCallback((): SpeechSynthesisVoice | null => {
+    if (typeof window === "undefined" || typeof window.speechSynthesis === "undefined") {
+      return null;
+    }
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length === 0) return null;
+    return (
+      voices.find((v) => /^ja[-_]?jp$/i.test(v.lang)) ??
+      voices.find((v) => /^ja/i.test(v.lang)) ??
+      voices[0] ??
+      null
+    );
+  }, []);
+
+  const playBrowserFallback = useCallback(async () => {
+    if (!dialogue) return;
+    if (typeof window === "undefined" || typeof window.speechSynthesis === "undefined") {
+      setHint("このブラウザは読み上げ機能に対応していません。");
+      return;
+    }
+    stop();
+    setBusy(true);
+    setHint("");
+    const token = speechTokenRef.current;
+    const voice = pickJapaneseVoice();
+    try {
+      for (const { key, label } of ORDER) {
+        if (token !== speechTokenRef.current) return;
+        const text = dialogue[key].trim();
+        if (!text) continue;
+        const style = SPEECH_STYLE[key];
+        await new Promise<void>((resolve, reject) => {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = "ja-JP";
+          utterance.rate = style.rate;
+          utterance.pitch = style.pitch;
+          utterance.volume = 1.0;
+          if (voice) utterance.voice = voice;
+          utterance.onend = () => resolve();
+          utterance.onerror = () => reject(new Error(`${label} の読み上げに失敗しました`));
+          window.speechSynthesis.speak(utterance);
+        });
+      }
+      setHint("音質はブラウザ内蔵音声です。VOICEVOX 接続時はより自然な音声になります。");
+    } catch (e) {
+      if (token !== speechTokenRef.current) return;
+      if (e instanceof Error) setHint(e.message);
+      else setHint("ブラウザ音声の読み上げに失敗しました。");
+    } finally {
+      if (token === speechTokenRef.current) {
+        setBusy(false);
+      }
+    }
+  }, [dialogue, pickJapaneseVoice, stop]);
 
   const play = useCallback(async () => {
     if (!dialogue) return;
@@ -135,18 +206,43 @@ export function YukkuriVoicePlayer({ dialogue, compact, autoPlayOnReady = false 
   if (!dialogue) return null;
 
   if (gate === "off") {
+    const unsupported = !speechSupported;
     return (
       <div
         className={`${styles.wrap}${compact ? ` ${styles.wrapCompact}` : ""}`}
         role="region"
         aria-label="VOICEVOX 読み上げ"
       >
-        <button type="button" className={styles.playBtnDisabled} disabled>
-          VOICEVOX は未設定です
-        </button>
+        {unsupported ? (
+          <button type="button" className={styles.playBtnDisabled} disabled>
+            VOICEVOX は未設定です
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={styles.fallbackBtn}
+            onClick={() => void playBrowserFallback()}
+            disabled={busy}
+            aria-busy={busy}
+          >
+            {busy ? "読み上げ中…" : "🔊 ブラウザ音声で読み上げ（簡易）"}
+          </button>
+        )}
+        {busy && !unsupported ? (
+          <button type="button" className={styles.stopBtn} onClick={stop}>
+            停止
+          </button>
+        ) : null}
         <p className={styles.hintMuted}>
-          サーバー環境変数 `VOICEVOX_BASE_URL` を設定すると読み上げできます。
+          {unsupported
+            ? "このブラウザは読み上げ機能に対応していません。"
+            : "音質はブラウザ内蔵音声です。VOICEVOX 接続時はより自然な音声になります。"}
         </p>
+        {hint && (
+          <p className={styles.hint} role="alert">
+            {hint}
+          </p>
+        )}
       </div>
     );
   }
@@ -164,18 +260,43 @@ export function YukkuriVoicePlayer({ dialogue, compact, autoPlayOnReady = false 
   }
 
   if (gate === "down") {
+    const unsupported = !speechSupported;
     return (
       <div
         className={`${styles.wrap}${compact ? ` ${styles.wrapCompact}` : ""}`}
         role="region"
         aria-label="VOICEVOX 読み上げ"
       >
-        <button type="button" className={styles.playBtnDisabled} disabled>
-          VOICEVOX に接続できません
-        </button>
+        {unsupported ? (
+          <button type="button" className={styles.playBtnDisabled} disabled>
+            VOICEVOX に接続できません
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={styles.fallbackBtn}
+            onClick={() => void playBrowserFallback()}
+            disabled={busy}
+            aria-busy={busy}
+          >
+            {busy ? "読み上げ中…" : "🔊 ブラウザ音声で読み上げ（簡易）"}
+          </button>
+        )}
+        {busy && !unsupported ? (
+          <button type="button" className={styles.stopBtn} onClick={stop}>
+            停止
+          </button>
+        ) : null}
         <p className={styles.hintMuted}>
-          エンジンを起動するか、VOICEVOX_BASE_URL（Tunnel 含む）を確認してください。
+          {unsupported
+            ? "このブラウザは読み上げ機能に対応していません。"
+            : "音質はブラウザ内蔵音声です。VOICEVOX 接続時はより自然な音声になります。"}
         </p>
+        {hint && (
+          <p className={styles.hint} role="alert">
+            {hint}
+          </p>
+        )}
       </div>
     );
   }
