@@ -4,11 +4,14 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, "..", ".env.production.local") });
 dotenv.config({ path: path.join(__dirname, "..", ".env.local") });
 dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
 const WAIT_MS = 1500;
-const dryRun = process.argv.includes("--dry-run");
+const dryRun =
+  process.argv.some((arg) => arg.includes("dry-run")) ||
+  process.env.npm_config_dry_run === "true";
 
 function pick(...values) {
   return values.find((v) => typeof v === "string" && v.length > 0);
