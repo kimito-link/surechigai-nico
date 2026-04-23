@@ -13,6 +13,17 @@ export type YukkuriExplainedArchiveRow = {
   source: string | null;
   first_explained_at: string;
   updated_at: string;
+  /**
+   * users テーブルに同じハンドルで登録されているか（すれ違いライトの参加者か）。
+   * CODEX-NEXT.md §2 対応。現状は users.twitter_handle がまだアプリ側で populate されていないので
+   * 常に false に落ちるが、X 連携が入ったタイミングで自動的に true に切り替わる設計。
+   */
+  is_surechigai_member?: boolean;
+  /**
+   * users.home_prefecture を返すのは「本人が全体公開している（location_visibility >= 2）」ときだけ。
+   * それ以外は null。JIS X 0401 の "01".."47" 形式。
+   */
+  home_prefecture?: string | null;
 };
 
 type CountRow = RowDataPacket & { cnt: number };
@@ -116,20 +127,64 @@ export async function listYukkuriExplainedArchive(
     params.push(`${sinceDate} 00:00:00`);
   }
   try {
+    // CODEX-NEXT.md §2: users.twitter_handle との LEFT JOIN で
+    // - is_surechigai_member: users 行があれば true（すれ違いライト参加フラグ）
+    // - home_prefecture: 本人が公開レベル 2 のときだけ返す（それ以外は NULL）
+    // 現状 users.twitter_handle がアプリ側で populate されていないので JOIN 結果は常に NULL、
+    // is_surechigai_member は常に false。X 連携が入れば自動的に true に切り替わる。
     const [rows] = await pool.query(
-      `SELECT x_handle, display_name, avatar_url, rink, konta, tanunee, source,
-              DATE_FORMAT(first_explained_at, '%Y-%m-%d %H:%i:%s') AS first_explained_at,
-              DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at
-       FROM yukkuri_explained
+      `SELECT y.x_handle, y.display_name, y.avatar_url, y.rink, y.konta, y.tanunee, y.source,
+              DATE_FORMAT(y.first_explained_at, '%Y-%m-%d %H:%i:%s') AS first_explained_at,
+              DATE_FORMAT(y.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at,
+              (u.id IS NOT NULL) AS is_surechigai_member,
+              CASE WHEN u.location_visibility >= 2 THEN u.home_prefecture ELSE NULL END AS home_prefecture
+       FROM yukkuri_explained y
+       LEFT JOIN users u
+         ON LOWER(u.twitter_handle) = y.x_handle
+        AND u.is_deleted = FALSE
        ${where.length > 0 ? `WHERE ${where.join(" AND ")}` : ""}
-       ORDER BY updated_at DESC
+       ORDER BY y.updated_at DESC
        LIMIT ? OFFSET ?`,
       [...params, cap, offset]
     );
-    return rows as YukkuriExplainedArchiveRow[];
+    return normalizeArchiveRows(rows);
   } catch {
     return [];
   }
+}
+
+/**
+ * MySQL の `(u.id IS NOT NULL)` は 1/0 の数値で返ってくるため boolean に寄せる。
+ * home_prefecture は CASE の結果で NULL or string なのでそのまま通す。
+ * CODEX-NEXT.md §2 の後方互換: フィールドが欠けている呼び出し側（旧テスト等）に配慮して
+ * undefined にはしない（必ず boolean / string | null のいずれかを入れる）。
+ */
+function normalizeArchiveRows(rows: unknown): YukkuriExplainedArchiveRow[] {
+  if (!Array.isArray(rows)) return [];
+  return rows.map((raw) => {
+    const r = raw as Record<string, unknown>;
+    const member =
+      typeof r.is_surechigai_member === "number"
+        ? r.is_surechigai_member !== 0
+        : Boolean(r.is_surechigai_member);
+    const pref =
+      typeof r.home_prefecture === "string" && r.home_prefecture.length > 0
+        ? r.home_prefecture
+        : null;
+    return {
+      x_handle: String(r.x_handle ?? ""),
+      display_name: (r.display_name as string | null) ?? null,
+      avatar_url: (r.avatar_url as string | null) ?? null,
+      rink: String(r.rink ?? ""),
+      konta: String(r.konta ?? ""),
+      tanunee: String(r.tanunee ?? ""),
+      source: (r.source as string | null) ?? null,
+      first_explained_at: String(r.first_explained_at ?? ""),
+      updated_at: String(r.updated_at ?? ""),
+      is_surechigai_member: member,
+      home_prefecture: pref,
+    };
+  });
 }
 
 export async function listYukkuriExplainedArchiveSitemapRows(input: {
@@ -159,16 +214,22 @@ export async function getYukkuriExplainedArchive(
   const h = normalizeHandle(handle);
   if (!h) return null;
   try {
+    // §2 と同じ LEFT JOIN を個別取得にも適用（詳細ページでも badge を出せるように）。
     const [rows] = await pool.query(
-      `SELECT x_handle, display_name, avatar_url, rink, konta, tanunee, source,
-              DATE_FORMAT(first_explained_at, '%Y-%m-%d %H:%i:%s') AS first_explained_at,
-              DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at
-       FROM yukkuri_explained
-       WHERE x_handle = ?
+      `SELECT y.x_handle, y.display_name, y.avatar_url, y.rink, y.konta, y.tanunee, y.source,
+              DATE_FORMAT(y.first_explained_at, '%Y-%m-%d %H:%i:%s') AS first_explained_at,
+              DATE_FORMAT(y.updated_at, '%Y-%m-%d %H:%i:%s') AS updated_at,
+              (u.id IS NOT NULL) AS is_surechigai_member,
+              CASE WHEN u.location_visibility >= 2 THEN u.home_prefecture ELSE NULL END AS home_prefecture
+       FROM yukkuri_explained y
+       LEFT JOIN users u
+         ON LOWER(u.twitter_handle) = y.x_handle
+        AND u.is_deleted = FALSE
+       WHERE y.x_handle = ?
        LIMIT 1`,
       [h]
     );
-    const list = rows as YukkuriExplainedArchiveRow[];
+    const list = normalizeArchiveRows(rows);
     return list[0] ?? null;
   } catch {
     return null;

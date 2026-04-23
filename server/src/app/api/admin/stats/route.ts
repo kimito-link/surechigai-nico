@@ -80,6 +80,17 @@ export async function GET(req: NextRequest) {
          AND (last_active_at IS NULL OR last_active_at < DATE_SUB(NOW(), INTERVAL 7 DAY))`
     );
 
+    // CODEX-NEXT.md §4: 「ゆっくり解説されている × すれ違いライトに登録している」重なり人数。
+    // この企画の中心値として表示する。users.twitter_handle が populate されていない間は
+    // 常に 0 になるが、X 連携が入れば自動的にカウントされ始める。
+    const [bothCountRow] = await pool.execute<RowDataPacket[]>(
+      `SELECT COUNT(*) AS count
+         FROM yukkuri_explained y
+         JOIN users u
+           ON LOWER(u.twitter_handle) = y.x_handle
+          AND u.is_deleted = FALSE`
+    );
+
     const d1Reg = d1Registered[0].count as number;
     const d1Ret = d1Retained[0].count as number;
 
@@ -91,6 +102,8 @@ export async function GET(req: NextRequest) {
         wau: wauRows[0].count,
         mau: mauRows[0].count,
         inactive_7d: inactiveUsers[0].count,
+        // 企画の中心値: 解説されている かつ すれ違い登録中 のユーザー数
+        both_count: Number(bothCountRow[0]?.count ?? 0),
       },
       retention: {
         d1_registered: d1Reg,
