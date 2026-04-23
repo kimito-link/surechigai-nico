@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import pool from "@/lib/db";
 import { requireAdminAuth } from "@/lib/adminAuth";
+import { prefectureCodeToName } from "@/lib/prefectureCodes";
 import type { RowDataPacket } from "mysql2";
 
 // 管理用統計API — Basic 認証 (requireAdminAuth) で保護
@@ -91,6 +92,51 @@ export async function GET(req: NextRequest) {
           AND u.is_deleted = FALSE`
     );
 
+    // CODEX-NEXT.md §1: 参加県機能の利用状況を admin に露出する。
+    // 会期中「参加県を使っている人どれくらい？」「全体公開にしてる人は？」を
+    // ダッシュボードから見て回せるように。debug-* ユーザーは除外。
+    const [homePrefSetRow] = await pool.execute<RowDataPacket[]>(
+      `SELECT COUNT(*) AS count FROM users
+       WHERE home_prefecture IS NOT NULL
+         AND is_deleted = FALSE
+         AND uuid NOT LIKE 'debug-%'`
+    );
+    const [visibilityBreakdown] = await pool.execute<RowDataPacket[]>(
+      `SELECT location_visibility AS lv, COUNT(*) AS cnt FROM users
+       WHERE is_deleted = FALSE AND uuid NOT LIKE 'debug-%'
+       GROUP BY location_visibility`
+    );
+    const [prefDistribution] = await pool.execute<RowDataPacket[]>(
+      `SELECT home_prefecture AS code,
+              COUNT(*) AS total,
+              SUM(CASE WHEN location_visibility >= 2 THEN 1 ELSE 0 END) AS visible
+       FROM users
+       WHERE home_prefecture IS NOT NULL
+         AND is_deleted = FALSE
+         AND uuid NOT LIKE 'debug-%'
+       GROUP BY home_prefecture
+       ORDER BY total DESC, code ASC`
+    );
+
+    // visibility_breakdown は {v0, v1, v2} の固定形に正規化（不正値は落とす）。
+    const visBreakdown = { v0: 0, v1: 0, v2: 0 };
+    for (const row of visibilityBreakdown) {
+      const lv = Number(row.lv);
+      const cnt = Number(row.cnt);
+      if (lv === 0) visBreakdown.v0 = cnt;
+      else if (lv === 1) visBreakdown.v1 = cnt;
+      else if (lv === 2) visBreakdown.v2 = cnt;
+    }
+
+    // 県別の分布に県名を解決。コードが不正なら name=null のまま通す
+    // （DB に残っている古い値のデバッグ用に素の code を残しておく）。
+    const prefDistributionWithName = prefDistribution.map((row) => ({
+      code: row.code as string,
+      name: prefectureCodeToName(row.code as string),
+      total: Number(row.total),
+      visible: Number(row.visible ?? 0),
+    }));
+
     const d1Reg = d1Registered[0].count as number;
     const d1Ret = d1Retained[0].count as number;
 
@@ -104,6 +150,9 @@ export async function GET(req: NextRequest) {
         inactive_7d: inactiveUsers[0].count,
         // 企画の中心値: 解説されている かつ すれ違い登録中 のユーザー数
         both_count: Number(bothCountRow[0]?.count ?? 0),
+        // CODEX-NEXT §1: 参加県機能の利用状況サマリ
+        home_prefecture_set: Number(homePrefSetRow[0]?.count ?? 0),
+        visibility_breakdown: visBreakdown,
       },
       retention: {
         d1_registered: d1Reg,
@@ -112,6 +161,8 @@ export async function GET(req: NextRequest) {
       },
       daily_dau: dailyDau,
       today_events: eventCounts,
+      // 県別の登録数と全体公開数。合計順に降順、コード昇順。
+      prefecture_distribution: prefDistributionWithName,
     });
   } catch (error) {
     console.error("統計取得エラー:", error);

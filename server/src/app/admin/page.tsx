@@ -11,6 +11,12 @@ interface Stats {
     wau: number;
     mau: number;
     inactive_7d: number;
+    /** 解説 × すれ違い登録の重なり人数（CODEX-NEXT §4） */
+    both_count?: number;
+    /** 参加県を登録しているユーザー数（CODEX-NEXT §1） */
+    home_prefecture_set?: number;
+    /** 公開範囲の分布（CODEX-NEXT §1） */
+    visibility_breakdown?: { v0: number; v1: number; v2: number };
   };
   retention: {
     d1_registered: number;
@@ -19,6 +25,13 @@ interface Stats {
   };
   daily_dau: { date: string; count: number }[];
   today_events: { event_type: string; count: number }[];
+  /** 県別の登録 / 全体公開数（総数降順） */
+  prefecture_distribution?: Array<{
+    code: string;
+    name: string | null;
+    total: number;
+    visible: number;
+  }>;
 }
 
 const EVENT_LABELS: Record<string, string> = {
@@ -124,7 +137,43 @@ export default function AdminPage() {
         <Card label="WAU (7日間)" value={stats.overview.wau} />
         <Card label="MAU (30日間)" value={stats.overview.mau} />
         <Card label="非アクティブ (7日+)" value={stats.overview.inactive_7d} warn />
+        {typeof stats.overview.both_count === "number" && (
+          <Card
+            label="解説×すれちがい両方"
+            value={stats.overview.both_count}
+            highlight
+          />
+        )}
+        {typeof stats.overview.home_prefecture_set === "number" && (
+          <Card
+            label="参加県を登録"
+            value={stats.overview.home_prefecture_set}
+          />
+        )}
       </div>
+
+      {stats.overview.visibility_breakdown && (
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>
+            公開範囲の分布（CODEX-NEXT §1）
+          </h2>
+          <div className={styles.cardGrid}>
+            <Card
+              label="非公開 (v0, デフォルト)"
+              value={stats.overview.visibility_breakdown.v0}
+            />
+            <Card
+              label="マッチ相手のみ (v1)"
+              value={stats.overview.visibility_breakdown.v1}
+            />
+            <Card
+              label="全体公開 (v2)"
+              value={stats.overview.visibility_breakdown.v2}
+              highlight
+            />
+          </div>
+        </div>
+      )}
 
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>D1継続率</h2>
@@ -166,6 +215,40 @@ export default function AdminPage() {
           )}
         </div>
       </div>
+
+      {stats.prefecture_distribution && stats.prefecture_distribution.length > 0 && (
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>
+            県別の参加者分布（{stats.prefecture_distribution.length} 県 / 総数降順）
+          </h2>
+          <div className={styles.card}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th className={styles.td}>県</th>
+                  <th className={`${styles.td} ${styles.tdNumeric}`}>登録数</th>
+                  <th className={`${styles.td} ${styles.tdNumeric}`}>全体公開</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.prefecture_distribution.map((row) => (
+                  <tr key={row.code}>
+                    <td className={styles.td}>
+                      {row.name ?? `(不正コード: ${row.code})`}
+                    </td>
+                    <td className={`${styles.td} ${styles.tdNumeric}`}>
+                      {row.total}
+                    </td>
+                    <td className={`${styles.td} ${styles.tdNumeric}`}>
+                      {row.visible}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {reports.length > 0 && (
         <div className={styles.section}>
