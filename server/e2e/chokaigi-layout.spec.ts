@@ -96,4 +96,27 @@ test.describe("chokaigi ヘッダーレイアウト", () => {
       page.getByRole("button", { name: /メニューを開く|メニューを閉じる/ })
     ).toBeVisible();
   });
+
+  test("モバイル: pathname 据え置きで hash だけ変えると Special Thanks までスクロールする", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/chokaigi?creator=test#creator-cross-search-heading", {
+      waitUntil: "domcontentloaded",
+    });
+    await expect(page.getByRole("banner")).toBeVisible({ timeout: 45_000 });
+    await expect(page.locator("main article h1").first()).toBeVisible({
+      timeout: 30_000,
+    });
+
+    await page.getByRole("button", { name: "メニューを開く" }).click();
+    const mobileNav = page.getByRole("navigation", { name: "モバイルメニュー" });
+    const thanksLink = mobileNav.locator('a[href="/chokaigi#special-thanks-heading"]');
+    await expect(thanksLink).toBeVisible();
+    await thanksLink.click();
+
+    const heading = page.locator("#special-thanks-heading");
+    await expect(heading).toBeVisible({ timeout: 15_000 });
+    await expect(heading).toBeInViewport({ timeout: 15_000, ratio: 0.12 });
+  });
 });

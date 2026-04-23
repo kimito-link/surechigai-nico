@@ -53,7 +53,9 @@ export default function RootLayout({
           </a>
           <WebVitalsReporter />
           <LayoutSpacingEffect />
-          <DocumentHashScroll />
+          <Suspense fallback={null}>
+            <DocumentHashScroll />
+          </Suspense>
           <Suspense fallback={null}>
             <AnalyticsNavigationTracker />
           </Suspense>

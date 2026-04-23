@@ -91,7 +91,7 @@
 .stickyXSubmit:hover:not(:disabled) { background: #b35500; }
 .stickyXSubmit:disabled { opacity: 0.5; cursor: default; }
 
-/* 2択アクションボタン */
+/* スティッキーバー：解説（オレンジ）＋すれ違い登録（青） */
 .stickyXBtnYukkuri {
   flex-shrink: 0;
   height: 2rem;
@@ -127,19 +127,40 @@
 
 .stickyXBtnRegister:hover { background: #144a80; }
 
-.stickyXHint {
+.stickyXHintWrap {
+  flex-shrink: 1;
+  min-width: 0;
   font-size: 0.75rem;
-  color: #a09080;
+  font-weight: 600;
+  color: #4a4036;
+  line-height: 1.35;
+}
+
+.stickyXHintLong,
+.stickyXHintShort {
+  display: inline;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex-shrink: 1;
+}
+
+.stickyXHintShort {
+  display: none;
 }
 
 @media (max-width: 480px) {
-  .stickyXHint { display: none; }
+  .stickyXHintLong {
+    display: none;
+  }
+  .stickyXHintShort {
+    display: inline;
+    font-size: 0.7rem;
+  }
   .stickyXBtnYukkuri,
-  .stickyXBtnRegister { font-size: 0.75rem; padding: 0 0.6rem; }
+  .stickyXBtnRegister {
+    font-size: 0.72rem;
+    padding: 0 0.55rem;
+  }
 }
 
 /* 結果パネル */

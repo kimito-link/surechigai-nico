@@ -93,7 +93,7 @@ export const MOBILE_CHOKAIGI_SECTION_LINKS: readonly HeaderNavLink[] = [
   {
     href: "/chokaigi#special-thanks-heading",
     label: "Special Thanks",
-    description: "協力者クレジット",
+    description: "協賛・協力者クレジット",
   },
 ] as const;
 

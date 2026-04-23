@@ -580,7 +580,10 @@
 .hint {
   margin: 0;
   font-size: 0.82rem;
-  color: #9a8878;
+  color: #4a4036;
+  text-align: center;
+  line-height: 1.5;
+  max-width: 26rem;
 }
 
 /* 登録CTA（解説フォームとは別） */
@@ -598,7 +601,10 @@
 .registerCtaText {
   margin: 0;
   font-size: 0.78rem;
-  color: #7a6a5a;
+  color: #4a4036;
+  text-align: center;
+  line-height: 1.45;
+  max-width: min(32rem, 100%);
 }
 
 .loadingRow {
@@ -614,7 +620,7 @@
 .loadingHint {
   margin: 0;
   font-size: 0.78rem;
-  color: #7a6a5a;
+  color: #4a4036;
   text-align: center;
   line-height: 1.5;
 }

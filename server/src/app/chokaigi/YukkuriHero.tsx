@@ -128,7 +128,7 @@ export function YukkuriHero() {
 
         {!hasInput && (
           <p className={styles.hint}>
-            自分でも他の人でも入力できます
+            誰のX IDでも解説できます。会場ですれ違う・いいね・オフ会のきっかけは、下のすれ違い参加登録から
           </p>
         )}
       </form>
@@ -198,8 +198,9 @@ export function YukkuriHero() {
                   type="button"
                   className={styles.btnRegister}
                   onClick={() => router.push("/sign-in")}
+                  title="位置の交換ですれ違い検出。いいねやオフ会のきっかけにも"
                 >
-                  すれ違い通信に登録する
+                  すれ違いに参加（位置・オフ会）
                 </button>
               )}
               {isLoaded && isSignedIn && (
@@ -220,19 +221,23 @@ export function YukkuriHero() {
        *   解説中は上のオーバーレイに同等の登録ボタンが入っているので重複を避けるため非表示にする。 */}
       {!isTalking && isLoaded && !isSignedIn && (
         <div className={styles.registerCta}>
-          <p className={styles.registerCtaText}>自分がすれ違い通信に参加する場合はこちら</p>
+          <p className={styles.registerCtaText}>
+            すれ違い通信は企画の核です。みんなで位置を交換して近くとマッチし、Xでいいねやオフ会のきっかけに。参加はこちら（ゆっくり解説とは別ボタン）
+          </p>
           <button
             type="button"
             className={styles.btnRegister}
             onClick={() => router.push("/sign-in")}
           >
-            自分を登録する（Xでログイン）
+            すれ違いに参加する（Xでログイン）
           </button>
         </div>
       )}
       {!isTalking && isLoaded && isSignedIn && (
         <div className={styles.registerCta}>
-          <p className={styles.registerCtaText}>すれ違い通信に参加中</p>
+          <p className={styles.registerCtaText}>
+            すれ違い通信に参加中。位置の送信・マッチ確認はアプリから
+          </p>
           <button
             type="button"
             className={styles.btnRegister}

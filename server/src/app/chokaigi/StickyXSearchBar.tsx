@@ -112,7 +112,7 @@ export function StickyXSearchBar() {
 
   return (
     <>
-      <div className={styles.stickyXBar} role="region" aria-label="検索・登録バー">
+      <div className={styles.stickyXBar} role="region" aria-label="X ID・ゆっくり解説とすれ違い登録">
         <form className={styles.stickyXForm} onSubmit={handleYukkuri}>
           <span className={styles.stickyXAt} aria-hidden="true">
             @
@@ -134,13 +134,23 @@ export function StickyXSearchBar() {
               <button type="submit" className={styles.stickyXBtnYukkuri} disabled={loading}>
                 {loading ? "…" : "ゆっくり解説"}
               </button>
-              <button type="button" className={styles.stickyXBtnRegister} onClick={handleRegister}>
+              <button
+                type="button"
+                className={styles.stickyXBtnRegister}
+                onClick={handleRegister}
+                title="会場で位置を交換してすれ違い検出。いいねやオフ会のきっかけにも（ログイン）"
+              >
                 すれ違い登録
               </button>
             </>
           )}
           {!hasInput && (
-            <span className={styles.stickyXHint}>入力すると解説・登録できます</span>
+            <span className={styles.stickyXHintWrap} aria-live="polite">
+              <span className={styles.stickyXHintLong}>
+                X IDを入れると「ゆっくり解説」と「すれ違い登録」。みんなで位置を交換してつながる土台です
+              </span>
+              <span className={styles.stickyXHintShort}>解説 or すれ違い登録</span>
+            </span>
           )}
         </form>
       </div>
@@ -231,8 +241,13 @@ export function StickyXSearchBar() {
                   >
                     Xでシェア
                   </a>
-                  <button type="button" className={styles.stickyXBtnRegister} onClick={handleRegister}>
-                    すれ違い登録へ
+                  <button
+                    type="button"
+                    className={styles.stickyXBtnRegister}
+                    onClick={handleRegister}
+                    title="位置情報の交換ですれ違い検出。いいねやオフ会のきっかけにも"
+                  >
+                    すれ違い参加（位置・オフ会）
                   </button>
                 </div>
                 <p className={styles.stickyXCanonNote}>
