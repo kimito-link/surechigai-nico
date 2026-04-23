@@ -52,6 +52,13 @@ function isUnprotectedApiPath(pathname: string): boolean {
 const isPublicRoute = createRouteMatcher([
   "/",
   "/chokaigi(.*)",
+  /**
+   * 都道府県別クリエイター一覧。/chokaigi LP のファーストビュー下と
+   * 機能カードから未ログインで直接リンクされているので public。
+   * 中身は `getPrefectureSummaries` / `getCreatorsByPrefecture` の公開集計データで
+   * Clerk セッションは不要。
+   */
+  "/creators(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/logged-out",
