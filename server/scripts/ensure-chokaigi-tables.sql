@@ -59,3 +59,33 @@ CREATE TABLE IF NOT EXISTS yukkuri_explained (
   PRIMARY KEY (x_handle),
   INDEX idx_yukkuri_explained_updated (updated_at)
 ) ENGINE=InnoDB;
+
+-- ============================================================
+-- yukkuri_explained_tweet（ツイート URL 解説アーカイブ）
+--   POST /api/yukkuri-explain-tweet 成功時に upsert。
+-- ============================================================
+CREATE TABLE IF NOT EXISTS yukkuri_explained_tweet (
+  tweet_id VARCHAR(32) NOT NULL COMMENT 'X ツイート ID（数字文字列）',
+  x_handle VARCHAR(64) NOT NULL COMMENT 'X ハンドル（小文字・@なし）',
+  author_display_name VARCHAR(200) NULL COMMENT '投稿者表示名',
+  author_avatar_url VARCHAR(500) NULL COMMENT '投稿者アバターURL',
+  tweet_text TEXT NOT NULL COMMENT 'ツイート本文',
+  tweeted_at DATETIME NULL COMMENT 'X 上の投稿時刻',
+  rink TEXT NOT NULL,
+  konta TEXT NOT NULL,
+  tanunee TEXT NOT NULL,
+  source VARCHAR(64) NULL COMMENT 'openrouter / cache_hit 等',
+  first_explained_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (tweet_id),
+  KEY idx_handle (x_handle),
+  KEY idx_updated (updated_at)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- 既存 yukkuri_explained を utf8mb4 へ変換（絵文字対応）
+-- ============================================================
+ALTER TABLE yukkuri_explained
+  CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

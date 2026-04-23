@@ -87,6 +87,16 @@ export async function gatherYukkuriHealth(
     return result;
   }
 
+  // MySQL: ツイート URL 解説アーカイブ件数
+  try {
+    const [rows] = await pool.query<RowDataPacket[]>(
+      "SELECT COUNT(*) AS c FROM yukkuri_explained_tweet"
+    );
+    result.tweetArchiveRows = Number(rows[0]?.c ?? 0);
+  } catch {
+    result.tweetArchiveRows = 0;
+  }
+
   const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
   const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
   const hasRedis = Boolean(redisUrl && redisToken);
