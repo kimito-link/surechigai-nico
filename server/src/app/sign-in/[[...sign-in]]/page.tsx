@@ -1,4 +1,4 @@
-import { SignIn } from "@clerk/nextjs";
+import { XOauthEntry } from "@/app/components/XOauthEntry";
 import styles from "./page.module.css";
 
 export default function SignInPage() {
@@ -24,21 +24,7 @@ export default function SignInPage() {
         </div>
         <h1 className={styles.title}>すれちがいライト</h1>
         <p className={styles.lead}>Xアカウントでログインして始めよう</p>
-        <SignIn
-          fallbackRedirectUrl="/onboarding"
-          appearance={{
-            elements: {
-              rootBox: styles.clerkRoot,
-              cardBox: styles.clerkCardBox,
-              card: styles.clerkCard,
-              header: styles.clerkHidden,
-              main: styles.clerkMain,
-              socialButtonsBlockButton: styles.clerkSocialButton,
-              footer: styles.clerkFooter,
-              footerAction: styles.clerkFooterAction,
-            },
-          }}
-        />
+        <XOauthEntry mode="sign-in" />
         <p className={styles.hint}>
           ログインすると、会場ですれちがった人と<br />
           匿名でつながれます
