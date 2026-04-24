@@ -2980,41 +2980,22 @@ button.footerThanksLink {
   margin-top: 0.1rem;
 }
 
-@media (max-width: 599px) {
-  .yukkuriRow,
-  .yukkuriRowReverse {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.4rem;
-  }
-
-  .yukkuriRowReverse .yukkuriAvatarBlock {
-    align-self: flex-end;
-  }
-
-  .yukkuriRow:not(.yukkuriRowReverse) .yukkuriAvatarBlock {
-    align-self: flex-start;
-  }
-}
-
 .yukkuriAvatarBlock {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.45rem;
-  width: 140px;
-  max-width: min(140px, calc(100vw - 2rem));
+  gap: 0.35rem;
+  width: clamp(80px, 24vw, 140px);
   min-width: 0;
 }
 
-/* 外枠：140×180 固定・クリップ（transform なし） */
+/* 外枠：viewport 連動サイズ・クリップ（transform なし） */
 .yukkuriAvatarInner {
   position: relative;
   box-sizing: border-box;
-  width: 140px;
-  height: 180px;
-  max-width: min(140px, calc(100vw - 2rem));
+  width: 100%;
+  aspect-ratio: 140 / 180;
   margin-inline: auto;
   flex-shrink: 0;
   overflow: hidden;
@@ -3092,55 +3073,53 @@ button.footerThanksLink {
   border: 1px solid rgba(130, 80, 200, 0.3);
 }
 
-@media (min-width: 600px) {
-  .yukkuriRow:not(.yukkuriRowReverse) .yukkuriBubble::after {
-    content: "";
-    position: absolute;
-    bottom: 1rem;
-    left: -7px;
-    width: 0;
-    height: 0;
-    border: 7px solid transparent;
-    border-right-width: 10px;
-    border-right-style: solid;
-  }
+.yukkuriRow:not(.yukkuriRowReverse) .yukkuriBubble::after {
+  content: "";
+  position: absolute;
+  bottom: 1rem;
+  left: -7px;
+  width: 0;
+  height: 0;
+  border: 7px solid transparent;
+  border-right-width: 10px;
+  border-right-style: solid;
+}
 
-  .yukkuriRowReverse .yukkuriBubble::after {
-    content: "";
-    position: absolute;
-    bottom: 1rem;
-    right: -7px;
-    left: auto;
-    width: 0;
-    height: 0;
-    border: 7px solid transparent;
-    border-left-width: 10px;
-    border-left-style: solid;
-  }
+.yukkuriRowReverse .yukkuriBubble::after {
+  content: "";
+  position: absolute;
+  bottom: 1rem;
+  right: -7px;
+  left: auto;
+  width: 0;
+  height: 0;
+  border: 7px solid transparent;
+  border-left-width: 10px;
+  border-left-style: solid;
+}
 
-  .yukkuriRow[data-speaker="rink"]:not(.yukkuriRowReverse) .yukkuriBubble::after {
-    border-right-color: #ddeeff;
-  }
+.yukkuriRow[data-speaker="rink"]:not(.yukkuriRowReverse) .yukkuriBubble::after {
+  border-right-color: #ddeeff;
+}
 
-  .yukkuriRow[data-speaker="rink"].yukkuriRowReverse .yukkuriBubble::after {
-    border-left-color: #ddeeff;
-  }
+.yukkuriRow[data-speaker="rink"].yukkuriRowReverse .yukkuriBubble::after {
+  border-left-color: #ddeeff;
+}
 
-  .yukkuriRow[data-speaker="konta"]:not(.yukkuriRowReverse) .yukkuriBubble::after {
-    border-right-color: #fff0da;
-  }
+.yukkuriRow[data-speaker="konta"]:not(.yukkuriRowReverse) .yukkuriBubble::after {
+  border-right-color: #fff0da;
+}
 
-  .yukkuriRow[data-speaker="konta"].yukkuriRowReverse .yukkuriBubble::after {
-    border-left-color: #fff0da;
-  }
+.yukkuriRow[data-speaker="konta"].yukkuriRowReverse .yukkuriBubble::after {
+  border-left-color: #fff0da;
+}
 
-  .yukkuriRow[data-speaker="tanunee"]:not(.yukkuriRowReverse) .yukkuriBubble::after {
-    border-right-color: #f0e6ff;
-  }
+.yukkuriRow[data-speaker="tanunee"]:not(.yukkuriRowReverse) .yukkuriBubble::after {
+  border-right-color: #f0e6ff;
+}
 
-  .yukkuriRow[data-speaker="tanunee"].yukkuriRowReverse .yukkuriBubble::after {
-    border-left-color: #f0e6ff;
-  }
+.yukkuriRow[data-speaker="tanunee"].yukkuriRowReverse .yukkuriBubble::after {
+  border-left-color: #f0e6ff;
 }
 
 .yukkuriBubbleText {
