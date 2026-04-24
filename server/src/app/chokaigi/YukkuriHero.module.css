@@ -112,11 +112,16 @@
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + max(7rem, 18vh));
   /* ベージュ系のベースに合わせたソリッド寄りの背景で下層を確実に隠す */
   background: linear-gradient(180deg, #faf6eb 0%, #f3ead9 100%);
-  /* 子要素（吹き出し + talkingFooter）を縦並びで画面中央寄せ */
+  /* 子要素（吹き出し + talkingFooter）を縦並びで画面中央寄せ。
+   * 重要: `safe center` を使うこと。`center` 単独だと、
+   * コンテンツ（3 キャラカード + フッター）がビューポート高を超えたときに
+   * 上端が切り落とされて **りんく・こん太が見えない**（スクロールでも戻れない）
+   * バグがモバイルで発生する。`safe center` は overflow 時に自動で flex-start に
+   * フォールバックしてスクロールで全員見えるようになる。 */
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: safe center;
   gap: clamp(0.55rem, 2vw, 1rem);
   overflow-y: auto;
   overscroll-behavior: contain;
