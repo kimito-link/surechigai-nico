@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useSignIn, useSignUp } from "@clerk/nextjs";
+import { useSignIn, useSignUp } from "@clerk/nextjs/legacy";
 import { normalizePostAuthRedirect } from "@/lib/authRedirectPath";
 import styles from "./XOauthEntry.module.css";
 
@@ -38,7 +38,9 @@ export function XOauthEntry({ mode }: XOauthEntryProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const isLoaded = mode === "sign-in" ? signInLoaded : signUpLoaded;
-  const resource = (mode === "sign-in" ? signIn : signUp) as RedirectStarter | undefined;
+  const resource = (mode === "sign-in" ? signIn : signUp) as unknown as
+    | RedirectStarter
+    | undefined;
   const callbackPath = mode === "sign-in" ? SIGN_IN_CALLBACK : SIGN_UP_CALLBACK;
 
   const redirectPath = useMemo(() => {
