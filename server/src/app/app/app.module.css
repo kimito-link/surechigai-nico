@@ -677,6 +677,19 @@
   white-space: nowrap;
 }
 
+/* 富士山までの距離・方位（位置情報を送ったあとに 1 行で表示） */
+.fujiProximity {
+  margin: 6px 0 0;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a3a5c;
+  background: rgba(79, 172, 254, 0.08);
+  border: 1px solid rgba(79, 172, 254, 0.25);
+  border-radius: 8px;
+  letter-spacing: 0.02em;
+}
+
 /* 全国参加者エリア統計 */
 .areaStatsWrap {
   margin: 14px 0 0;

@@ -7,6 +7,7 @@ import { buildAiErrorReport, maskToken } from "@/lib/aiErrorReport";
 import { clientReverseGeocode } from "@/lib/clientReverseGeocode";
 import { useLiveMapStream } from "@/lib/useLiveMapStream";
 import { haversineMeters } from "@/lib/geoDistance";
+import { getFujiProximity, formatFujiProximityLine } from "@/lib/fujiDistance";
 import {
   LIVE_MAP_FALLBACK_VENUE,
   LIVE_MAP_POLL_MS,
@@ -606,15 +607,28 @@ export default function LocationButton({
 
       {/* 送信済み表示: ローカル state 優先。refresh 後は API の selfLocation にフォールバック */}
       {(lastSubmission || mapPayload?.selfLocation) && (
-        <div className={styles.selfLocationCard}>
-          <span className={styles.selfLocationPin}>📍</span>
-          <span className={styles.selfLocationText}>
-            送信済み：{lastSubmission?.municipality ?? mapPayload?.selfLocation?.municipality ?? "位置取得済み"}
-          </span>
-          <span className={styles.selfLocationTime}>
-            {liveMapFormatAgo(lastSubmission?.at ?? mapPayload?.selfLocation?.updatedAtMs ?? Date.now())}
-          </span>
-        </div>
+        <>
+          <div className={styles.selfLocationCard}>
+            <span className={styles.selfLocationPin}>📍</span>
+            <span className={styles.selfLocationText}>
+              送信済み：{lastSubmission?.municipality ?? mapPayload?.selfLocation?.municipality ?? "位置取得済み"}
+            </span>
+            <span className={styles.selfLocationTime}>
+              {liveMapFormatAgo(lastSubmission?.at ?? mapPayload?.selfLocation?.updatedAtMs ?? Date.now())}
+            </span>
+          </div>
+          {(() => {
+            const lat = lastSubmission?.lat ?? mapPayload?.selfLocation?.lat;
+            const lng = lastSubmission?.lng ?? mapPayload?.selfLocation?.lng;
+            if (typeof lat !== "number" || typeof lng !== "number") return null;
+            const proximity = getFujiProximity(lat, lng);
+            return (
+              <p className={styles.fujiProximity} aria-live="polite">
+                {formatFujiProximityLine(proximity)}
+              </p>
+            );
+          })()}
+        </>
       )}
 
       {/* 全国参加者マップ + エリアタグ */}
