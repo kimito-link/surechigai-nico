@@ -40,10 +40,15 @@ function isUnprotectedApiPath(pathname: string): boolean {
   }
   // 管理 API は Clerk セッションではなく Basic 認証 (requireAdminAuth) で守る。
   // Clerk protect を通すとリダイレクトで 404 になるので、middleware ではバイパス。
-  if (pathname.startsWith("/api/admin/yukkuri-backfill")) {
-    return true;
-  }
-  if (pathname.startsWith("/api/admin/health/yukkuri")) {
+  //
+  // 2026-04-24 追記: 個別に列挙していた時代は `yukkuri-backfill` と
+  // `health/yukkuri` しか書いておらず、`/api/admin/reports` と `/api/admin/stats`
+  // が本番で HTTP 404 を返していた（`curl -L https://surechigai-nico.link/api/admin/stats`
+  // で再現）。会期当日の通報対応・ダッシュボード閲覧が壊れるので、
+  // `/api/admin/` 配下を丸ごとバイパスする方針に変更した。各 route 側は
+  // `requireAdminAuth` で Basic 認証を要求しているので Clerk の代わりに
+  // 必ずそちらで守られる（= middleware バイパスしても無認証で通ることはない）。
+  if (pathname.startsWith("/api/admin/")) {
     return true;
   }
   return false;

@@ -358,15 +358,28 @@ export function StickyXSearchBar() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.stickyXShareBtn}
+                    /**
+                     * 2026-04-24 緊急修正（会期前日）: 旧実装は onClick で
+                     * `e.preventDefault()` → `await primeClipboardForShare()` →
+                     * `window.open()` の順に呼んでいたが、iOS Safari / スマホ Chrome は
+                     * `await` をまたぐと user gesture が失効し、`window.open` が
+                     * popup blocker に掴まれて **新規タブが全く開かない** 症状になっていた。
+                     * （ユーザー報告：「紹介 URL ボタンを押しても動かない」）
+                     *
+                     * 修正方針: onClick を削除し、`<a target="_blank">` の通常遷移に任せる。
+                     * クリップボード仕込みは mousedown / touchstart の **同期 fire-and-forget**
+                     * で行う。これなら click の user gesture を一切消費せず、ブラウザが
+                     * 新規タブを確実に開ける。X デスクトップアプリが intent を奪って空白
+                     * composer を開いた場合でも、直前に書き込んだクリップボードから
+                     * Ctrl+V で復旧できる（onMouseDown が click より前に走る仕様）。
+                     */
                     onMouseDown={() => {
                       void primeClipboardForShare(shareTarget);
                     }}
-                    onClick={async (e) => {
-                      e.preventDefault();
-                      try {
-                        await primeClipboardForShare(shareTarget);
-                      } catch {}
-                      window.open(buildTweetUrl(shareTarget), "_blank", "noopener,noreferrer");
+                    onTouchStart={() => {
+                      // スマホでは mousedown が走らず touchstart のみが click より前に
+                      // 発火する。iOS Safari で clipboard を仕込むにはこのタイミングが必須。
+                      void primeClipboardForShare(shareTarget);
                     }}
                   >
                     Xでシェア

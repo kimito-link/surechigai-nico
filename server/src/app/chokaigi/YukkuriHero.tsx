@@ -91,45 +91,39 @@ export function YukkuriHero() {
   };
 
   /**
-   * 「X でシェア（カード付き）」の onClick。
+   * 「X でシェア（カード付き）」のイベントハンドラ群。
    *
-   * 【ツイッター専用方針】以前は navigator.share（ネイティブ共有シート）を優先していたが、
-   * 以下の理由で削除し、**全ユーザーを `x.com/intent/post` 直行に統一**している:
-   *  - iOS/Android の共有シートは LINE / Instagram / Mastodon 等も並べるため
-   *    「X に共有するはずが別 SNS に流れる」誤タップ事故の原因になる
-   *  - ネイティブ共有経由だと X アプリ側で `{text, url}` が別フィールドで渡されて
-   *    OGP カードが出ない / 空 composer で開くケースが観測された
+   * 【2026-04-24 緊急修正】以前は onClick で
+   *   `e.preventDefault()` → `await navigator.clipboard.writeText()` → `window.open()`
+   * の順に呼んでいたが、iOS Safari / スマホ Chrome は `await` をまたぐと
+   * user gesture が失効し、`window.open` が popup blocker に掴まれて
+   * **新規タブが全く開かない** 症状になっていた（ユーザー報告: 会期前日）。
    *
-   * 現在の挙動:
-   *  1. 押した瞬間にクリップボードへ「本文＋URL」を仕込む
-   *     （X デスクトップアプリが intent を奪って空 composer を開いた時の Ctrl+V 用）
-   *  2. `x.com/intent/post?text=<本文+URL>` を新規タブで開く
-   *     （iOS は Universal Link で X アプリ起動、それ以外は Web composer）
+   * 新方針: onClick を廃止し、`<a target="_blank">` の通常遷移に任せる。
+   * クリップボード仕込みは mousedown / touchstart の **同期 fire-and-forget**
+   * で行い、click の user gesture を一切消費しない。これで iOS/Android/Desktop
+   * のどれでも確実に新規タブが開く。
+   *
+   * X デスクトップアプリが intent を奪って空白 composer を開いた場合も、
+   * 直前に mousedown で書き込んだクリップボードから Ctrl+V で復旧できる。
    */
-  const handleShareClick = useCallback(
-    async (e: React.MouseEvent<HTMLAnchorElement>) => {
-      if (!raw) return;
-      // 重要: デフォルト遷移を先に止める。こうしないと X デスクトップアプリが
-      // intent URL を先取りして起動し、クリップボード書き込みが間に合わず
-      // 「空白の composer」で開かれる（Ctrl+V しても何も出ない）バグになる。
-      e.preventDefault();
-
-      // 1) クリップボード先入れ（await で書き込み完了を保証する）
-      const bundle = yukkuriShareClipboardBundle(BASE_URL, raw);
-      try {
-        await navigator.clipboard.writeText(bundle);
+  const primeShareClipboard = useCallback(() => {
+    if (!raw) return;
+    const bundle = yukkuriShareClipboardBundle(BASE_URL, raw);
+    // Promise は投げっぱなし（fire-and-forget）で await しない。
+    // await すると click より前であっても iOS の短い gesture window を
+    // 跨いでしまう可能性があるため、await せずに submit してすぐ return する。
+    void navigator.clipboard
+      .writeText(bundle)
+      .then(() => {
         setShareCopied(true);
         window.setTimeout(() => setShareCopied(false), 2200);
-      } catch {
-        // クリップボード API が使えない環境（古い Safari / 非 HTTPS 等）。
-        // フォールバック（後続の intent URL オープン）はそのまま動くので何もしない。
-      }
-
-      // 2) X の intent URL を新規タブで開く（全環境共通）。
-      window.open(buildTweetUrl(raw), "_blank", "noopener,noreferrer");
-    },
-    [raw]
-  );
+      })
+      .catch(() => {
+        // クリップボード API 不可の環境（古い Safari / 非 HTTPS）は諦める。
+        // `<a target="_blank">` での遷移は独立に機能する。
+      });
+  }, [raw]);
 
   return (
     <section className={styles.hero} aria-label="ゆっくり解説 × すれ違い通信 ヒーロー">
@@ -352,7 +346,8 @@ export function YukkuriHero() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.shareBtn}
-                  onClick={handleShareClick}
+                  onMouseDown={primeShareClipboard}
+                  onTouchStart={primeShareClipboard}
                 >
                   {shareCopied
                     ? "コピーしました！X で貼り付け OK"
