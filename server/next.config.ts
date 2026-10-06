@@ -7,33 +7,13 @@ const nextConfig: NextConfig = {
   // 注意: App Router 既定は末尾スラッシュなし。/chokaigi → /chokaigi/ の redirects を足すと
   // Next の /chokaigi/ → /chokaigi 正規化と衝突しリダイレクトループになる。
   async headers() {
-    const isDev = process.env.NODE_ENV !== "production";
-    
-    // 開発時は HMR 等のために unsafe-eval/inline が必要だが、本番では除外する
-    const scriptSrc = isDev
-      ? "'self' 'unsafe-eval' 'unsafe-inline' https://clerk.com https://*.clerk.com https://*.clerk.accounts.dev"
-      : "'self' https://clerk.com https://*.clerk.com https://*.clerk.accounts.dev";
-
-    const cspHeader = `
-      default-src 'self';
-      script-src ${scriptSrc};
-      style-src 'self';
-      img-src 'self' data: blob: https://img.clerk.com;
-      font-src 'self';
-      object-src 'none';
-      base-uri 'self';
-      form-action 'self';
-      frame-ancestors 'none';
-      connect-src 'self' https://clerk.com https://*.clerk.com https://*.clerk.accounts.dev;
-      frame-src 'self' https://clerk.com https://*.clerk.com https://*.clerk.accounts.dev;
-      worker-src 'self' blob:;
-    `.replace(/\s{2,}/g, ' ').trim();
-
+    // 注意: Content-Security-Policyはここでは設定しない。nonce付きscript-srcは
+    // リクエストごとに値が変わるため、next.config.tsの静的なheaders()では表現できない。
+    // src/middleware.tsでnonceを生成しレスポンスヘッダーに直接設定している(そちらが正本)。
     return [
       {
         source: "/:path*",
         headers: [
-          { key: "Content-Security-Policy", value: cspHeader },
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },

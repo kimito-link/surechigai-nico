@@ -1,12 +1,65 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 
-function withPathnameHeader(req: NextRequest) {
+// CSP対応: script-srcをnonce + 'strict-dynamic'で厳格化するため、リクエストごとに
+// nonceを生成してヘッダーに載せる。Clerk公式のclerkMiddleware({contentSecurityPolicy})は
+// style-srcには便利だが、script-srcの'unsafe-inline'を除去する機能が無い(実装を確認済み:
+// node_modules/@clerk/nextjs/dist/esm/server/content-security-policy.js の
+// buildContentSecurityPolicyDirectives は strict:true でも 'unsafe-inline' を消さず、
+// http:/https: の削除とstrict-dynamic/nonceの追加のみ行う)ため、自前でCSPを組み立てる。
+// 実装はNext.js公式ドキュメント(nextjs.org/docs/15/app/guides/content-security-policy)の
+// middlewareパターンに準拠。
+function generateNonce(): string {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return Buffer.from(bytes).toString("base64");
+}
+
+function buildCspHeader(nonce: string): string {
+  const isDev = process.env.NODE_ENV !== "production";
+  // script-src: 自社コードはnonce必須。Clerk/Stripe系のscriptはnonceが付かないため、
+  // 'strict-dynamic'でnonce付きscriptから動的に読み込まれるものは許可する
+  // (nonce-based CSPの標準パターン。ホワイトリストのURL列挙は不要になる)。
+  const scriptSrc = [
+    "'self'",
+    `'nonce-${nonce}'`,
+    "'strict-dynamic'",
+    // 開発時はHMR(Fast Refresh)が eval を使うため許可。本番では付与しない。
+    ...(isDev ? ["'unsafe-eval'"] : []),
+  ].join(" ");
+  // style-src: Clerkの公式ドキュメント(clerk.com/docs/guides/secure/best-practices/csp-headers)が
+  // 「Clerkのランタイムcss-in-jsスタイル注入にunsafe-inlineが必須、撤廃は未定のロードマップ項目」と
+  // 明言している。next/imageのプレースホルダースタイルも同様にインライン属性を使うため、
+  // style-srcのみ不safe-inlineを許容する(script-srcは厳格化するので全体のCSP価値は維持される)。
+  const styleSrc = "'self' 'unsafe-inline'";
+
+  return [
+    `default-src 'self'`,
+    `script-src ${scriptSrc}`,
+    `style-src ${styleSrc}`,
+    `img-src 'self' data: blob: https://img.clerk.com`,
+    `font-src 'self'`,
+    `object-src 'none'`,
+    `base-uri 'self'`,
+    `form-action 'self'`,
+    `frame-ancestors 'none'`,
+    `connect-src 'self' https://clerk-telemetry.com https://*.clerk-telemetry.com https://img.clerk.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com`,
+    `frame-src 'self' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com`,
+    `worker-src 'self' blob:`,
+  ].join("; ");
+}
+
+function withPathnameHeader(req: NextRequest, nonce: string) {
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-pathname", req.nextUrl.pathname);
-  return NextResponse.next({
+  requestHeaders.set("x-nonce", nonce);
+  const cspHeader = buildCspHeader(nonce);
+  requestHeaders.set("Content-Security-Policy", cspHeader);
+  const response = NextResponse.next({
     request: { headers: requestHeaders },
   });
+  response.headers.set("Content-Security-Policy", cspHeader);
+  return response;
 }
 
 /**
@@ -86,11 +139,12 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req: NextRequest) => {
+  const nonce = generateNonce();
   if (isUnprotectedApiPath(req.nextUrl.pathname) || isPublicRoute(req)) {
-    return withPathnameHeader(req);
+    return withPathnameHeader(req, nonce);
   }
   await auth.protect();
-  return withPathnameHeader(req);
+  return withPathnameHeader(req, nonce);
 });
 
 export const config = {
