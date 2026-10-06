@@ -7,9 +7,16 @@ const nextConfig: NextConfig = {
   // 注意: App Router 既定は末尾スラッシュなし。/chokaigi → /chokaigi/ の redirects を足すと
   // Next の /chokaigi/ → /chokaigi 正規化と衝突しリダイレクトループになる。
   async headers() {
+    const isDev = process.env.NODE_ENV !== "production";
+    
+    // 開発時は HMR 等のために unsafe-eval/inline が必要だが、本番では除外する
+    const scriptSrc = isDev
+      ? "'self' 'unsafe-eval' 'unsafe-inline' https://clerk.com https://*.clerk.com https://*.clerk.accounts.dev"
+      : "'self' https://clerk.com https://*.clerk.com https://*.clerk.accounts.dev";
+
     const cspHeader = `
       default-src 'self';
-      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://clerk.com https://*.clerk.com https://*.clerk.accounts.dev;
+      script-src ${scriptSrc};
       style-src 'self';
       img-src 'self' data: blob: https://img.clerk.com;
       font-src 'self';
