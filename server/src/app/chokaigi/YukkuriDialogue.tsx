@@ -46,7 +46,7 @@ export function YukkuriDialogue() {
                     className={`${styles.yukkuriAvatarMotion} ${AVATAR_MOTION[line.speaker]}`}
                     role="img"
                     aria-label={meta.imageAlt}
-                    style={{ backgroundImage: `url("${meta.imageSrc}")` }}
+                    data-character={line.speaker}
                   />
                 </div>
                 <span className={styles.yukkuriNameBadge}>{meta.label}</span>

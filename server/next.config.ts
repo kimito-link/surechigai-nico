@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   // 注意: App Router 既定は末尾スラッシュなし。/chokaigi → /chokaigi/ の redirects を足すと
   // Next の /chokaigi/ → /chokaigi 正規化と衝突しリダイレクトループになる。
   async headers() {
+    // 注意: Content-Security-Policyはここでは設定しない。nonce付きscript-srcは
+    // リクエストごとに値が変わるため、next.config.tsの静的なheaders()では表現できない。
+    // src/middleware.tsでnonceを生成しレスポンスヘッダーに直接設定している(そちらが正本)。
     return [
       {
         source: "/:path*",

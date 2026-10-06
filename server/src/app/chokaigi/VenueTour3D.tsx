@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import styles from "./VenueTour3D.module.css";
-import { MAIN_HALLS, SUB_HALLS, EVENT_HALL, AREA_COLORS, type Hall } from "./venue-map-data";
+import { MAIN_HALLS, SUB_HALLS, EVENT_HALL, type Hall } from "./venue-map-data";
+import { hallColorKey } from "./hall-color-key";
+import { cssomStyle } from "@/lib/cssom-style";
 import { GUIDES } from "./lp-content";
 
 type TourState = "intro" | "touring" | "paused";
@@ -117,9 +119,6 @@ export function VenueTour3D() {
           <div className={styles.hallTrack}>
             {visibleHalls.map(({ hall, position, index }) => {
               const featured = hall.sections.find((s) => s.featured);
-              const areaColor = featured
-                ? AREA_COLORS[featured.area]
-                : { fill: "#ffffff", stroke: "#cccccc" };
 
               const zOffset = position * 300 - transition * 3;
               const scale = Math.max(0.3, 1 - Math.abs(zOffset) / 600);
@@ -131,22 +130,17 @@ export function VenueTour3D() {
                 <div
                   key={hall.no}
                   className={styles.hallPanel}
-                  style={{
-                    transform: `
-                      translateX(${xOffset}px)
-                      translateZ(${zOffset}px)
-                      scale(${scale})
-                      rotateY(${isLeft ? 15 : -15}deg)
-                    `,
+                  // CSP対応: 色は data-area + CSS固定セレクタ、連続値は CSSOM で直接書き込む
+                  data-area={featured?.area ?? "none"}
+                  ref={cssomStyle({
+                    transform: `translateX(${xOffset}px) translateZ(${zOffset}px) scale(${scale}) rotateY(${isLeft ? 15 : -15}deg)`,
                     opacity,
-                    backgroundColor: areaColor.fill,
-                    borderColor: areaColor.stroke,
-                    zIndex: 100 - Math.abs(position),
-                  }}
+                    "z-index": 100 - Math.abs(position),
+                  })}
                 >
                   <div
                     className={styles.hallHeader}
-                    style={{ backgroundColor: hall.headerColor }}
+                    data-hall-color={hallColorKey(hall.headerColor)}
                   >
                     {hall.label}
                   </div>
@@ -171,7 +165,7 @@ export function VenueTour3D() {
             <div className={styles.currentHallOverlay}>
               <span
                 className={styles.currentDot}
-                style={{ backgroundColor: currentHall.headerColor }}
+                data-hall-color={hallColorKey(currentHall.headerColor)}
               />
               <span className={styles.currentLabel}>{currentHall.label}</span>
             </div>
@@ -216,9 +210,9 @@ export function VenueTour3D() {
         <div className={styles.progressBar}>
           <div
             className={styles.progressFill}
-            style={{
+            ref={cssomStyle({
               width: `${((currentIndex + transition / 100) / totalHalls) * 100}%`,
-            }}
+            })}
           />
         </div>
 
@@ -228,7 +222,7 @@ export function VenueTour3D() {
             <button
               key={hall.no}
               className={`${styles.hallDot} ${idx === currentIndex ? styles.hallDotActive : ""}`}
-              style={{ backgroundColor: hall.headerColor }}
+              data-hall-color={hallColorKey(hall.headerColor)}
               onClick={() => goToHall(idx)}
               title={hall.label}
             />

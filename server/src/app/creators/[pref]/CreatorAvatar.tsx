@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import styles from "./CreatorAvatar.module.css";
 
 type Props = {
   src: string | null;
@@ -24,16 +25,8 @@ export default function CreatorAvatar({
   if (!src || errored) {
     return (
       <div
-        className={className}
+        className={`${className} ${styles.fallback}`}
         aria-hidden="true"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontWeight: 800,
-          color: "#aaa",
-          fontSize: 24,
-        }}
       >
         {fallbackInitial}
       </div>

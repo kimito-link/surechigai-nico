@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getUuidToken } from "@/lib/clientAuth";
 import { useLiveMapStream } from "@/lib/useLiveMapStream";
+import { cssomStyle } from "@/lib/cssom-style";
 import {
   LIVE_MAP_FALLBACK_VENUE,
   LIVE_MAP_POLL_MS,
@@ -148,7 +149,7 @@ export function VenueLiveMap() {
           />
         )}
         {staticMapImageVariant === 2 && (
-          <p className={styles.venueLiveError} style={{ minHeight: "12rem" }}>
+          <p className={`${styles.venueLiveError} ${styles.venueLiveErrorTall}`}>
             地図画像の取得に失敗しました。ピン表示は有効な場合があります。© OpenStreetMap
           </p>
         )}
@@ -162,7 +163,8 @@ export function VenueLiveMap() {
           <div
             key={`${point.id}-${point.updatedAtMs}`}
             className={`${styles.venueLivePin} ${point.isMe ? styles.venueLivePinMe : ""}`}
-            style={{ left: `${point.leftPct}%`, top: `${point.topPct}%` }}
+            // CSP対応: 連続値の座標はインライン style ではなく CSSOM で書き込む
+            ref={cssomStyle({ left: `${point.leftPct}%`, top: `${point.topPct}%` })}
             title={`${point.nickname}${point.twitterHandle ? ` (${point.twitterHandle})` : ""} · ${liveMapFormatAgo(point.updatedAtMs)}`}
             aria-label={`${point.nickname} ${liveMapFormatAgo(point.updatedAtMs)}`}
           >

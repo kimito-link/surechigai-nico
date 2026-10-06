@@ -201,7 +201,7 @@ export function UsageGuide() {
             <div className={styles.usageExplain}>
               <div
                 className={styles.usageAvatar}
-                style={{ backgroundImage: `url("${guide.imageSrc}")` }}
+                data-character={["rink", "konta", "tanunee"][step.guideIndex]}
                 aria-hidden="true"
               />
               <div className={styles.usageBubble}>

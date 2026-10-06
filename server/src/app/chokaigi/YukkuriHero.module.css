@@ -1066,3 +1066,24 @@
   .pillarCharStrip { gap: 0.5rem; }
   .pillarCharImg { width: 44px; height: 44px; }
 }
+
+/* ==========================================================================
+   CSP対応（style-src 'self'）: インライン style の置き換え
+   ========================================================================== */
+
+/* キャラ名ラベルの色。YukkuriHero.tsx の CHARS[].color と一致させること。 */
+.pillarCharLabel[data-char],
+.charLabel[data-char] { color: #0a0e1a; }
+.pillarCharLabel[data-char="rink"],
+.charLabel[data-char="rink"] { background: #ff7eb3; }
+.pillarCharLabel[data-char="konta"],
+.charLabel[data-char="konta"] { background: #7ec8ff; }
+.pillarCharLabel[data-char="tanunee"],
+.charLabel[data-char="tanunee"] { background: #a8e6a3; }
+
+/* 解説中カードの登場遅延（旧: style={{ animationDelay: `${i * 0.18}s` }}）。
+   旧インライン style は上の .charsTalking .charCard:nth-child(3) 等より強かったため、
+   同等以上の詳細度 + ファイル末尾配置で上書きする。 */
+.charsTalking .charCard[data-delay-index="0"] { animation-delay: 0s; }
+.charsTalking .charCard[data-delay-index="1"] { animation-delay: 0.18s; }
+.charsTalking .charCard[data-delay-index="2"] { animation-delay: 0.36s; }

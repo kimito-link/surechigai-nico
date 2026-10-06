@@ -26,10 +26,17 @@
 }
 
 .progressFill {
+  width: 0;
   height: 100%;
   background: linear-gradient(90deg, #255d9b, #c98e2b);
   transition: width 0.3s ease;
 }
+
+/* CSP対応: インライン style の width の代わりに data-progress で段階ごとに幅を固定 */
+.progressFill[data-progress="25"] { width: 25%; }
+.progressFill[data-progress="50"] { width: 50%; }
+.progressFill[data-progress="75"] { width: 75%; }
+.progressFill[data-progress="100"] { width: 100%; }
 
 .stepCounter {
   font-size: 0.875rem;

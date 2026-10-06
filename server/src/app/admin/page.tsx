@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import styles from "./admin.module.css";
+import { cssomStyle } from "@/lib/cssom-style";
 
 interface Stats {
   overview: {
@@ -202,7 +203,8 @@ export default function AdminPage() {
                   <div className={styles.chartBarWrap}>
                     <div
                       className={styles.chartBar}
-                      style={{ height: `${(d.count / maxDau) * 100}%` }}
+                      // CSP対応: 連続値の高さはインライン style ではなく CSSOM で書き込む
+                      ref={cssomStyle({ height: `${(d.count / maxDau) * 100}%` })}
                     />
                   </div>
                   <div className={styles.chartLabel}>{d.date.slice(5)}</div>

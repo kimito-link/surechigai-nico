@@ -107,7 +107,7 @@ export default function Home() {
                     <div className={styles.avatarFrame}>
                       <div
                         className={`${styles.avatarFrameFloat} ${frameClass}`}
-                        style={{ backgroundImage: `url("${g.imageSrc}")` }}
+                        data-character={["rink", "konta", "tanunee"][i]}
                         aria-hidden
                       />
                     </div>

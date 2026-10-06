@@ -157,7 +157,7 @@ export function YukkuriHero() {
                  *   解説中（isTalking）はこの帯は描画せず、全画面オーバーレイ側で
                  *   キャラが大きく喋る演出に切り替わる。 */}
                 <div className={styles.pillarCharStrip} aria-hidden="true">
-                  {CHARS.map(({ key, label, src, color }) => (
+                  {CHARS.map(({ key, label, src }) => (
                     <div key={key} className={styles.pillarCharItem}>
                       <Image
                         src={src}
@@ -166,10 +166,8 @@ export function YukkuriHero() {
                         height={60}
                         className={styles.pillarCharImg}
                       />
-                      <span
-                        className={styles.pillarCharLabel}
-                        style={{ background: color, color: "#0a0e1a" }}
-                      >
+                      {/* CSP対応: キャラ色は data-char + CSS固定セレクタ（CHARS の color と一致させる） */}
+                      <span className={styles.pillarCharLabel} data-char={key}>
                         {label}
                       </span>
                     </div>
@@ -277,13 +275,13 @@ export function YukkuriHero() {
         {/* ====== 解説中（isTalking=true）: 全画面モーダル ====== */}
         {isTalking && dialogue && (
           <div className={`${styles.chars} ${styles.charsTalking}`}>
-            {CHARS.map(({ key, label, src, color }, i) => {
+            {CHARS.map(({ key, label, src }, i) => {
               const isReverse = i % 2 === 1;
               return (
                 <div
                   key={key}
                   className={`${styles.charCard} ${isReverse ? styles.charCardReverse : styles.charCardForward} ${styles[`charCardSpeak${i}`]}`}
-                  style={{ animationDelay: `${i * 0.18}s` }}
+                  data-delay-index={i}
                 >
                   <div className={styles.charAvatarColumn}>
                     <div className={styles.charImgWrap}>
@@ -295,10 +293,7 @@ export function YukkuriHero() {
                         className={styles.charImg}
                       />
                     </div>
-                    <span
-                      className={styles.charLabel}
-                      style={{ background: color, color: "#0a0e1a" }}
-                    >
+                    <span className={styles.charLabel} data-char={key}>
                       {label}
                     </span>
                   </div>

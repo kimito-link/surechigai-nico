@@ -1,0 +1,14 @@
+.main {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.text {
+  max-width: 400px;
+  text-align: center;
+  color: #3a2f24;
+  font-size: 0.95rem;
+}
