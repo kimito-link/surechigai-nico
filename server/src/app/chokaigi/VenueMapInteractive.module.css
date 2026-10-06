@@ -340,6 +340,53 @@
   transition: transform 0.2s;
 }
 
+/* エリア種別ごとの色。CSP対応のためインラインstyleでなくdata-area属性で分岐する。
+   値は venue-map-data.ts の AREA_COLORS と一致させること(2か所で管理しないよう
+   ここが唯一の色定義。venue-map-data.tsのAREA_COLORSはこのファイルのコメント用に残す)。 */
+.sectionItem[data-area="stage"] { background-color: #1565c0; border-color: #0d47a1; }
+.sectionItem[data-area="food"] { background-color: #ffe0b2; border-color: #ef6c00; }
+.sectionItem[data-area="cc"] { background-color: #c8e6c9; border-color: #2e7d32; }
+.sectionItem[data-area="exp"] { background-color: #fce4ec; border-color: #e91e63; }
+.sectionItem[data-area="goods"] { background-color: #b3e5fc; border-color: #0288d1; }
+.sectionItem[data-area="info"] { background-color: #fff59d; border-color: #f9a825; }
+.sectionItem[data-area="toilet"] { background-color: #e1bee7; border-color: #6a1b9a; }
+.sectionItem[data-area="shrine"] { background-color: #ffcdd2; border-color: #c62828; }
+.sectionItem[data-area="cosplay"] { background-color: #e1bee7; border-color: #8e24aa; }
+.sectionItem[data-area="gaming"] { background-color: #dcedc8; border-color: #689f38; }
+.sectionItem[data-area="entrance"] { background-color: #bbdefb; border-color: #1565c0; }
+.sectionItem[data-area="smoking"] { background-color: #eceff1; border-color: #546e7a; }
+.sectionItem[data-area="charge"] { background-color: #fff9c4; border-color: #f57f17; }
+
+.legendDot[data-area="stage"] { background-color: #1565c0; }
+.legendDot[data-area="food"] { background-color: #ef6c00; }
+.legendDot[data-area="goods"] { background-color: #0288d1; }
+.legendDot[data-area="exp"] { background-color: #e91e63; }
+.legendDot[data-area="cosplay"] { background-color: #8e24aa; }
+.legendDot[data-area="cc"] { background-color: #2e7d32; }
+
+/* ホールのヘッダー色(venue-map-data.tsのHEADER_*と一致させる) */
+.hallHeader[data-hall-color="purple"] { background: #7e57c2; }
+.hallHeader[data-hall-color="blue"] { background: #42a5f5; }
+.hallHeader[data-hall-color="pink"] { background: #ec407a; }
+.hallHeader[data-hall-color="green"] { background: #66bb6a; }
+.hallHeader[data-hall-color="orange"] { background: #ff9800; }
+.hallHeader[data-hall-color="teal"] { background: #26a69a; }
+
+.detailTitle[data-hall-color="purple"] { background-color: #7e57c2; }
+.detailTitle[data-hall-color="blue"] { background-color: #42a5f5; }
+.detailTitle[data-hall-color="pink"] { background-color: #ec407a; }
+.detailTitle[data-hall-color="green"] { background-color: #66bb6a; }
+.detailTitle[data-hall-color="orange"] { background-color: #ff9800; }
+.detailTitle[data-hall-color="teal"] { background-color: #26a69a; }
+
+/* フィルターカテゴリの色(AREA_CATEGORIESのidと一致) */
+.filterBtn[data-cat="stage"] { --cat-color: #1565c0; }
+.filterBtn[data-cat="food"] { --cat-color: #ef6c00; }
+.filterBtn[data-cat="goods"] { --cat-color: #0288d1; }
+.filterBtn[data-cat="exp"] { --cat-color: #e91e63; }
+.filterBtn[data-cat="cosplay"] { --cat-color: #8e24aa; }
+.filterBtn[data-cat="cc"] { --cat-color: #2e7d32; }
+
 .sectionItem:hover {
   transform: scale(1.02);
 }

@@ -2,10 +2,23 @@
 
 import { useState } from "react";
 import styles from "./VenueMapInteractive.module.css";
-import { MAIN_HALLS, SUB_HALLS, AREA_COLORS, type Hall, type Section } from "./venue-map-data";
+import { MAIN_HALLS, SUB_HALLS, type Hall, type Section } from "./venue-map-data";
 import { GUIDES } from "./lp-content";
 
 const ALL_HALLS: Hall[] = [...MAIN_HALLS, ...SUB_HALLS];
+
+// CSP対応: headerColorの16進値から、CSS側(VenueMapInteractive.module.css)の
+// data-hall-color セレクタに渡す識別子へ変換する。venue-map-data.ts の
+// HEADER_* 定数と一致させること(値を変えたらここも直す)。
+const HEADER_COLOR_TO_KEY: Record<string, string> = {
+  "#7e57c2": "purple",
+  "#42a5f5": "blue",
+  "#ec407a": "pink",
+  "#66bb6a": "green",
+  "#ff9800": "orange",
+  "#26a69a": "teal",
+};
+const hallColorKey = (hex: string) => HEADER_COLOR_TO_KEY[hex] ?? "blue";
 
 const HALL_TIPS: Record<number, string> = {
   8: "超音楽祭やクリエイタークロスがある大ホール！",
@@ -65,9 +78,7 @@ export function VenueMapInteractive() {
           <button
             key={cat.id}
             className={`${styles.filterBtn} ${filterCategory === cat.id ? styles.filterBtnActive : ""}`}
-            style={{
-              "--cat-color": cat.color,
-            } as React.CSSProperties}
+            data-cat={cat.id}
             onClick={() => setFilterCategory(filterCategory === cat.id ? null : cat.id)}
           >
             <span className={styles.filterIcon}>{cat.icon}</span>
@@ -95,12 +106,9 @@ export function VenueMapInteractive() {
               <button
                 key={hall.no}
                 className={`${styles.hallCard} ${isSelected ? styles.hallCardSelected : ""} ${!hasMatch ? styles.hallCardDimmed : ""}`}
-                style={{
-                  "--hall-color": hall.headerColor,
-                } as React.CSSProperties}
                 onClick={() => setSelectedHall(isSelected ? null : hall)}
               >
-                <div className={styles.hallHeader}>{hall.label}</div>
+                <div className={styles.hallHeader} data-hall-color={hallColorKey(hall.headerColor)}>{hall.label}</div>
                 <div className={styles.hallBody}>
                   {hall.sections.find((s) => s.featured)?.name || hall.sections[0]?.name}
                 </div>
@@ -135,12 +143,9 @@ export function VenueMapInteractive() {
               <button
                 key={hall.no}
                 className={`${styles.hallCard} ${isSelected ? styles.hallCardSelected : ""} ${!hasMatch ? styles.hallCardDimmed : ""}`}
-                style={{
-                  "--hall-color": hall.headerColor,
-                } as React.CSSProperties}
                 onClick={() => setSelectedHall(isSelected ? null : hall)}
               >
-                <div className={styles.hallHeader}>{hall.label}</div>
+                <div className={styles.hallHeader} data-hall-color={hallColorKey(hall.headerColor)}>{hall.label}</div>
                 <div className={styles.hallBody}>
                   {hall.sections.find((s) => s.featured)?.name || hall.sections[0]?.name}
                 </div>
@@ -159,7 +164,7 @@ export function VenueMapInteractive() {
           <div className={styles.detailHeader}>
             <div
               className={styles.detailTitle}
-              style={{ backgroundColor: selectedHall.headerColor }}
+              data-hall-color={hallColorKey(selectedHall.headerColor)}
             >
               {selectedHall.label}
             </div>
@@ -186,15 +191,11 @@ export function VenueMapInteractive() {
           {/* セクション一覧 */}
           <div className={styles.sectionList}>
             {getFilteredSections(selectedHall).map((sec, i) => {
-              const color = AREA_COLORS[sec.area];
               return (
                 <div
                   key={i}
                   className={`${styles.sectionItem} ${sec.featured ? styles.sectionFeatured : ""}`}
-                  style={{
-                    backgroundColor: color.fill,
-                    borderColor: color.stroke,
-                  }}
+                  data-area={sec.area}
                 >
                   {sec.code && <span className={styles.sectionCode}>{sec.code}</span>}
                   <span className={styles.sectionName}>{sec.name}</span>
@@ -221,7 +222,7 @@ export function VenueMapInteractive() {
             <div key={cat.id} className={styles.legendItem}>
               <span
                 className={styles.legendDot}
-                style={{ backgroundColor: cat.color }}
+                data-area={cat.id}
               />
               <span>{cat.icon} {cat.label}</span>
             </div>
