@@ -1,7 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 
-// CSP対応: script-srcをnonce + 'strict-dynamic'で厳格化するため、リクエストごとに
+// CSP対応: script-srcをnonce + ホスト許可リストで厳格化するため、リクエストごとに
 // nonceを生成してヘッダーに載せる。Clerk公式のclerkMiddleware({contentSecurityPolicy})は
 // style-srcには便利だが、script-srcの'unsafe-inline'を除去する機能が無い(実装を確認済み:
 // node_modules/@clerk/nextjs/dist/esm/server/content-security-policy.js の
@@ -9,6 +9,14 @@ import { NextResponse, type NextRequest } from "next/server";
 // http:/https: の削除とstrict-dynamic/nonceの追加のみ行う)ため、自前でCSPを組み立てる。
 // 実装はNext.js公式ドキュメント(nextjs.org/docs/15/app/guides/content-security-policy)の
 // middlewareパターンに準拠。
+//
+// 【重要】'strict-dynamic'は使わない(2026-10-07判明): 'strict-dynamic'が指定されると、
+// ブラウザ仕様によりscript-srcのホストベース許可リスト(URLの列挙)が完全に無視される
+// ("Note that 'strict-dynamic' is present, so host-based allowlisting is disabled."という
+// ブラウザのコンソールエラーで確認)。Clerkは<script src="https://clerk.<domain>/...">タグを
+// 自前で生成し、そのタグにnonceを付与する手段が無いため、'strict-dynamic'方式とは
+// 根本的に非互換。nonce(自社インラインscript用) + ホスト許可リスト(Clerk等の外部script用)
+// の併用方式に統一する。
 function generateNonce(): string {
   const bytes = new Uint8Array(16);
   crypto.getRandomValues(bytes);
@@ -23,7 +31,6 @@ function buildCspHeader(nonce: string): string {
   const scriptSrc = [
     "'self'",
     `'nonce-${nonce}'`,
-    "'strict-dynamic'",
     // 開発時はHMR(Fast Refresh)が eval を使うため許可。本番では付与しない。
     ...(isDev ? ["'unsafe-eval'"] : []),
   ].join(" ");
@@ -39,9 +46,15 @@ function buildCspHeader(nonce: string): string {
   // script-srcの両方で clerk.surechigai-nico.link への通信がブロックされていた)。
   const clerkCustomDomain = "https://clerk.surechigai-nico.link";
 
+  // Clerkが生成する<script src="...">タグにはnonceを付与できないため、
+  // 'strict-dynamic'は使わずホスト許可リストで直接許可する(上のコメント参照)。
+  const clerkScriptHosts =
+    "https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com " +
+    clerkCustomDomain;
+
   return [
     `default-src 'self'`,
-    `script-src ${scriptSrc} ${clerkCustomDomain}`,
+    `script-src ${scriptSrc} ${clerkScriptHosts}`,
     `style-src ${styleSrc}`,
     `img-src 'self' data: blob: https://img.clerk.com`,
     `font-src 'self'`,
