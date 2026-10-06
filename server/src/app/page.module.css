@@ -453,6 +453,22 @@
   background-size: contain;
 }
 
+.avatarFrameFloat[data-character="rink"],
+.venueWanderSprite[data-character="rink"] {
+  background-image: url("/chokaigi/yukkuri/rink.png");
+}
+
+.avatarFrameFloat[data-character="konta"],
+.venueWanderSprite[data-character="konta"] {
+  background-image: url("/chokaigi/yukkuri/konta.png");
+}
+
+.avatarFrameFloat[data-character="tanunee"],
+.venueWanderSprite[data-character="tanunee"] {
+  background-image: url("/chokaigi/yukkuri/tanunee.png");
+}
+
+
 .avatarFrameRink {
   animation: homeFloatA 3.2s ease-in-out infinite;
 }

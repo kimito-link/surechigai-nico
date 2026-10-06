@@ -1,0 +1,8 @@
+.fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #aaa;
+  font-size: 24px;
+}

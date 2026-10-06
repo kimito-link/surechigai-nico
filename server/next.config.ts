@@ -7,10 +7,26 @@ const nextConfig: NextConfig = {
   // 注意: App Router 既定は末尾スラッシュなし。/chokaigi → /chokaigi/ の redirects を足すと
   // Next の /chokaigi/ → /chokaigi 正規化と衝突しリダイレクトループになる。
   async headers() {
+    const cspHeader = `
+      default-src 'self';
+      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://clerk.com https://*.clerk.com https://*.clerk.accounts.dev;
+      style-src 'self';
+      img-src 'self' data: blob: https://img.clerk.com;
+      font-src 'self';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'none';
+      connect-src 'self' https://clerk.com https://*.clerk.com https://*.clerk.accounts.dev;
+      frame-src 'self' https://clerk.com https://*.clerk.com https://*.clerk.accounts.dev;
+      worker-src 'self' blob:;
+    `.replace(/\s{2,}/g, ' ').trim();
+
     return [
       {
         source: "/:path*",
         headers: [
+          { key: "Content-Security-Policy", value: cspHeader },
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },

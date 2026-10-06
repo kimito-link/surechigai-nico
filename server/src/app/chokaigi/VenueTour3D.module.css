@@ -282,6 +282,7 @@
 }
 
 .progressFill {
+  width: 0;
   height: 100%;
   background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
   transition: width 0.1s linear;
@@ -318,6 +319,43 @@
   transform: scale(1.3);
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
+
+/* CSP対応: インラインstyleの代わりに data 属性で色を分岐する。
+   ホール色は venue-map-data.ts の HEADER_* / hall-color-key.ts と一致させること。 */
+.hallHeader[data-hall-color="purple"],
+.currentDot[data-hall-color="purple"],
+.hallDot[data-hall-color="purple"] { background-color: #7e57c2; }
+.hallHeader[data-hall-color="blue"],
+.currentDot[data-hall-color="blue"],
+.hallDot[data-hall-color="blue"] { background-color: #42a5f5; }
+.hallHeader[data-hall-color="pink"],
+.currentDot[data-hall-color="pink"],
+.hallDot[data-hall-color="pink"] { background-color: #ec407a; }
+.hallHeader[data-hall-color="green"],
+.currentDot[data-hall-color="green"],
+.hallDot[data-hall-color="green"] { background-color: #66bb6a; }
+.hallHeader[data-hall-color="orange"],
+.currentDot[data-hall-color="orange"],
+.hallDot[data-hall-color="orange"] { background-color: #ff9800; }
+.hallHeader[data-hall-color="teal"],
+.currentDot[data-hall-color="teal"],
+.hallDot[data-hall-color="teal"] { background-color: #26a69a; }
+
+/* パネルの色: featured セクションのエリア種別（venue-map-data.ts の AREA_COLORS と一致） */
+.hallPanel[data-area="none"] { background-color: #ffffff; border-color: #cccccc; }
+.hallPanel[data-area="stage"] { background-color: #1565c0; border-color: #0d47a1; }
+.hallPanel[data-area="food"] { background-color: #ffe0b2; border-color: #ef6c00; }
+.hallPanel[data-area="cc"] { background-color: #c8e6c9; border-color: #2e7d32; }
+.hallPanel[data-area="exp"] { background-color: #fce4ec; border-color: #e91e63; }
+.hallPanel[data-area="goods"] { background-color: #b3e5fc; border-color: #0288d1; }
+.hallPanel[data-area="info"] { background-color: #fff59d; border-color: #f9a825; }
+.hallPanel[data-area="toilet"] { background-color: #e1bee7; border-color: #6a1b9a; }
+.hallPanel[data-area="shrine"] { background-color: #ffcdd2; border-color: #c62828; }
+.hallPanel[data-area="cosplay"] { background-color: #e1bee7; border-color: #8e24aa; }
+.hallPanel[data-area="gaming"] { background-color: #dcedc8; border-color: #689f38; }
+.hallPanel[data-area="entrance"] { background-color: #bbdefb; border-color: #1565c0; }
+.hallPanel[data-area="smoking"] { background-color: #eceff1; border-color: #546e7a; }
+.hallPanel[data-area="charge"] { background-color: #fff9c4; border-color: #f57f17; }
 
 /* レスポンシブ */
 @media (max-width: 600px) {

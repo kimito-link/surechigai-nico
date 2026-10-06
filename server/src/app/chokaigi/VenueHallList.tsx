@@ -1,13 +1,13 @@
 import styles from "./chokaigi.module.css";
 import { HALL_GUIDE_NOTE, HALL_SUMMARIES } from "./lp-content";
 import {
-  AREA_COLORS,
   EVENT_HALL,
   MAIN_HALLS,
   SUB_HALLS,
   type Hall,
   type Section,
 } from "./venue-map-data";
+import { hallColorKey } from "./hall-color-key";
 
 type HallCardProps = {
   hall: Hall;
@@ -74,7 +74,7 @@ function HallCard({ hall, summary, anchorId }: HallCardProps) {
     <article id={anchorId} className={`${styles.hallCard} ${styles.hallCardAnchorTarget}`}>
       <div
         className={styles.hallCardBar}
-        style={{ backgroundColor: hall.headerColor }}
+        data-hall-color={hallColorKey(hall.headerColor)}
         aria-hidden="true"
       />
       <div className={styles.hallCardHead}>
@@ -85,7 +85,6 @@ function HallCard({ hall, summary, anchorId }: HallCardProps) {
       </div>
       <ul className={styles.hallCardList}>
         {top.map((s, i) => {
-          const color = AREA_COLORS[s.area];
           return (
             <li key={`${hall.no}-${i}`} className={styles.hallCardItem}>
               <div className={styles.hallCardItemTop}>
@@ -94,14 +93,7 @@ function HallCard({ hall, summary, anchorId }: HallCardProps) {
                     ★
                   </span>
                 ) : null}
-                <span
-                  className={styles.hallCardBadge}
-                  style={{
-                    backgroundColor: color.fill,
-                    borderColor: color.stroke,
-                    color: color.text ?? "#2c2117",
-                  }}
-                >
+                <span className={styles.hallCardBadge} data-area={s.area}>
                   {AREA_LABEL[s.area]}
                 </span>
                 {s.code ? (
@@ -185,7 +177,7 @@ export function VenueHallList() {
       >
         <div
           className={styles.hallCardBar}
-          style={{ backgroundColor: "#1976d2" }}
+          data-hall-color="event"
           aria-hidden="true"
         />
         <div className={styles.hallCardHead}>
@@ -196,7 +188,6 @@ export function VenueHallList() {
         </div>
         <ul className={styles.hallCardList}>
           {EVENT_HALL.sections.map((s, i) => {
-            const color = AREA_COLORS[s.area];
             return (
               <li key={`ev-${i}`} className={styles.hallCardItem}>
                 <div className={styles.hallCardItemTop}>
@@ -205,14 +196,7 @@ export function VenueHallList() {
                       ★
                     </span>
                   ) : null}
-                  <span
-                    className={styles.hallCardBadge}
-                    style={{
-                      backgroundColor: color.fill,
-                      borderColor: color.stroke,
-                      color: color.text ?? "#2c2117",
-                    }}
-                  >
+                  <span className={styles.hallCardBadge} data-area={s.area}>
                     {AREA_LABEL[s.area]}
                   </span>
                   {s.code ? (

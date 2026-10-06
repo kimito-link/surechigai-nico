@@ -137,7 +137,8 @@ export default function OnboardingPage() {
       <header className={styles.header}>
         <h1 className={styles.title}>はじめに</h1>
         <div className={styles.progressBar}>
-          <div className={styles.progressFill} style={{ width: `${progressPct}%` }} />
+          {/* CSP対応: 進捗は 25/50/75/100 の4段階のみなので data 属性 + CSS 固定セレクタで幅を決める */}
+          <div className={styles.progressFill} data-progress={progressPct} />
         </div>
         <p className={styles.stepCounter}>
           {step === "profile" && "1/4 プロフィール"}

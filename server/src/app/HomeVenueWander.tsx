@@ -80,7 +80,7 @@ export function HomeVenueWander() {
           >
             <div
               className={styles.venueWanderSprite}
-              style={{ backgroundImage: `url("${g.imageSrc}")` }}
+              data-character={["rink", "konta", "tanunee"][i]}
               aria-hidden="true"
             />
             <span

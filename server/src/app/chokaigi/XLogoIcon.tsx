@@ -10,7 +10,6 @@ const X_LOGO_PATH =
 
 type Props = {
   className?: string;
-  style?: CSSProperties;
   /** デフォルトは currentColor。親テキスト色に追従させたいので基本は指定不要。 */
   fill?: string;
   /** em 単位で大きさを揃えたいときは font-size から 0.95em などで読み替え可能 */
@@ -20,25 +19,18 @@ type Props = {
 
 export function XLogoIcon({
   className,
-  style,
   fill = "currentColor",
   size,
   title,
 }: Props) {
-  const mergedStyle: CSSProperties = {
-    width: size ?? "0.95em",
-    height: size ?? "0.95em",
-    flex: "none",
-    ...style,
-  };
   return (
     <svg
       className={className}
-      style={mergedStyle}
+      width={size ?? "0.95em"}
+      height={size ?? "0.95em"}
       viewBox="0 0 24 24"
       fill={fill}
       aria-hidden={title ? undefined : true}
-      role={title ? "img" : undefined}
       focusable="false"
     >
       {title ? <title>{title}</title> : null}

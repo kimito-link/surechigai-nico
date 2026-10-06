@@ -8,6 +8,7 @@ import {
   PREFECTURES,
   type PrefectureInfo,
 } from "@/lib/prefectureCoords";
+import { cssomStyle } from "@/lib/cssom-style";
 import styles from "../app.module.css";
 
 type AreaStat = { area: string; count: number };
@@ -96,7 +97,8 @@ export default function JapanMap({ areaStats, selfMunicipality }: Props) {
               <span
                 key={`bg-${p.name}`}
                 className={styles.japanMapDot}
-                style={{ left: `${pos.leftPct}%`, top: `${pos.topPct}%` }}
+                // CSP対応: 座標はインライン style ではなく CSSOM で書き込む
+                ref={cssomStyle<HTMLSpanElement>({ left: `${pos.leftPct}%`, top: `${pos.topPct}%` })}
               />
             );
           })}
@@ -109,11 +111,11 @@ export default function JapanMap({ areaStats, selfMunicipality }: Props) {
               key={pin.pref.name}
               href={`/creators/${encodeURIComponent(pin.pref.name)}`}
               className={`${styles.japanMapPin} ${pin.isSelf ? styles.japanMapPinMe : ""}`}
-              style={{
+              ref={cssomStyle<HTMLAnchorElement>({
                 left: `${pin.leftPct}%`,
                 top: `${pin.topPct}%`,
                 transform: `translate(-50%, -50%) scale(${scale})`,
-              }}
+              })}
               title={`${pin.pref.name} ${pin.count}人${pin.isSelf ? "（あなた）" : ""} — タップで参加者一覧`}
               aria-label={`${pin.pref.name} の参加者一覧を見る`}
             >

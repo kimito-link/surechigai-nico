@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * ヒーローの背景を覆う日本地図レイヤー。
  *
@@ -19,6 +21,7 @@
  */
 
 import styles from "./chokaigi.module.css";
+import { cssomStyle } from "@/lib/cssom-style";
 
 // 幕張メッセの SVG viewBox (0..1024) 上の座標（千葉・Kanto 東端）。
 // `.conceptPinLarge` / `.chokaigiMesse` / `.makuhariHalo` 他の
@@ -271,7 +274,8 @@ export function ChokaigiConceptBanner() {
                    */}
                   <g
                     className={styles.accountAvatarPop}
-                    style={{ animationDelay: `${delay}s` }}
+                    // CSP対応: インライン style ではなく CSSOM で animation-delay を設定
+                    ref={cssomStyle<SVGGElement>({ "animation-delay": `${delay}s` })}
                   >
                     <image
                       href={line.avatarSrc}
@@ -416,7 +420,7 @@ export function ChokaigiConceptBanner() {
             {CROWD_DOTS.map((dot, i) => (
               <g
                 key={`crowd-${i}`}
-                style={{ animationDelay: `${dot.delay}s` }}
+                ref={cssomStyle<SVGGElement>({ "animation-delay": `${dot.delay}s` })}
                 className={styles.crowdDot}
               >
                 <circle

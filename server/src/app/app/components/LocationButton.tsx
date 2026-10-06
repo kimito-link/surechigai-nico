@@ -6,6 +6,7 @@ import { AiErrorShare } from "@/app/components/AiErrorShare";
 import { buildAiErrorReport, maskToken } from "@/lib/aiErrorReport";
 import { clientReverseGeocode } from "@/lib/clientReverseGeocode";
 import { useLiveMapStream } from "@/lib/useLiveMapStream";
+import { cssomStyle } from "@/lib/cssom-style";
 import { haversineMeters } from "@/lib/geoDistance";
 import { getFujiProximity, formatFujiProximityLine } from "@/lib/fujiDistance";
 import {
@@ -710,10 +711,11 @@ export default function LocationButton({
             <div
               key={`${point.id}-${point.updatedAtMs}`}
               className={`${styles.liveMapPin} ${point.isMe ? styles.liveMapPinMe : ""}`}
-              style={{
+              // CSP対応: 座標はインライン style ではなく CSSOM で書き込む
+              ref={cssomStyle({
                 left: `${point.leftPct}%`,
                 top: `${point.topPct}%`,
-              }}
+              })}
               title={`${point.nickname}${point.twitterHandle ? ` (${point.twitterHandle})` : ""} · ${liveMapFormatAgo(point.updatedAtMs)}`}
               aria-label={`${point.nickname} ${liveMapFormatAgo(point.updatedAtMs)}`}
             >

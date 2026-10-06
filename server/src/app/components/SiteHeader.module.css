@@ -664,3 +664,7 @@
     padding-inline: 0.45rem;
   }
 }
+
+.xIcon {
+  flex-shrink: 0;
+}
