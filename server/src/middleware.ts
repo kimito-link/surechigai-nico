@@ -33,9 +33,15 @@ function buildCspHeader(nonce: string): string {
   // style-srcのみ不safe-inlineを許容する(script-srcは厳格化するので全体のCSP価値は維持される)。
   const styleSrc = "'self' 'unsafe-inline'";
 
+  // Clerkのカスタムドメイン機能(自ドメイン配下に clerk.<自ドメイン> でAPI/scriptを
+  // プロキシする構成)を使っているため、ワイルドカードの*.clerk.com等では
+  // カバーできず明示的に含める必要がある(実ブラウザで2026-10-07に確認: connect-src/
+  // script-srcの両方で clerk.surechigai-nico.link への通信がブロックされていた)。
+  const clerkCustomDomain = "https://clerk.surechigai-nico.link";
+
   return [
     `default-src 'self'`,
-    `script-src ${scriptSrc}`,
+    `script-src ${scriptSrc} ${clerkCustomDomain}`,
     `style-src ${styleSrc}`,
     `img-src 'self' data: blob: https://img.clerk.com`,
     `font-src 'self'`,
@@ -43,8 +49,8 @@ function buildCspHeader(nonce: string): string {
     `base-uri 'self'`,
     `form-action 'self'`,
     `frame-ancestors 'none'`,
-    `connect-src 'self' https://clerk-telemetry.com https://*.clerk-telemetry.com https://img.clerk.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com`,
-    `frame-src 'self' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com`,
+    `connect-src 'self' https://clerk-telemetry.com https://*.clerk-telemetry.com https://img.clerk.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com ${clerkCustomDomain}`,
+    `frame-src 'self' https://challenges.cloudflare.com https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com ${clerkCustomDomain}`,
     `worker-src 'self' blob:`,
   ].join("; ");
 }
