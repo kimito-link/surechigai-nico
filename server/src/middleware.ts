@@ -52,11 +52,18 @@ function buildCspHeader(nonce: string): string {
     "https://*.clerk.accounts.dev https://clerk.com https://*.clerk.com " +
     clerkCustomDomain;
 
+  // img-src: 会場ライブマップ(/chokaigi)がOpenStreetMapの静的地図画像・タイル画像を
+  // 読み込む(server/src/lib/liveMapShared.ts の liveMapBuildStaticImageUrl /
+  // liveMapBuildOsmTileImageUrl)。CSP厳格化で未許可になりimg-src違反で地図が
+  // 表示されなくなっていた(2026-10-07実ブラウザで発覚)ため明示的に許可する。
+  const imgSrc =
+    "'self' data: blob: https://img.clerk.com https://staticmap.openstreetmap.de https://tile.openstreetmap.org";
+
   return [
     `default-src 'self'`,
     `script-src ${scriptSrc} ${clerkScriptHosts}`,
     `style-src ${styleSrc}`,
-    `img-src 'self' data: blob: https://img.clerk.com`,
+    `img-src ${imgSrc}`,
     `font-src 'self'`,
     `object-src 'none'`,
     `base-uri 'self'`,
