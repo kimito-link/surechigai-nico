@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { clampYukkuriDialogue } from "@/lib/yukkuriDialogueClamp";
 import { extractTweetId } from "@/lib/tweetUrl";
-import { fetchXTweetWithAuthor, type XTweetContext } from "@/lib/xTweet";
-import { upsertYukkuriExplainedTweet } from "@/lib/yukkuriExplainedTweetArchive";
+import { fetchXTweetWithAuthorDetailed, type XTweetContext } from "@/lib/xTweet";
+import {
+  getYukkuriExplainedTweet,
+  upsertYukkuriExplainedTweet,
+} from "@/lib/yukkuriExplainedTweetArchive";
+import {
+  guardPaidEntry,
+  openRouterDisabled,
+  readCacheJson,
+  reserveYukkuriBudget,
+  writeCacheJson,
+} from "@/lib/costGuard";
+import {
+  COST_MILLI,
+  denialResponse,
+  isPaidModel,
+  orderModelsFreeFirst,
+} from "@/lib/costGuardCore";
 
 /**
  * 「ツイート URL を貼り付けて、そのツイートをゆっくり解説する」新 API。
@@ -15,8 +31,15 @@ import { upsertYukkuriExplainedTweet } from "@/lib/yukkuriExplainedTweetArchive"
  *
  * フォールバック方針:
  * - Ollama は使わない（会場の家庭内 PC は帯域不安定で、URL 解説は待たせたくないため）
- * - OpenRouter のみ、複数モデルを順に叩くが、1 つ成功したら終わり
+ * - OpenRouter のみ、**無料モデル（:free）→ 有料モデル**の順に叩き、1 つ成功したら終わり
  * - 全失敗したら 503 を返してクライアントに再試行させる（静的フォールバック無し）
+ *
+ * 原価の守り（COST_SAFETY_POLICY.md。2026-10-19 監査で「呼ぶたびに X＋有料 LLM・キャッシュなし」を塞いだ）:
+ * 1. キャッシュ（Upstash → DB アーカイブ）を最初に見る。当たれば原価 0 で返す
+ * 2. 存在しない・見られないツイートは否定キャッシュ（同じ ID で X に二度払わない）
+ * 3. 外れたらキルスイッチ（PAID_CALLS_DISABLED）と IP ごとの上限（fail-closed）
+ * 4. X を呼ぶ前・有料モデルを呼ぶ前に日次予算を予約（reserveYukkuriBudget・fail-closed）
+ * 5. 予算切れは「本日の無料枠が終了しました」と正直に返す（429）
  *
  * DB 保存:
  * - `yukkuri_explained_tweet` テーブル（Codex が後で作成）。未作成でも API は動く。
@@ -27,12 +50,70 @@ export const maxDuration = 60;
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const PER_MODEL_TIMEOUT_MS = 20_000;
-const MODELS = [
+/** ★無料モデルを先に試す（orderModelsFreeFirst）。有料は予算の予約が通ったときだけ。 */
+const MODELS = orderModelsFreeFirst([
   "anthropic/claude-3-5-haiku",
   "openai/gpt-4o-mini",
   "google/gemma-4-31b-it:free",
   "meta-llama/llama-3.3-70b-instruct:free",
-];
+]);
+
+/** 成功結果の永続キャッシュ（DB アーカイブが正本。こちらは DB を引かずに返すための前段）。 */
+const TWEET_CACHE_TTL_OK_SEC = 30 * 24 * 60 * 60;
+/** 「存在しない・見られない」の否定キャッシュ。削除・鍵垢化は戻ることもあるので 1 日。 */
+const TWEET_CACHE_TTL_NOT_FOUND_SEC = 24 * 60 * 60;
+
+type TweetExplainResponse = Dialogue & {
+  tweet: {
+    id: string;
+    handle: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    text: string;
+  };
+};
+
+type TweetCachePayload = { ok: true; response: TweetExplainResponse } | { ok: false; notFound: true };
+
+function tweetCacheKey(tweetId: string): string {
+  return `yukkuri:tweet:${tweetId}`;
+}
+
+const TWEET_NOT_FOUND_BODY = {
+  error:
+    "このツイートを取得できませんでした（削除済み・非公開アカウント・URL の打ち間違い等をご確認ください）。",
+  error_code: "E_TWEET_EXPLAIN_TWEET_NOT_FOUND",
+};
+
+/** キャッシュ（Upstash → DB アーカイブ）から引く。どちらも原価 0。 */
+async function lookupTweetCache(tweetId: string): Promise<TweetCachePayload | null> {
+  const cached = await readCacheJson<TweetCachePayload>(tweetCacheKey(tweetId));
+  if (cached && typeof cached === "object" && "ok" in cached) {
+    if (cached.ok && cached.response?.rink) return cached;
+    if (!cached.ok) return cached;
+  }
+  const row = await getYukkuriExplainedTweet(tweetId);
+  if (row && row.rink && row.konta && row.tanunee) {
+    const payload: TweetCachePayload = {
+      ok: true,
+      response: {
+        rink: row.rink,
+        konta: row.konta,
+        tanunee: row.tanunee,
+        tweet: {
+          id: row.tweet_id,
+          handle: row.x_handle,
+          displayName: row.author_display_name,
+          avatarUrl: row.author_avatar_url,
+          text: row.tweet_text,
+        },
+      },
+    };
+    await writeCacheJson(tweetCacheKey(tweetId), payload, TWEET_CACHE_TTL_OK_SEC);
+    return payload;
+  }
+  return null;
+}
 
 const SYSTEM_PROMPT = `あなたはニコニコ超会議2026「すれちがいライト」アプリのガイドキャラクター3人です。
 X（旧 Twitter）のユーザーが投稿した **1 つのツイート** について、3人で反応しながら解説してください。
@@ -216,6 +297,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 2.5) キャッシュ（★有料呼び出しより先。当たれば原価 0）
+    const cached = await lookupTweetCache(parsed.tweetId);
+    if (cached) {
+      if (cached.ok) {
+        return NextResponse.json({ ...cached.response, cached: true });
+      }
+      return NextResponse.json({ ...TWEET_NOT_FOUND_BODY, cached: true }, { status: 404 });
+    }
+
     // 3) X API でツイート + 投稿者取得
     const bearerToken = process.env.TWITTER_BEARER_TOKEN?.trim();
     if (!bearerToken) {
@@ -228,20 +318,33 @@ export async function POST(req: NextRequest) {
         { status: 503 }
       );
     }
-    const tweet = await fetchXTweetWithAuthor(parsed.tweetId, bearerToken);
+    // ★キャッシュに当たらなかったときだけ: キルスイッチ → IP 上限 → X の予算予約（すべて fail-closed）
+    const denied = await guardPaidEntry(req.headers, "tweet");
+    if (denied) {
+      const d = denialResponse(denied, "E_TWEET_EXPLAIN");
+      return NextResponse.json(d.body, { status: d.status });
+    }
+    const xReserve = await reserveYukkuriBudget(COST_MILLI.xTweetWithAuthor);
+    if (!xReserve.ok) {
+      const d = denialResponse(xReserve.reason, "E_TWEET_EXPLAIN");
+      return NextResponse.json(d.body, { status: d.status });
+    }
+
+    const fetched = await fetchXTweetWithAuthorDetailed(parsed.tweetId, bearerToken);
+    const tweet = fetched.tweet;
     if (!tweet) {
-      return NextResponse.json(
-        {
-          error:
-            "このツイートを取得できませんでした（削除済み・非公開アカウント・URL の打ち間違い等をご確認ください）。",
-          error_code: "E_TWEET_EXPLAIN_TWEET_NOT_FOUND",
-        },
-        { status: 404 }
-      );
+      if (fetched.notFound) {
+        await writeCacheJson(
+          tweetCacheKey(parsed.tweetId),
+          { ok: false, notFound: true } satisfies TweetCachePayload,
+          TWEET_CACHE_TTL_NOT_FOUND_SEC
+        );
+      }
+      return NextResponse.json(TWEET_NOT_FOUND_BODY, { status: 404 });
     }
 
     // 4) LLM 呼び出し（OpenRouter のモデルを順に試す。1 つ成功で終わり）
-    const openRouterKey = process.env.OPENROUTER_API_KEY?.trim();
+    const openRouterKey = openRouterDisabled() ? undefined : process.env.OPENROUTER_API_KEY?.trim();
     if (!openRouterKey) {
       return NextResponse.json(
         {
@@ -256,8 +359,18 @@ export async function POST(req: NextRequest) {
     const failures: string[] = [];
     let dialogue: Dialogue | null = null;
     let usedModel: string | null = null;
+    let paidSkippedForBudget = false;
 
     for (const model of MODELS) {
+      // ★有料モデルは呼ぶ前に予算を予約。通らなければ以降の有料モデルも通らないので打ち切る。
+      if (isPaidModel(model)) {
+        const llmReserve = await reserveYukkuriBudget(COST_MILLI.paidLlmCall);
+        if (!llmReserve.ok) {
+          paidSkippedForBudget = true;
+          failures.push(`openrouter ${model} skipped_budget=${llmReserve.reason}`);
+          break;
+        }
+      }
       const r = await callOpenRouter(openRouterKey, model, userMessage, PER_MODEL_TIMEOUT_MS);
       if (!r.ok) {
         failures.push(r.message);
@@ -278,6 +391,11 @@ export async function POST(req: NextRequest) {
       console.warn(
         `[yukkuri-explain-tweet] all models failed tweetId=${parsed.tweetId} failures=${JSON.stringify(failures).slice(0, 400)}`
       );
+      if (paidSkippedForBudget) {
+        // ★無料モデルが全滅し、有料は予算切れで呼ばなかった。「失敗」ではなく「無料枠の終了」と正直に言う。
+        const d = denialResponse("budget_exhausted", "E_TWEET_EXPLAIN");
+        return NextResponse.json(d.body, { status: d.status });
+      }
       return NextResponse.json(
         {
           error:
@@ -302,7 +420,7 @@ export async function POST(req: NextRequest) {
       source: "openrouter",
     });
 
-    return NextResponse.json({
+    const response: TweetExplainResponse = {
       ...dialogue,
       tweet: {
         id: tweet.tweetId,
@@ -311,7 +429,13 @@ export async function POST(req: NextRequest) {
         avatarUrl: tweet.author.profileImageUrl,
         text: tweet.text,
       },
-    });
+    };
+    await writeCacheJson(
+      tweetCacheKey(parsed.tweetId),
+      { ok: true, response } satisfies TweetCachePayload,
+      TWEET_CACHE_TTL_OK_SEC
+    );
+    return NextResponse.json(response);
   } catch (err) {
     // fetchXTweetWithAuthor の内部 fetch エラー（DNS 失敗・TLS 障害・
     // 予期せぬ JSON 構造）など、上の個別ブランチで拾い切れない例外。

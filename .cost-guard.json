@@ -1,0 +1,9 @@
+{
+  "$comment": "ai-hub/bin/cost-scan.mjs が読む。正本 ai-generic-rules/docs/policies/COST_SAFETY_POLICY.md §4。理由の無い行は効かない。",
+  "guarded": {
+    "server/src/lib/xTweet.ts": "呼び出し元 server/src/app/api/yukkuri-explain-tweet/route.ts が X を呼ぶ前に reserveYukkuriBudget(COST_MILLI.xTweetWithAuthor) で予約し、guardPaidEntry で IP 上限・キルスイッチを通している"
+  },
+  "exempt": {
+    "server/src/app/api/admin/yukkuri-backfill/route.ts": "管理者のみ（route 内の requireAdminAuth による Basic 認証）。利用者の操作では走らない"
+  }
+}

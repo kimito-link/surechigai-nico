@@ -132,12 +132,29 @@ export async function fetchXTweetWithAuthor(
   tweetId: string,
   bearerToken: string
 ): Promise<XTweetContext | null> {
+  return (await fetchXTweetWithAuthorDetailed(tweetId, bearerToken)).tweet;
+}
+
+/**
+ * `fetchXTweetWithAuthor` と同じだが、「存在しない／見られない」を区別して返す。
+ * `notFound: true` は再試行しても変わらない失敗（403 / 404 / 200 で本文なし）。
+ * 呼び出し側はこれを否定キャッシュに入れて、同じ ID で二度払わない（COST_SAFETY_POLICY L3）。
+ */
+export async function fetchXTweetWithAuthorDetailed(
+  tweetId: string,
+  bearerToken: string
+): Promise<{ tweet: XTweetContext | null; notFound: boolean }> {
   const first = await fetchXTweetOnce(tweetId, bearerToken);
-  if (first.tweet) return first.tweet;
-  if (first.status === 401 || first.status === 403 || first.status === 404) {
-    return null;
+  if (first.tweet) return { tweet: first.tweet, notFound: false };
+  if (first.status === 403 || first.status === 404 || first.status === 200) {
+    return { tweet: null, notFound: true };
   }
+  if (first.status === 401) return { tweet: null, notFound: false };
   await new Promise((resolve) => setTimeout(resolve, 2000));
   const second = await fetchXTweetOnce(tweetId, bearerToken);
-  return second.tweet;
+  if (second.tweet) return { tweet: second.tweet, notFound: false };
+  return {
+    tweet: null,
+    notFound: second.status === 403 || second.status === 404 || second.status === 200,
+  };
 }

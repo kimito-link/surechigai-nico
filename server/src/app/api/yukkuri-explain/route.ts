@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { clampYukkuriDialogue } from "@/lib/yukkuriDialogueClamp";
 import { recordYukkuriExplainedHandleRedis, YUKKURI_EXPLAINED_SET_KEY } from "@/lib/homeStats";
-import { upsertYukkuriExplainedArchive } from "@/lib/yukkuriExplainedArchive";
+import {
+  getYukkuriExplainedArchive,
+  upsertYukkuriExplainedArchive,
+} from "@/lib/yukkuriExplainedArchive";
+import { guardPaidEntry, openRouterDisabled, reserveYukkuriBudget } from "@/lib/costGuard";
+import {
+  COST_MILLI,
+  denialResponse,
+  isPaidModel,
+  isValidXHandle,
+  orderModelsFreeFirst,
+} from "@/lib/costGuardCore";
 import pool from "@/lib/db";
 import { prefectureCodeToName } from "@/lib/prefectureCodes";
 import type { RowDataPacket } from "mysql2";
@@ -18,29 +29,35 @@ export const maxDuration = 300;
 const CACHE_TTL_OK = 24 * 60 * 60; // 24時間キャッシュ（成功）
 const CACHE_TTL_FAIL = 20; // 20秒キャッシュ（失敗）— 一時障害時の再試行余地を残す
 const CACHE_TTL_MEM_OK_MS = 2 * 60 * 60 * 1000; // 2時間（インスタンス内）
+/** 「存在しないハンドル」の否定キャッシュ（同じ名前で X に二度払わない）。 */
+const CACHE_TTL_NOT_FOUND = 24 * 60 * 60;
+const HANDLE_NOT_FOUND_CODE = "E_YUKKURI_HANDLE_NOT_FOUND";
+const HANDLE_NOT_FOUND_BODY = {
+  error: "このアカウントは X で見つかりませんでした（ユーザー名の打ち間違い・凍結・削除をご確認ください）。",
+  error_code: HANDLE_NOT_FOUND_CODE,
+};
 // 超会議 2026 本番: Ollama（家庭内 PC）だけだと「たまに落ちる」「帯域不安定」で
-// 会場の体験が止まるので、OpenRouter を Ollama フォールバックとして有効化する。
-// 有料モデル（haiku / gpt-4o-mini）を主力に、:free をラストリゾートに配置。
-// コスト上限は OpenRouter ダッシュボード側で設定（¥10,000 相当）。
-// 緊急時に再封印したい場合はこのフラグを true にして commit すればすぐ止められる。
-const OPENROUTER_DISABLED = false;
+// 会場の体験が止まるので、OpenRouter を Ollama フォールバックとして有効化している。
+// ★2026-10-19（COST_SAFETY_POLICY）: 止めるスイッチをコードの定数から env に移した。
+//   PAID_CALLS_DISABLED=1（X と有料 LLM を全停止）／ YUKKURI_OPENROUTER_DISABLED=1（OpenRouter だけ停止）。
+//   コミット＋デプロイが要るスイッチはスイッチではないため。判定は costGuard.ts の openRouterDisabled()。
 const OPENROUTER_GLOBAL_BACKOFF_KEY = "yukkuri:openrouter:backoff:global";
 const OPENROUTER_GLOBAL_BACKOFF_MAX_SEC = 180;
 const OPENROUTER_MODEL_COOLDOWN_MS = 120_000;
 
 /**
  * OpenRouter モデル候補。
- * - 超会議本番では「有料モデル（速くて安定）→ :free（コスト 0 だが 20 req/min・200 req/day の枠）」の順で試す。
- * - 先頭が成功すれば終わるので、通常時は有料の claude-3-5-haiku / gpt-4o-mini で完結する。
- * - 枠やバックオフで弾かれた場合だけ :free に落ちる多段防御。
- * - コスト上限は OpenRouter ダッシュボード側（Credit limit ¥10,000）で Hard cap する。
+ * - ★2026-10-19 から「:free（原価 0 だが 20 req/min・200 req/day の枠）→ 有料モデル」の順で試す
+ *   （超会議本番では有料を先にしていた。会期後は原価を先に守る）。
+ * - 有料モデルは呼ぶ前に日次予算を予約する（reserveYukkuriBudget）。通らなければ呼ばない。
+ * - 物理上限は OpenRouter ダッシュボード側（Credit limit ¥10,000）で Hard cap（COST_SAFETY_POLICY L0）。
  */
-const MODELS = [
+const MODELS = orderModelsFreeFirst([
   "anthropic/claude-3-5-haiku",
   "openai/gpt-4o-mini",
   "google/gemma-4-31b-it:free",
   "meta-llama/llama-3.3-70b-instruct:free",
-];
+]);
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const OPENROUTER_MODELS_URL = "https://openrouter.ai/api/v1/models";
@@ -190,7 +207,11 @@ function getCachedFromMemory(handle: string): CachedPayload | null {
 
 function setCachedToMemory(handle: string, payload: CachedPayload) {
   const key = cacheKeyFromHandle(handle);
-  const ttlMs = payload.ok ? CACHE_TTL_MEM_OK_MS : CACHE_TTL_FAIL * 1000;
+  const ttlMs = payload.ok
+    ? CACHE_TTL_MEM_OK_MS
+    : payload.errorCode === HANDLE_NOT_FOUND_CODE
+      ? CACHE_TTL_NOT_FOUND * 1000
+      : CACHE_TTL_FAIL * 1000;
   memoryCache.set(key, { payload, expiresAt: Date.now() + ttlMs });
 }
 
@@ -241,7 +262,11 @@ async function setCached(handle: string, payload: CachedPayload) {
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) return;
   try {
-    const ttl = payload.ok ? CACHE_TTL_OK : CACHE_TTL_FAIL;
+    const ttl = payload.ok
+      ? CACHE_TTL_OK
+      : payload.errorCode === HANDLE_NOT_FOUND_CODE
+        ? CACHE_TTL_NOT_FOUND
+        : CACHE_TTL_FAIL;
     // 成功時は「これまでに解説された固有ハンドル」の集合にも登録しておき、
     // TOP のヒーロー統計（ゆっくり解説された数）から参照できるようにする。
     const commands: Array<Array<string | number>> = [
@@ -599,12 +624,17 @@ async function fetchXProfileOnce(
 async function fetchXProfile(
   handle: string,
   bearerToken: string
-): Promise<XProfile | null> {
+): Promise<{ profile: XProfile | null; notFound: boolean }> {
   const first = await fetchXProfileOnce(handle, bearerToken);
-  if (first.profile) return first.profile;
-  // 恒常的な失敗は再試行しない（Bearer 不正・アカウント消滅）
-  if (first.status === 401 || first.status === 403 || first.status === 404) {
-    return null;
+  if (first.profile) return { profile: first.profile, notFound: false };
+  // ★X は存在しないユーザー名に 200 + errors（data なし）を返す。404 と同じく「存在しない」扱い。
+  //   呼び出し側はこれを否定キャッシュに入れる（同じ名前で二度払わない）。
+  if (first.status === 404 || first.status === 200) {
+    return { profile: null, notFound: true };
+  }
+  // 恒常的な失敗は再試行しない（Bearer 不正・凍結など）
+  if (first.status === 401 || first.status === 403) {
+    return { profile: null, notFound: false };
   }
   // 一時的失敗（429 / 5xx / ネットワーク）だけ 2 秒待って 1 回だけ再挑戦
   await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -614,7 +644,10 @@ async function fetchXProfile(
       `[yukkuri-explain] x-profile recovered on retry handle=${handle} first_status=${first.status} second_status=${second.status}`
     );
   }
-  return second.profile;
+  return {
+    profile: second.profile,
+    notFound: !second.profile && (second.status === 404 || second.status === 200),
+  };
 }
 
 function normalizeXAvatarUrl(input: string | undefined): string | undefined {
@@ -1220,7 +1253,8 @@ export async function GET() {
   }
 
   const openRouterKey = process.env.OPENROUTER_API_KEY?.trim();
-  const openRouter = OPENROUTER_DISABLED
+  const orDisabled = openRouterDisabled();
+  const openRouter = orDisabled
     ? { configured: false as const, disabled: true as const }
     : { configured: Boolean(openRouterKey) };
 
@@ -1239,11 +1273,11 @@ export async function GET() {
   // - ollama だけ: "ollama_only"
   // - openrouter だけ: "openrouter_only"
   // - どちらもなし: "fallback_only"
-  const providerLabel = ollamaConfigured && !OPENROUTER_DISABLED && openRouterKey
+  const providerLabel = ollamaConfigured && !orDisabled && openRouterKey
     ? "ollama+openrouter"
     : ollamaConfigured
       ? "ollama_only"
-      : !OPENROUTER_DISABLED && openRouterKey
+      : !orDisabled && openRouterKey
         ? "openrouter_only"
         : "fallback_only";
 
@@ -1298,45 +1332,90 @@ export async function POST(req: NextRequest) {
 
   const useOllama = Boolean(ollamaBase && ollamaModel);
   const openRouterKey = process.env.OPENROUTER_API_KEY?.trim();
-  const useOpenRouter = !OPENROUTER_DISABLED && Boolean(openRouterKey);
+  const useOpenRouter = !openRouterDisabled() && Boolean(openRouterKey);
   // 全ての先頭 @ を取り除いて trim。キャッシュキー / Redis SADD / DB PK の
   // 正規化ロジックと揃えて、`@@handle` のような入力で二重登録されないようにする。
   // trim を先に行う。逆順だと「先頭空白 + @」の入力で `^@+` が一致せず @ が残る。
   const handle = body.xHandle?.trim().replace(/^@+/, "") ?? "";
   const official = findOfficialCreatorContext(handle, body.name);
 
-  // X プロフィールは「キャッシュ判定より前」で取っておく。
-  // - cache hit 経路でも display_name を最新の profile.name で更新できる
-  //   （過去 curl 等で保存された壊れた表示名を、UI 経由で解説された時点で自動修復する）。
-  // - 取得コストは 1 API 呼び出し / 数百ms 程度。cache hit の体感は維持できる。
-  const bearerToken = process.env.TWITTER_BEARER_TOKEN;
-  const profile = bearerToken && handle ? await fetchXProfile(handle, bearerToken) : null;
+  // ★X のユーザー名として形が正しくないものは、何も呼ばずに弾く（存在しえない名前に払わない）。
+  if (handle && !isValidXHandle(handle)) {
+    return NextResponse.json(
+      {
+        error: "X のユーザー名（英数字と _ の 15 文字以内）を入力してください。",
+        error_code: "E_YUKKURI_BAD_HANDLE",
+      },
+      { status: 400 }
+    );
+  }
 
-  // キャッシュ確認（成功 / 失敗いずれもヒットさせてレート浪費を防ぐ）
+  // ★キャッシュ確認を有料呼び出し（X プロフィール取得）より「先」に行う（COST_SAFETY_POLICY L3）。
+  //   2026-10-19 まではキャッシュ判定の前に X を呼んでいた（表示名の自動修復のため）ので、
+  //   キャッシュに当たっても毎回 X に払っていた。表示名・アバターの修復は backfill（管理者のみ）に任せる。
+  //   cache hit では profile を渡さない（upsert は COALESCE なので既存の表示名・アバターは消えない）。
   const cached = await getCached(handle);
   if (cached) {
     if (cached.ok) {
       const dialogue = clampYukkuriDialogue(cached.dialogue);
-      await scheduleArchiveSave(handle, dialogue, body, "cache_hit", profile);
+      await scheduleArchiveSave(handle, dialogue, body, "cache_hit", null);
       return NextResponse.json(dialogue);
     }
-    if (!useOllama && !useOpenRouter) {
-      const fallback = buildFallbackDialogue(body, null, official);
-      if (handle) {
-        await setCached(handle, { ok: true, dialogue: fallback });
-      }
-      await scheduleArchiveSave(handle, fallback, body, "fallback_no_llm", profile);
-      return NextResponse.json({
-        ...fallback,
-        degraded: true,
-        source: "fallback_no_llm",
-      });
+    if (cached.errorCode === HANDLE_NOT_FOUND_CODE) {
+      // 否定キャッシュ: 存在しないハンドルで X に二度払わない。
+      return NextResponse.json({ ...HANDLE_NOT_FOUND_BODY, cached: true }, { status: 404 });
     }
     // 過去バージョンで保存された失敗キャッシュが残っている場合でも、
-    // 現在の LLM 経路で再試行して体験を止めない。
+    // 現在の LLM 経路で再試行して体験を止めない（下の門番・予算予約は通る）。
     console.warn(
       `[yukkuri-explain] ignore_stale_fail_cache handle=${handle || "-"} code=${cached.errorCode}`
     );
+  }
+
+  // ★DB アーカイブ（永続）にも当たれば原価 0 で返す。Upstash の 24h が切れた後も二度払わない。
+  //   ただし LLM を通っていない静的フォールバック（source が fallback_*）は再生成の対象にする。
+  if (handle) {
+    const archived = await getYukkuriExplainedArchive(handle);
+    if (
+      archived &&
+      archived.rink &&
+      archived.konta &&
+      archived.tanunee &&
+      !(archived.source ?? "").startsWith("fallback")
+    ) {
+      const dialogue = clampYukkuriDialogue({
+        rink: archived.rink,
+        konta: archived.konta,
+        tanunee: archived.tanunee,
+      });
+      await setCached(handle, { ok: true, dialogue });
+      return NextResponse.json(dialogue);
+    }
+  }
+
+  // ★ここから先は原価がかかる。キルスイッチ → IP ごとの上限（fail-closed）。
+  const denied = await guardPaidEntry(req.headers, "handle");
+  if (denied) {
+    const d = denialResponse(denied, "E_YUKKURI");
+    return NextResponse.json(d.body, { status: d.status });
+  }
+
+  const bearerToken = process.env.TWITTER_BEARER_TOKEN;
+  let profile: XProfile | null = null;
+  if (bearerToken && handle) {
+    // ★X を呼ぶ前に日次予算を予約（プロフィール＋タイムラインの最大額。fail-closed）。
+    const xReserve = await reserveYukkuriBudget(COST_MILLI.xUserLookup + COST_MILLI.xTimeline10);
+    if (!xReserve.ok) {
+      const d = denialResponse(xReserve.reason, "E_YUKKURI");
+      return NextResponse.json(d.body, { status: d.status });
+    }
+    const fetched = await fetchXProfile(handle, bearerToken);
+    profile = fetched.profile;
+    if (fetched.notFound && !official) {
+      // 存在しないハンドルに LLM を回さない（作り話の紹介を出さない）。否定キャッシュに入れて終わる。
+      await setCached(handle, { ok: false, errorCode: HANDLE_NOT_FOUND_CODE });
+      return NextResponse.json(HANDLE_NOT_FOUND_BODY, { status: 404 });
+    }
   }
 
   // 直近ツイートを「全員」取得して LLM に渡す（非キャッシュ経路限定）。
@@ -1432,6 +1511,7 @@ export async function POST(req: NextRequest) {
   // - 401 / 402（認証 / 残高不足）は次モデルでも直らないので即打ち切り
   // - 429 は global backoff を上書きして以降のモデルもスキップ
   // - 404 はそのモデル slug が消えた可能性、他モデルは続行
+  let paidSkippedForBudget = false;
   if (useOpenRouter && openRouterKey) {
     const nowOuter = Date.now();
     const globalBackoffUntilRedis = await getGlobalBackoffUntilRedis();
@@ -1448,6 +1528,14 @@ export async function POST(req: NextRequest) {
         if (hardStop) break;
         const budgetLeft = remainingBudget();
         if (budgetLeft < PER_MODEL_MIN_MS) break;
+        // ★有料モデルは呼ぶ前に日次予算を予約。通らなければ以降の有料モデルも通らないので打ち切る。
+        if (isPaidModel(model)) {
+          const llmReserve = await reserveYukkuriBudget(COST_MILLI.paidLlmCall);
+          if (!llmReserve.ok) {
+            paidSkippedForBudget = true;
+            break;
+          }
+        }
         const perModel = Math.max(
           PER_MODEL_MIN_MS,
           Math.floor(budgetLeft / Math.max(1, remainingModels))
@@ -1487,6 +1575,16 @@ export async function POST(req: NextRequest) {
         }
       }
     }
+  }
+
+  if (paidSkippedForBudget) {
+    // ★無料の経路（Ollama・:free）が全滅し、有料は予算切れで呼ばなかった。
+    //   定型のフォールバック文を「解説」として出さず、無料枠の終了を正直に返す（キャッシュもしない）。
+    console.warn(
+      `[yukkuri-explain] paid_llm_skipped_budget handle=${handle || "-"} failures=${failures.length}`
+    );
+    const d = denialResponse("budget_exhausted", "E_YUKKURI");
+    return NextResponse.json(d.body, { status: d.status });
   }
 
   if (failures.length > 0) {
