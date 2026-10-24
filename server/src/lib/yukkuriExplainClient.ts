@@ -8,6 +8,30 @@ export type YukkuriDialogue = { rink: string; konta: string; tanunee: string };
 export const YUKKURI_EXPLAIN_TIMEOUT_MS = 90_000;
 
 /**
+ * 日次上限到達時にサーバーが返す構造化情報（`/api/yukkuri-explain*` の 429）。
+ * 将来の有料プラン導線（「プランを見る」等）はここの `upgradeAvailable` で出し分ける。
+ */
+export type YukkuriLimitInfo = {
+  reason: string;
+  scope: "client" | "global";
+  resetAt: string;
+  upgradeAvailable: boolean;
+};
+
+export function parseYukkuriLimitInfo(v: unknown): YukkuriLimitInfo | null {
+  if (!v || typeof v !== "object") return null;
+  const o = v as Record<string, unknown>;
+  if (typeof o.reason !== "string" || typeof o.resetAt !== "string") return null;
+  if (o.scope !== "client" && o.scope !== "global") return null;
+  return {
+    reason: o.reason,
+    scope: o.scope,
+    resetAt: o.resetAt,
+    upgradeAvailable: o.upgradeAvailable === true,
+  };
+}
+
+/**
  * サーバーが付与する `error_code` を保持するためのエラー型。
  * UI 側で `err instanceof YukkuriExplainError` で分岐できるようにする。
  */
@@ -15,18 +39,22 @@ export class YukkuriExplainError extends Error {
   readonly errorCode: string;
   readonly httpStatus: number;
   readonly cached: boolean;
+  /** 日次上限到達（429）のときだけ非 null */
+  readonly limit: YukkuriLimitInfo | null;
 
   constructor(opts: {
     message: string;
     errorCode: string;
     httpStatus: number;
     cached?: boolean;
+    limit?: YukkuriLimitInfo | null;
   }) {
     super(opts.message);
     this.name = "YukkuriExplainError";
     this.errorCode = opts.errorCode;
     this.httpStatus = opts.httpStatus;
     this.cached = opts.cached ?? false;
+    this.limit = opts.limit ?? null;
   }
 }
 
@@ -46,6 +74,7 @@ export async function fetchYukkuriExplain(
     error?: string;
     error_code?: string;
     cached?: boolean;
+    limit?: unknown;
     rink?: string;
     konta?: string;
     tanunee?: string;
@@ -59,6 +88,7 @@ export async function fetchYukkuriExplain(
       errorCode: data.error_code ?? `E_YUKKURI_HTTP_${res.status}`,
       httpStatus: res.status,
       cached: Boolean(data.cached),
+      limit: parseYukkuriLimitInfo(data.limit),
     });
   }
   if (
@@ -109,6 +139,7 @@ export async function fetchYukkuriExplainTweet(
   const data = (await res.json().catch(() => ({}))) as {
     error?: string;
     error_code?: string;
+    limit?: unknown;
     rink?: string;
     konta?: string;
     tanunee?: string;
@@ -128,6 +159,7 @@ export async function fetchYukkuriExplainTweet(
           : `HTTP ${res.status}`,
       errorCode: data.error_code ?? `E_TWEET_EXPLAIN_HTTP_${res.status}`,
       httpStatus: res.status,
+      limit: parseYukkuriLimitInfo(data.limit),
     });
   }
   if (
@@ -179,6 +211,9 @@ export function yukkuriExplainUserMessage(err: unknown): string {
         return "解説 AI の複数モデルで失敗しました。少し待ってから再試行してください。";
       case "E_YUKKURI_LLM_NOT_CONFIGURED":
         return "解説 AI が未設定です。運営にお知らせください。";
+      case "E_YUKKURI_LIMIT_REACHED":
+      case "E_TWEET_EXPLAIN_LIMIT_REACHED":
+        return err.message || "本日の解説回数の上限に達しました。明日またお試しください。";
       case "E_YUKKURI_BAD_REQUEST":
         return "リクエストの形式が不正でした。画面を再読み込みしてやり直してください。";
       default:

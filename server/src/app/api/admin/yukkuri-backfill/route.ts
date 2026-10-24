@@ -6,6 +6,9 @@ import {
   recordBackfillRun,
   type BackfillRunState,
 } from "@/lib/yukkuriBackfillState";
+import { estimateXApiCostMills } from "@/lib/xApiBudgetCore";
+import { reserveXApiSpend, settleXApiSpend } from "@/lib/xApiBudget";
+import { getCachedXProfile } from "@/lib/xProfileCache";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -285,7 +288,58 @@ async function runBackfillCore(req: NextRequest, dryRun: boolean) {
       continue;
     }
 
-    const r = await fetchXProfile(handle, bearerToken);
+    // 解説ルートが直近で取得済みのプロフィール（xProfileCache）があれば X API を叩かない（$0）。
+    const cachedProfile = await getCachedXProfile(handle);
+    let r: FetchResult;
+    let fromCache = false;
+    if (cachedProfile && (cachedProfile.name || cachedProfile.profileImageUrl)) {
+      r = {
+        ok: true,
+        profile: {
+          displayName: cachedProfile.name?.trim().slice(0, 200) || null,
+          avatarUrl: cachedProfile.profileImageUrl,
+        },
+      };
+      fromCache = true;
+    } else {
+      // 日次支出ガード（全体枠のみ。Cron はクライアント枠の対象外）。
+      const reserved = await reserveXApiSpend(null, estimateXApiCostMills({ posts: 0, users: 1 }));
+      if (!reserved.ok) {
+        await persistBackfillOutcome({
+          startedAt,
+          dryRun,
+          ok: false,
+          total: rows.length,
+          updated,
+          skipped,
+          failed,
+          aborted: "x_api_daily_budget",
+          error: `X API 日次予算に到達（${reserved.reason}）`,
+        });
+        return NextResponse.json(
+          {
+            ok: false,
+            dryRun,
+            aborted: "x_api_daily_budget",
+            error: "X API の日次予算上限に達したため中断しました（X_API_DAILY_BUDGET_USD）。",
+            total: rows.length,
+            processed: i,
+            updated,
+            skipped,
+            failed,
+            waitMs,
+            limit,
+            results,
+          },
+          { status: 429 }
+        );
+      }
+      r = await fetchXProfile(handle, bearerToken);
+      await settleXApiSpend(
+        reserved.reservation,
+        estimateXApiCostMills({ posts: 0, users: r.ok ? 1 : 0 })
+      );
+    }
     if (!r.ok) {
       failed += 1;
       results.push({
@@ -325,7 +379,7 @@ async function runBackfillCore(req: NextRequest, dryRun: boolean) {
           { status: 503 }
         );
       }
-      if (i < rows.length - 1 && waitMs > 0) {
+      if (i < rows.length - 1 && waitMs > 0 && !fromCache) {
         await new Promise((resolve) => setTimeout(resolve, waitMs));
       }
       continue;
@@ -339,7 +393,7 @@ async function runBackfillCore(req: NextRequest, dryRun: boolean) {
     if (nextName === currentName && nextAvatar === currentAvatar) {
       skipped += 1;
       results.push({ handle, action: "no_change" });
-      if (i < rows.length - 1 && waitMs > 0) {
+      if (i < rows.length - 1 && waitMs > 0 && !fromCache) {
         await new Promise((resolve) => setTimeout(resolve, waitMs));
       }
       continue;
@@ -366,7 +420,7 @@ async function runBackfillCore(req: NextRequest, dryRun: boolean) {
         avatar: nextAvatar ? "set" : null,
       },
     });
-    if (i < rows.length - 1 && waitMs > 0) {
+    if (i < rows.length - 1 && waitMs > 0 && !fromCache) {
       await new Promise((resolve) => setTimeout(resolve, waitMs));
     }
   }
