@@ -13,7 +13,14 @@ import {
   yukkuriTweetShareClipboardBundle,
   yukkuriTweetShareTweetUrl,
 } from "@/lib/yukkuriShareUrls";
+import { trackYukkuriFunnel } from "@/lib/trackYukkuriFunnel";
 import styles from "./chokaigi.module.css";
+
+/**
+ * 解説成功後に「別の人も解説してみる」導線を出すか（CPA / 回遊施策）。
+ * 既定は OFF（従来 UI のまま）。`NEXT_PUBLIC_YUKKURI_INVITE_PROMPT=1` で有効化。
+ */
+const INVITE_PROMPT_ENABLED = process.env.NEXT_PUBLIC_YUKKURI_INVITE_PROMPT === "1";
 
 type Dialogue = YukkuriDialogue;
 
@@ -74,8 +81,9 @@ function collectFocusables(root: HTMLElement | null): HTMLElement[] {
 export function StickyXSearchBar() {
   const router = useRouter();
   const [handle, setHandle] = useState("");
-  const { dialogue, tweetContext, loading, error, explain, reset, cancelInFlight } =
+  const { dialogue, tweetContext, loading, error, limit, explain, reset, cancelInFlight } =
     useYukkuriExplain();
+
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -86,6 +94,7 @@ export function StickyXSearchBar() {
   // 入力を「ハンドル」「ツイート URL」「認識不能」に分類する。
   // 送信時にこの分類結果で API を振り分け、UI 表示にも流用する。
   const classified = useMemo(() => classifyYukkuriInput(handle), [handle]);
+  const funnelMode = tweetContext || classified.kind === "tweet" ? "tweet" : "handle";
   const panelOpen = Boolean(loading || dialogue || error);
   // パネル内でのハンドル表記は優先順で決める:
   //   1) ツイート解説が成功していれば投稿者の handle
@@ -179,7 +188,15 @@ export function StickyXSearchBar() {
   };
 
   const handleRegister = () => {
+    trackYukkuriFunnel({ step: "register_click", mode: funnelMode, surface: "sticky_bar" });
     router.push("/sign-in");
+  };
+
+  /** 招待導線: 入力を空にしてフォーカス → 友だちの ID / 別ツイートをすぐ試せる */
+  const handleExplainAnother = () => {
+    dismiss();
+    setHandle("");
+    window.setTimeout(() => inputRef.current?.focus(), 0);
   };
 
   return (
@@ -285,7 +302,30 @@ export function StickyXSearchBar() {
               </div>
             )}
 
-            {!loading && error && (
+            {!loading && error && limit && (
+              <>
+                {/* 日次上限到達: 再試行しても同じ結果なので「再試行」は出さず、
+                    すれ違い参加（コストのかからない体験）へ誘導する。
+                    将来 limit.upgradeAvailable が true になったらここに「プランを見る」を足す。 */}
+                <p className={styles.stickyXPanelError} role="alert">
+                  {error}
+                </p>
+                <div className={styles.stickyXLoadingActions}>
+                  <button
+                    type="button"
+                    className={styles.stickyXBtnRegister}
+                    onClick={handleRegister}
+                  >
+                    すれ違い参加（位置・オフ会）
+                  </button>
+                  <button type="button" className={styles.stickyXCancelBtn} onClick={dismiss}>
+                    閉じる
+                  </button>
+                </div>
+              </>
+            )}
+
+            {!loading && error && !limit && (
               <>
                 <p className={styles.stickyXPanelError} role="alert">
                   {error}
@@ -363,6 +403,11 @@ export function StickyXSearchBar() {
                     }}
                     onClick={async (e) => {
                       e.preventDefault();
+                      trackYukkuriFunnel({
+                        step: "share_click",
+                        mode: funnelMode,
+                        surface: "sticky_bar",
+                      });
                       try {
                         await primeClipboardForShare(shareTarget);
                       } catch {}
@@ -383,6 +428,18 @@ export function StickyXSearchBar() {
                 <p className={styles.stickyXShareHint}>
                   Xアプリで空白で開いたら<strong>そのまま貼り付け</strong>でOKです（本文＋URLはコピー済）。
                 </p>
+                {INVITE_PROMPT_ENABLED && (
+                  <p className={styles.stickyXShareHint}>
+                    友だちや推しの ID でも試せます。{" "}
+                    <button
+                      type="button"
+                      className={`${styles.stickyXCanonLink} ${styles.stickyXInviteBtn}`}
+                      onClick={handleExplainAnother}
+                    >
+                      別の人を解説してみる →
+                    </button>
+                  </p>
+                )}
                 {/* 保存 URL の案内。
                     ハンドル解説 → /yukkuri/explained/{handle}
                     ツイート解説 → /yukkuri/explained/tweet/{tweetId}

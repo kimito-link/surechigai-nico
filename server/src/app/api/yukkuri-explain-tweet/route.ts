@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { clampYukkuriDialogue } from "@/lib/yukkuriDialogueClamp";
 import { extractTweetId } from "@/lib/tweetUrl";
 import { fetchXTweetWithAuthor, type XTweetContext } from "@/lib/xTweet";
+import {
+  buildLimitReachedBody,
+  estimateXApiCostMills,
+} from "@/lib/xApiBudgetCore";
+import { clientKeyFromHeaders, reserveXApiSpend, settleXApiSpend } from "@/lib/xApiBudget";
+import { getCachedXProfile, setCachedXProfile } from "@/lib/xProfileCache";
 import { upsertYukkuriExplainedTweet } from "@/lib/yukkuriExplainedTweetArchive";
 
 /**
@@ -179,6 +185,11 @@ async function callOpenRouter(
   }
 }
 
+function retryAfterSec(resetAtIso: string): string {
+  const sec = Math.ceil((Date.parse(resetAtIso) - Date.now()) / 1000);
+  return String(Number.isFinite(sec) && sec > 0 ? sec : 60);
+}
+
 export async function POST(req: NextRequest) {
   // 全体を try/catch で囲って、想定外例外でも JSON を返すようにする。
   // ここが throw すると Next.js が HTML の 500 を返し、クライアントの
@@ -228,7 +239,47 @@ export async function POST(req: NextRequest) {
         { status: 503 }
       );
     }
-    const tweet = await fetchXTweetWithAuthor(parsed.tweetId, bearerToken);
+    // 3-a) 投稿者プロフィールがキャッシュ済みなら expansions を付けず post のみ課金で取る。
+    //      URL のハンドルは偽装できるので、xTweet 側で author_id 一致を確認してから採用する。
+    const cachedAuthor = parsed.handle ? await getCachedXProfile(parsed.handle) : null;
+    const knownAuthor = cachedAuthor
+      ? {
+          id: cachedAuthor.id,
+          username: cachedAuthor.username,
+          name: cachedAuthor.name,
+          description: cachedAuthor.description,
+          profileImageUrl: cachedAuthor.profileImageUrl,
+        }
+      : null;
+
+    // 3-b) 日次支出ガード（予約 → 実額で精算）。上限到達時は構造化した 429 を返す。
+    const estimate = estimateXApiCostMills({ posts: 1, users: knownAuthor ? 0 : 1 });
+    const reserved = await reserveXApiSpend(clientKeyFromHeaders(req.headers), estimate);
+    if (!reserved.ok) {
+      console.warn(`[yukkuri-explain-tweet] x_api_budget_limited reason=${reserved.reason}`);
+      return NextResponse.json(
+        buildLimitReachedBody({
+          errorCode: "E_TWEET_EXPLAIN_LIMIT_REACHED",
+          reason: reserved.reason,
+          resetAt: reserved.resetAt,
+        }),
+        { status: 429, headers: { "Retry-After": retryAfterSec(reserved.resetAt) } }
+      );
+    }
+    const fetched = await fetchXTweetWithAuthor(parsed.tweetId, bearerToken, { knownAuthor });
+    await settleXApiSpend(reserved.reservation, estimateXApiCostMills(fetched.billed));
+    const tweet = fetched.tweet;
+    if (tweet && !fetched.authorFromCache) {
+      // 次回以降のツイート解説 / ハンドル解説で user read を省けるようにキャッシュ。
+      // （followers 等はツイート API では取っていないので入れない）
+      await setCachedXProfile({
+        id: tweet.author.id,
+        username: tweet.author.username,
+        name: tweet.author.name,
+        description: tweet.author.description,
+        profileImageUrl: tweet.author.profileImageUrl,
+      });
+    }
     if (!tweet) {
       return NextResponse.json(
         {

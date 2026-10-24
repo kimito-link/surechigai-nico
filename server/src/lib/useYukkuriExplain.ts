@@ -6,9 +6,12 @@ import {
   fetchYukkuriExplainTweet,
   yukkuriExplainUserMessage,
   YUKKURI_EXPLAIN_TIMEOUT_MS,
+  YukkuriExplainError,
   type YukkuriDialogue,
+  type YukkuriLimitInfo,
   type YukkuriTweetContext,
 } from "./yukkuriExplainClient";
+import { trackYukkuriFunnel } from "./trackYukkuriFunnel";
 
 /**
  * ゆっくり解説の UI から使う hook。
@@ -39,6 +42,8 @@ export function useYukkuriExplain() {
   const [tweetContext, setTweetContext] = useState<YukkuriTweetContext | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  /** 日次上限到達時のみ非 null（UI が「明日また」/ 将来の「プランを見る」を出し分ける用） */
+  const [limit, setLimit] = useState<YukkuriLimitInfo | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const userCancelledRef = useRef(false);
@@ -56,6 +61,7 @@ export function useYukkuriExplain() {
     setDialogue(null);
     setTweetContext(null);
     setError("");
+    setLimit(null);
     setLoading(false);
   }, []);
 
@@ -83,8 +89,13 @@ export function useYukkuriExplain() {
     abortRef.current = ac;
     setLoading(true);
     setError("");
+    setLimit(null);
     setDialogue(null);
     setTweetContext(null);
+
+    const mode = typeof body.tweetUrl === "string" && body.tweetUrl.length > 0 ? "tweet" : "handle";
+    const startedAt = Date.now();
+    trackYukkuriFunnel({ step: "explain_start", mode });
 
     timeoutRef.current = setTimeout(() => {
       timeoutFiredRef.current = true;
@@ -107,6 +118,7 @@ export function useYukkuriExplain() {
         if (abortRef.current !== ac) return;
         setDialogue(result);
       }
+      trackYukkuriFunnel({ step: "explain_success", mode, elapsedMs: Date.now() - startedAt });
     } catch (e) {
       // 現在アクティブな attempt でなければ（= ユーザーが再送信して上書きされた等）
       // 古い attempt のエラーで UI を騒がせない。userCancelledRef / timeoutFiredRef
@@ -138,6 +150,17 @@ export function useYukkuriExplain() {
         return;
       }
       // ネットワーク層ではなくアプリ層のエラー（HTTP エラー / JSON 不正等）
+      if (e instanceof YukkuriExplainError && e.limit) {
+        setLimit(e.limit);
+        trackYukkuriFunnel({ step: "explain_limit", mode, scope: e.limit.scope });
+      } else {
+        trackYukkuriFunnel({
+          step: "explain_error",
+          mode,
+          errorCode: e instanceof YukkuriExplainError ? e.errorCode : "E_CLIENT_UNKNOWN",
+          elapsedMs: Date.now() - startedAt,
+        });
+      }
       setError(yukkuriExplainUserMessage(e));
     } finally {
       // 現在アクティブな attempt の finally のみ、共有 state を触ってよい。
@@ -157,5 +180,5 @@ export function useYukkuriExplain() {
     }
   }, []);
 
-  return { dialogue, tweetContext, loading, error, explain, reset, cancelInFlight };
+  return { dialogue, tweetContext, loading, error, limit, explain, reset, cancelInFlight };
 }

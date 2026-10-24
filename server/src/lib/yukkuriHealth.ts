@@ -2,6 +2,8 @@ import "server-only";
 import pool from "@/lib/db";
 import type { RowDataPacket } from "mysql2";
 import { loadLastBackfillRun } from "@/lib/yukkuriBackfillState";
+import { loadTodayXApiSpend } from "@/lib/xApiBudget";
+import { millsToUsd } from "@/lib/xApiBudgetCore";
 
 /**
  * `/api/health/yukkuri` と `/api/admin/health/yukkuri` 共通の診断ロジック。
@@ -145,6 +147,20 @@ export async function gatherYukkuriHealth(
   result.twitter = {
     hasBearerToken: Boolean(process.env.TWITTER_BEARER_TOKEN),
   };
+
+  // X API 日次推定支出（xApiBudget のカウンタ。UTC 日付単位、単価は xApiBudgetCore の前提値）
+  try {
+    const spend = await loadTodayXApiSpend();
+    result.xApiSpend = {
+      day: spend.day,
+      estimatedUsd: millsToUsd(spend.globalMills),
+      guardEnabled: spend.config.enabled,
+      globalDailyLimitUsd: millsToUsd(spend.config.globalDailyMills),
+      perClientDailyLimitUsd: millsToUsd(spend.config.perClientDailyMills),
+    };
+  } catch (err) {
+    result.xApiSpend = { ok: false, error: (err as Error).message.slice(0, 200) };
+  }
 
   return result;
 }
