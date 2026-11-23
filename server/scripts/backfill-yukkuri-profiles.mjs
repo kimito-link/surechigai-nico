@@ -9,6 +9,13 @@ dotenv.config({ path: path.join(__dirname, "..", ".env.local") });
 dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
 const WAIT_MS = 1500;
+// X API Pay-Per-Use: users/by/username は 1 件 $0.010（dry-run でも API は叩くので課金される）。
+const USER_READ_USD = 0.01;
+// 任意の上限件数（既定: 無制限 = 従来どおり全件）。例: BACKFILL_MAX_USERS=100
+const MAX_USERS = (() => {
+  const n = Number.parseInt(process.env.BACKFILL_MAX_USERS ?? "", 10);
+  return Number.isFinite(n) && n > 0 ? n : Infinity;
+})();
 const dryRun =
   process.argv.some((arg) => arg.includes("dry-run")) ||
   process.env.npm_config_dry_run === "true";
@@ -177,9 +184,9 @@ async function main() {
        (display_name IS NULL OR avatar_url IS NULL) DESC,
        updated_at DESC`
   );
-  const list = rows;
+  const list = Number.isFinite(MAX_USERS) ? rows.slice(0, MAX_USERS) : rows;
   console.log(
-    `[backfill-yukkuri] start total=${list.length} mode=${dryRun ? "dry-run" : "apply"} wait=${WAIT_MS}ms`
+    `[backfill-yukkuri] start total=${list.length}/${rows.length} mode=${dryRun ? "dry-run" : "apply"} wait=${WAIT_MS}ms est_max_cost=$${(list.length * USER_READ_USD).toFixed(2)}`
   );
 
   let updated = 0;

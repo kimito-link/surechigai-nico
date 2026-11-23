@@ -6,6 +6,13 @@ import pool from "@/lib/db";
 import { prefectureCodeToName } from "@/lib/prefectureCodes";
 import type { RowDataPacket } from "mysql2";
 import {
+  buildLimitReachedBody,
+  estimateXApiCostMills,
+  X_API_PRICE_MILLS,
+} from "@/lib/xApiBudgetCore";
+import { clientKeyFromHeaders, reserveXApiSpend, settleXApiSpend } from "@/lib/xApiBudget";
+import { getCachedXProfile, setCachedXProfile, type CachedXProfile } from "@/lib/xProfileCache";
+import {
   OFFICIAL_CREATORCROSS_ENTRIES,
   type OfficialCreatorCrossEntry,
 } from "@/app/chokaigi/creatorcross-official-data";
@@ -617,6 +624,34 @@ async function fetchXProfile(
   return second.profile;
 }
 
+function xProfileFromCache(c: CachedXProfile): XProfile {
+  return {
+    id: c.id,
+    name: c.name ?? undefined,
+    description: c.description ?? undefined,
+    profileImageUrl: c.profileImageUrl ?? undefined,
+    followersCount: c.followersCount,
+    tweetCount: c.tweetCount,
+  };
+}
+
+function xProfileToCache(handle: string, p: XProfile): CachedXProfile {
+  return {
+    id: p.id ?? "",
+    username: handle,
+    name: p.name ?? null,
+    description: p.description ?? null,
+    profileImageUrl: p.profileImageUrl ?? null,
+    followersCount: p.followersCount,
+    tweetCount: p.tweetCount,
+  };
+}
+
+function retryAfterSec(resetAtIso: string): string {
+  const sec = Math.ceil((Date.parse(resetAtIso) - Date.now()) / 1000);
+  return String(Number.isFinite(sec) && sec > 0 ? sec : 60);
+}
+
 function normalizeXAvatarUrl(input: string | undefined): string | undefined {
   if (!input) return undefined;
   const trimmed = input.trim();
@@ -706,12 +741,16 @@ function isBioThin(description: string | null | undefined): boolean {
  *   がそのまま信号になるため（例: くーまさん = 女性配信者を RT で紹介）。
  * - 失敗してもプロフィールだけで続行できるよう、例外は握りつぶして null を返す。
  */
+/** タイムライン取得で要求する件数。課金は返ってきた post 数 × $0.005。 */
+const RECENT_TWEETS_MAX_RESULTS = 10;
+
 async function fetchRecentTweets(
   userId: string,
-  bearerToken: string
+  bearerToken: string,
+  onBilled?: (posts: number) => void
 ): Promise<string[] | null> {
   try {
-    const url = `https://api.twitter.com/2/users/${encodeURIComponent(userId)}/tweets?max_results=10&exclude=replies&tweet.fields=text`;
+    const url = `https://api.twitter.com/2/users/${encodeURIComponent(userId)}/tweets?max_results=${RECENT_TWEETS_MAX_RESULTS}&exclude=replies&tweet.fields=text`;
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${bearerToken}` },
     });
@@ -725,6 +764,7 @@ async function fetchRecentTweets(
       data?: Array<{ id?: string; text?: string }>;
     };
     const items = data.data ?? [];
+    onBilled?.(items.length);
     if (items.length === 0) return null;
     const texts = items
       .map((t) => (t.text ?? "").trim())
@@ -1305,15 +1345,56 @@ export async function POST(req: NextRequest) {
   const handle = body.xHandle?.trim().replace(/^@+/, "") ?? "";
   const official = findOfficialCreatorContext(handle, body.name);
 
-  // X プロフィールは「キャッシュ判定より前」で取っておく。
-  // - cache hit 経路でも display_name を最新の profile.name で更新できる
-  //   （過去 curl 等で保存された壊れた表示名を、UI 経由で解説された時点で自動修復する）。
-  // - 取得コストは 1 API 呼び出し / 数百ms 程度。cache hit の体感は維持できる。
   const bearerToken = process.env.TWITTER_BEARER_TOKEN;
-  const profile = bearerToken && handle ? await fetchXProfile(handle, bearerToken) : null;
+  const clientKey = clientKeyFromHeaders(req.headers);
 
   // キャッシュ確認（成功 / 失敗いずれもヒットさせてレート浪費を防ぐ）
   const cached = await getCached(handle);
+
+  // X プロフィール（user read = $0.010/回）。
+  // - 解説キャッシュ hit 経路でも display_name / avatar を最新化するために取る
+  //   （過去 curl 等で保存された壊れた表示名を、UI 経由で解説された時点で自動修復する）。
+  // - ただし 2026-11 の従量課金化に合わせ、xProfileCache（既定 24h, Redis 共有）を先に見る。
+  //   ツイート解説で保存された投稿者キャッシュは followers 等を持たないので、
+  //   新規生成（プロンプトに数値を使う）経路では followers 付きのものだけ採用する。
+  // - 日次支出ガード: 新規生成で上限超過なら構造化 429。解説キャッシュ hit は
+  //   上限超過でも（プロフィール更新を諦めて）そのまま返す。
+  const needsFullProfile = !(cached && cached.ok);
+  let profile: XProfile | null = null;
+  if (bearerToken && handle) {
+    const cachedProfile = await getCachedXProfile(handle);
+    if (cachedProfile && (!needsFullProfile || cachedProfile.followersCount !== undefined)) {
+      profile = xProfileFromCache(cachedProfile);
+    } else {
+      const reserved = await reserveXApiSpend(
+        clientKey,
+        estimateXApiCostMills({ posts: 0, users: 1 })
+      );
+      if (reserved.ok) {
+        profile = await fetchXProfile(handle, bearerToken);
+        await settleXApiSpend(
+          reserved.reservation,
+          estimateXApiCostMills({ posts: 0, users: profile ? 1 : 0 })
+        );
+        if (profile?.id) {
+          await setCachedXProfile(xProfileToCache(handle, profile));
+        }
+      } else if (needsFullProfile) {
+        console.warn(
+          `[yukkuri-explain] x_api_budget_limited reason=${reserved.reason} handle=${handle}`
+        );
+        return NextResponse.json(
+          buildLimitReachedBody({
+            errorCode: "E_YUKKURI_LIMIT_REACHED",
+            reason: reserved.reason,
+            resetAt: reserved.resetAt,
+          }),
+          { status: 429, headers: { "Retry-After": retryAfterSec(reserved.resetAt) } }
+        );
+      }
+    }
+  }
+
   if (cached) {
     if (cached.ok) {
       const dialogue = clampYukkuriDialogue(cached.dialogue);
@@ -1354,8 +1435,27 @@ export async function POST(req: NextRequest) {
   // - 1 リクエストあたり X API 呼び出しが +1 になる（プロフ取得に追加）。
   // - キャッシュヒット（24h）は既に fetch しないので影響なし。
   // - レート枠で実害が出たら、環境変数等でここを再度 bio-thin 限定に戻せる。
+  // 支出ガード: タイムラインは最大 10 posts = $0.050 を予約し、実件数で精算。
+  // 上限超過時はタイムラインだけ諦めてプロフィールのみで続行する（体験は止めない）。
+  let timelineReserved: Awaited<ReturnType<typeof reserveXApiSpend>> | null = null;
   if (profile?.id && bearerToken) {
-    const tweets = await fetchRecentTweets(profile.id, bearerToken);
+    timelineReserved = await reserveXApiSpend(
+      clientKey,
+      RECENT_TWEETS_MAX_RESULTS * X_API_PRICE_MILLS.postRead
+    );
+    if (!timelineReserved.ok) {
+      console.warn(
+        `[yukkuri-explain] x-timeline skipped reason=${timelineReserved.reason} handle=${handle}`
+      );
+    }
+  }
+  if (profile?.id && bearerToken && timelineReserved?.ok) {
+    const reservation = timelineReserved.reservation;
+    let billedPosts = 0;
+    const tweets = await fetchRecentTweets(profile.id, bearerToken, (n) => {
+      billedPosts = n;
+    });
+    await settleXApiSpend(reservation, billedPosts * X_API_PRICE_MILLS.postRead);
     if (tweets && tweets.length > 0) {
       profile.recentTweets = tweets;
       console.log(

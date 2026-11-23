@@ -23,6 +23,7 @@ import {
   HERO_TITLE_SUB,
 } from "./lp-content";
 import { ChokaigiConceptBanner } from "./ChokaigiConceptBanner";
+import { trackYukkuriFunnel } from "@/lib/trackYukkuriFunnel";
 import styles from "./YukkuriHero.module.css";
 
 type Dialogue = YukkuriDialogue;
@@ -113,6 +114,7 @@ export function YukkuriHero() {
       // intent URL を先取りして起動し、クリップボード書き込みが間に合わず
       // 「空白の composer」で開かれる（Ctrl+V しても何も出ない）バグになる。
       e.preventDefault();
+      trackYukkuriFunnel({ step: "share_click", mode: "handle", surface: "hero" });
 
       // 1) クリップボード先入れ（await で書き込み完了を保証する）
       const bundle = yukkuriShareClipboardBundle(BASE_URL, raw);
