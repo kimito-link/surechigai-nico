@@ -5,6 +5,7 @@
  * - **Vercel build**: `package.json` の `build` スクリプトが `next build` の前にこれを呼ぶ。
  *   接続情報（MYSQL_PUBLIC_URL / DATABASE_URL 等）が Build スコープの Env に入っていれば
  *   自動で DDL 反映、入っていなければ「skip」ログを出して build を継続（= fail しない）。
+ *   接続情報があっても DB に届かない（停止中・接続断）ときは warn を出して build を継続する。
  *   これにより `git push` → Vercel デプロイだけで DB スキーマが同期される。
  * - **手元で明示実行**: `npm run db:ensure:chokaigi`。
  *   こちらは接続情報が無いと明示的に失敗 (`process.exit(1)`) する。
@@ -141,147 +142,170 @@ const sqlPath = path.join(__dirname, "ensure-chokaigi-tables.sql");
 const sql = fs.readFileSync(sqlPath, "utf8");
 const statements = parseSqlStatements(sql);
 
+// DB に届かないとき（Railway 停止・接続上限・ネットワーク断など）の扱い:
+// - Vercel build 経由: 警告を出して build を続ける（DB の都合で本番デプロイ全体を止めない）。
+//   スキーマ反映は DB が戻った後の次のデプロイ、または `npm run db:ensure:chokaigi` で行う。
+// - 手元の明示実行（db:ensure:chokaigi）: 従来どおり exit 1 で失敗させる。
+// 2026-11-23: Railway の MySQL を止めた後、build が PROTOCOL_CONNECTION_LOST で落ち続けたため追加。
 let conn;
+try {
+  if (mysqlUri && (mysqlUri.startsWith("mysql://") || mysqlUri.startsWith("mysql2://"))) {
+    conn = await mysql.createConnection({
+      uri: mysqlUri.startsWith("mysql2://")
+        ? `mysql://${mysqlUri.slice("mysql2://".length)}`
+        : mysqlUri,
+      connectTimeout: 20_000,
+      timezone: "+09:00",
+      ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
+    });
+  } else {
+    conn = await mysql.createConnection({
+      host,
+      port,
+      user,
+      password,
+      database,
+      connectTimeout: 20_000,
+      timezone: "+09:00",
+      ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
+    });
+  }
 
-if (mysqlUri && (mysqlUri.startsWith("mysql://") || mysqlUri.startsWith("mysql2://"))) {
-  conn = await mysql.createConnection({
-    uri: mysqlUri.startsWith("mysql2://")
-      ? `mysql://${mysqlUri.slice("mysql2://".length)}`
-      : mysqlUri,
-    connectTimeout: 20_000,
-    timezone: "+09:00",
-    ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
-  });
-} else {
-  conn = await mysql.createConnection({
-    host,
-    port,
-    user,
-    password,
-    database,
-    connectTimeout: 20_000,
-    timezone: "+09:00",
-    ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
-  });
-}
-
-for (const st of statements) {
-  await conn.query(st);
-  console.log(
-    "[ensure-chokaigi] ok:",
-    st.slice(0, 72).replace(/\s+/g, " ") + (st.length > 72 ? "…" : "")
-  );
-}
-
-// users.avatar_url は本番コードで参照されるため、既存DBにも揃える
-{
-  const [rows] = await conn.query(
-    `
-      SELECT DATA_TYPE, COLUMN_TYPE
-      FROM information_schema.COLUMNS
-      WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME = 'users'
-        AND COLUMN_NAME = 'avatar_url'
-      LIMIT 1
-    `
-  );
-  const col = rows?.[0];
-  const dataType = String(col?.DATA_TYPE || "").toLowerCase();
-  const columnType = String(col?.COLUMN_TYPE || "").toLowerCase();
-  const isTextType =
-    dataType === "text" || dataType === "mediumtext" || dataType === "longtext";
-
-  if (!col) {
-    await conn.query(
-      "ALTER TABLE users ADD COLUMN avatar_url TEXT NULL COMMENT 'プロフィール画像URL' AFTER avatar_config"
-    );
-    console.log("[ensure-chokaigi] ok: added users.avatar_url");
-  } else if (!isTextType) {
-    await conn.query(
-      "ALTER TABLE users MODIFY COLUMN avatar_url TEXT NULL COMMENT 'プロフィール画像URL' AFTER avatar_config"
-    );
+  for (const st of statements) {
+    await conn.query(st);
     console.log(
-      `[ensure-chokaigi] ok: widened users.avatar_url (${columnType || "unknown"} -> TEXT)`
+      "[ensure-chokaigi] ok:",
+      st.slice(0, 72).replace(/\s+/g, " ") + (st.length > 72 ? "…" : "")
     );
-  } else {
-    console.log("[ensure-chokaigi] ok: users.avatar_url already present");
   }
-}
 
-// yukkuri_explained.avatar_url はアーカイブ一覧/詳細で参照するため、既存DBにも揃える
-{
-  const [rows] = await conn.query(
-    `
-      SELECT DATA_TYPE, COLUMN_TYPE
-      FROM information_schema.COLUMNS
-      WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME = 'yukkuri_explained'
-        AND COLUMN_NAME = 'avatar_url'
-      LIMIT 1
-    `
-  );
-  const col = rows?.[0];
-  const dataType = String(col?.DATA_TYPE || "").toLowerCase();
-  const isVarchar = dataType === "varchar";
-  const lengthMatch = String(col?.COLUMN_TYPE || "").match(/\((\d+)\)/);
-  const currentLength = lengthMatch ? Number.parseInt(lengthMatch[1], 10) : 0;
+  // users.avatar_url は本番コードで参照されるため、既存DBにも揃える
+  {
+    const [rows] = await conn.query(
+      `
+        SELECT DATA_TYPE, COLUMN_TYPE
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'users'
+          AND COLUMN_NAME = 'avatar_url'
+        LIMIT 1
+      `
+    );
+    const col = rows?.[0];
+    const dataType = String(col?.DATA_TYPE || "").toLowerCase();
+    const columnType = String(col?.COLUMN_TYPE || "").toLowerCase();
+    const isTextType =
+      dataType === "text" || dataType === "mediumtext" || dataType === "longtext";
 
-  if (!col) {
-    await conn.query(
-      "ALTER TABLE yukkuri_explained ADD COLUMN avatar_url VARCHAR(500) NULL COMMENT 'Xプロフィール画像URL' AFTER display_name"
-    );
-    console.log("[ensure-chokaigi] ok: added yukkuri_explained.avatar_url");
-  } else if (!isVarchar || currentLength < 500) {
-    await conn.query(
-      "ALTER TABLE yukkuri_explained MODIFY COLUMN avatar_url VARCHAR(500) NULL COMMENT 'Xプロフィール画像URL' AFTER display_name"
-    );
-    console.log(
-      `[ensure-chokaigi] ok: widened yukkuri_explained.avatar_url (${col?.COLUMN_TYPE || "unknown"} -> varchar(500))`
-    );
-  } else {
-    console.log("[ensure-chokaigi] ok: yukkuri_explained.avatar_url already present");
+    if (!col) {
+      await conn.query(
+        "ALTER TABLE users ADD COLUMN avatar_url TEXT NULL COMMENT 'プロフィール画像URL' AFTER avatar_config"
+      );
+      console.log("[ensure-chokaigi] ok: added users.avatar_url");
+    } else if (!isTextType) {
+      await conn.query(
+        "ALTER TABLE users MODIFY COLUMN avatar_url TEXT NULL COMMENT 'プロフィール画像URL' AFTER avatar_config"
+      );
+      console.log(
+        `[ensure-chokaigi] ok: widened users.avatar_url (${columnType || "unknown"} -> TEXT)`
+      );
+    } else {
+      console.log("[ensure-chokaigi] ok: users.avatar_url already present");
+    }
   }
-}
 
-// users.home_prefecture / location_visibility（超会議 2026「参加県・公開範囲」）。
-//
-// 仕様:
-// - home_prefecture: JIS X 0401 の 01..47 を 0 パディング文字列で保持。NULL は未設定。
-//   型は VARCHAR(8) と広めにしてあるが、アプリ側バリデーションで "01".."47" のみ許容する。
-// - location_visibility: 0=完全非公開 / 1=マッチ相手のみ / 2=全体公開。
-//   **デフォルト 0 が必須**（フロントの "デフォルト非公開" 約束を DB 側で担保）。
-//
-// 既存レコードは DEFAULT で自動的に 0 が入るので、後方互換を壊さない。
-// CODEX-NEXT.md §1 のスキーマ案に準拠。
-{
-  const [rows] = await conn.query(
-    `
-      SELECT COLUMN_NAME
-      FROM information_schema.COLUMNS
-      WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME = 'users'
-        AND COLUMN_NAME IN ('home_prefecture', 'location_visibility')
-    `
-  );
-  const present = new Set(
-    (rows ?? []).map((r) => String(r.COLUMN_NAME || "").toLowerCase())
-  );
-  if (!present.has("home_prefecture")) {
-    await conn.query(
-      "ALTER TABLE users ADD COLUMN home_prefecture VARCHAR(8) NULL COMMENT '都道府県コード JIS X 0401 の 01..47。NULL は未設定'"
+  // yukkuri_explained.avatar_url はアーカイブ一覧/詳細で参照するため、既存DBにも揃える
+  {
+    const [rows] = await conn.query(
+      `
+        SELECT DATA_TYPE, COLUMN_TYPE
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'yukkuri_explained'
+          AND COLUMN_NAME = 'avatar_url'
+        LIMIT 1
+      `
     );
-    console.log("[ensure-chokaigi] ok: added users.home_prefecture");
-  } else {
-    console.log("[ensure-chokaigi] ok: users.home_prefecture already present");
+    const col = rows?.[0];
+    const dataType = String(col?.DATA_TYPE || "").toLowerCase();
+    const isVarchar = dataType === "varchar";
+    const lengthMatch = String(col?.COLUMN_TYPE || "").match(/\((\d+)\)/);
+    const currentLength = lengthMatch ? Number.parseInt(lengthMatch[1], 10) : 0;
+
+    if (!col) {
+      await conn.query(
+        "ALTER TABLE yukkuri_explained ADD COLUMN avatar_url VARCHAR(500) NULL COMMENT 'Xプロフィール画像URL' AFTER display_name"
+      );
+      console.log("[ensure-chokaigi] ok: added yukkuri_explained.avatar_url");
+    } else if (!isVarchar || currentLength < 500) {
+      await conn.query(
+        "ALTER TABLE yukkuri_explained MODIFY COLUMN avatar_url VARCHAR(500) NULL COMMENT 'Xプロフィール画像URL' AFTER display_name"
+      );
+      console.log(
+        `[ensure-chokaigi] ok: widened yukkuri_explained.avatar_url (${col?.COLUMN_TYPE || "unknown"} -> varchar(500))`
+      );
+    } else {
+      console.log("[ensure-chokaigi] ok: yukkuri_explained.avatar_url already present");
+    }
   }
-  if (!present.has("location_visibility")) {
-    await conn.query(
-      "ALTER TABLE users ADD COLUMN location_visibility TINYINT NOT NULL DEFAULT 0 COMMENT '0=完全非公開 / 1=マッチ相手のみ / 2=全体公開'"
+
+  // users.home_prefecture / location_visibility（超会議 2026「参加県・公開範囲」）。
+  //
+  // 仕様:
+  // - home_prefecture: JIS X 0401 の 01..47 を 0 パディング文字列で保持。NULL は未設定。
+  //   型は VARCHAR(8) と広めにしてあるが、アプリ側バリデーションで "01".."47" のみ許容する。
+  // - location_visibility: 0=完全非公開 / 1=マッチ相手のみ / 2=全体公開。
+  //   **デフォルト 0 が必須**（フロントの "デフォルト非公開" 約束を DB 側で担保）。
+  //
+  // 既存レコードは DEFAULT で自動的に 0 が入るので、後方互換を壊さない。
+  // CODEX-NEXT.md §1 のスキーマ案に準拠。
+  {
+    const [rows] = await conn.query(
+      `
+        SELECT COLUMN_NAME
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'users'
+          AND COLUMN_NAME IN ('home_prefecture', 'location_visibility')
+      `
     );
-    console.log("[ensure-chokaigi] ok: added users.location_visibility (DEFAULT 0)");
-  } else {
-    console.log("[ensure-chokaigi] ok: users.location_visibility already present");
+    const present = new Set(
+      (rows ?? []).map((r) => String(r.COLUMN_NAME || "").toLowerCase())
+    );
+    if (!present.has("home_prefecture")) {
+      await conn.query(
+        "ALTER TABLE users ADD COLUMN home_prefecture VARCHAR(8) NULL COMMENT '都道府県コード JIS X 0401 の 01..47。NULL は未設定'"
+      );
+      console.log("[ensure-chokaigi] ok: added users.home_prefecture");
+    } else {
+      console.log("[ensure-chokaigi] ok: users.home_prefecture already present");
+    }
+    if (!present.has("location_visibility")) {
+      await conn.query(
+        "ALTER TABLE users ADD COLUMN location_visibility TINYINT NOT NULL DEFAULT 0 COMMENT '0=完全非公開 / 1=マッチ相手のみ / 2=全体公開'"
+      );
+      console.log("[ensure-chokaigi] ok: added users.location_visibility (DEFAULT 0)");
+    } else {
+      console.log("[ensure-chokaigi] ok: users.location_visibility already present");
+    }
   }
+  await conn.end();
+  console.log(`[ensure-chokaigi] 完了 (${statements.length} 文)`);
+} catch (err) {
+  try {
+    await conn?.end();
+  } catch {
+    // 接続が既に切れている場合は無視
+  }
+  const code = err && typeof err === "object" && "code" in err ? String(err.code) : "";
+  const message = err instanceof Error ? err.message : String(err);
+  if (explicitEnsure) {
+    console.error(`[ensure-chokaigi] 失敗: ${code} ${message}`);
+    process.exit(1);
+  }
+  console.warn(
+    `[ensure-chokaigi] warn: DB に接続・反映できなかったため skip して build を続けます (${code || "unknown"}: ${message})\n` +
+      "  DB が戻ったら再デプロイするか、手元で npm run db:ensure:chokaigi を実行してください。"
+  );
+  process.exit(0);
 }
-await conn.end();
-console.log(`[ensure-chokaigi] 完了 (${statements.length} 文)`);
